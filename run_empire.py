@@ -50,8 +50,10 @@ def run_single_channel(
     shutil.rmtree(work_dir, ignore_errors=True)
     work_dir.mkdir(parents=True, exist_ok=True)
 
+    mood = "mystery" if ("conan" in ch_cfg["niche"] or "mystery" in ch_cfg["niche"] or "detective" in ch_cfg["niche"]) else "warm"
+    ch_cfg["voice"]["mood"] = mood
     print(f"🎨 [{channel_id}] توليد الـ 8 مشاهد السينمائية المخصصة لأحداث القصة بالذكاء الاصطناعي...")
-    scenes = prepare_episode_scenes(episode["scene_prompts"], work_dir / "scenes", mood="mystery")
+    scenes = prepare_episode_scenes(episode["scene_prompts"], work_dir / "scenes", mood=mood)
 
     print(f"🎙️ [{channel_id}] تسجيل الصوت الكامل للحلقة (+15 دقيقة)...")
     master_mp3, subs, markers = synthesize_long_episode_audio(

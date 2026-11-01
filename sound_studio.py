@@ -346,7 +346,7 @@ def synthesize_long_episode_audio(
 
     # توليد موسيقى خلفية درامية ناعمة جداً (Ambient Warm Pad) ومزجها تحت الصوت البشري
     expected_final_dur = actual_dur / tempo + 2.0
-    pad_wav = _build_warm_cinema_pad(work_dir / "cinema_pad.wav", duration_sec=min(60.0, expected_final_dur))
+    pad_wav = _build_warm_cinema_pad(work_dir / "cinema_pad.wav", duration_sec=min(60.0, expected_final_dur), mood=voice_cfg.get("mood", "mystery"))
 
     final_mp3 = work_dir / "long_episode_master.mp3"
     tempo_flt = f"atempo={tempo:.4f}," if abs(tempo - 1.0) > 0.005 else ""
@@ -412,7 +412,7 @@ def synthesize_short_audio_and_words(
         check=True,
     )
 
-    pad_wav = _build_warm_cinema_pad(work_dir / "short_thriller_pad.wav", duration_sec=40.0)
+    pad_wav = _build_warm_cinema_pad(work_dir / "short_thriller_pad.wav", duration_sec=40.0, mood=voice_cfg.get("mood", "mystery"))
     paced_mp3 = work_dir / "short_master.mp3"
     subprocess.run(
         [
@@ -461,23 +461,35 @@ def synthesize_short_audio_and_words(
     return paced_mp3, words
 
 
-def _build_warm_cinema_pad(out_wav: Path, duration_sec: float = 48.0) -> Path:
-    """يولّد خلفية إثارة نفسية سينمائية داكنة (نبض قلب 52Hz + تشيلو تشويقي خافت D-Minor) قابلة للتكرار السلس."""
+def _build_warm_cinema_pad(out_wav: Path, duration_sec: float = 48.0, mood: str = "mystery") -> Path:
+    """يولّد خلفية صوتية سينمائية حسب روح القناة: نبض تحقيقات وتشويق لقنوات الألغاز، أو نغمة سينمائية دافئة ناعمة للروايات المتنوعة."""
     sr = 24000
     n = int(sr * duration_sec)
     t = np.linspace(0.0, duration_sec, n, endpoint=False, dtype=np.float32)
-    drone = (
-        0.34 * np.sin(2 * math.pi * 73.42 * t)
-        + 0.22 * np.sin(2 * math.pi * 87.31 * t + 0.4)
-        + 0.14 * np.sin(2 * math.pi * 110.00 * t + 1.1)
-    ) * (0.72 + 0.28 * np.sin(2 * math.pi * 0.11 * t))
-    beat_period = 0.92
-    phase = np.mod(t, beat_period)
-    hb1 = np.exp(-phase * 26.0) * np.sin(2 * math.pi * 52.0 * phase)
-    hb2 = np.where(phase > 0.23, np.exp(-(phase - 0.23) * 30.0) * np.sin(2 * math.pi * 46.0 * (phase - 0.23)), 0.0)
-    heartbeat = 0.42 * (hb1 + 0.72 * hb2)
-    riser = 0.09 * np.sin(2 * math.pi * (146.83 + 12.0 * np.sin(2 * math.pi * 0.0625 * t)) * t)
-    sig = 0.55 * drone + heartbeat + riser
+    if mood == "warm":
+        chords = [(110.0, 164.81, 220.0), (87.31, 130.81, 174.61), (130.81, 164.81, 196.0), (98.0, 146.83, 196.0)]
+        seg_len = n // len(chords)
+        sig = np.zeros(n, dtype=np.float32)
+        for ci, (f1, f2, f3) in enumerate(chords):
+            s_i = ci * seg_len
+            e_i = n if ci == len(chords) - 1 else (ci + 1) * seg_len
+            tt = t[s_i:e_i] - t[s_i]
+            d_seg = max(0.1, float(e_i - s_i) / sr)
+            env = np.sin(np.pi * tt / d_seg) ** 0.45
+            sig[s_i:e_i] = (0.45 * np.sin(2 * math.pi * f1 * tt) + 0.30 * np.sin(2 * math.pi * f2 * tt) + 0.20 * np.sin(2 * math.pi * f3 * tt)) * env
+    else:
+        drone = (
+            0.34 * np.sin(2 * math.pi * 73.42 * t)
+            + 0.22 * np.sin(2 * math.pi * 87.31 * t + 0.4)
+            + 0.14 * np.sin(2 * math.pi * 110.00 * t + 1.1)
+        ) * (0.72 + 0.28 * np.sin(2 * math.pi * 0.11 * t))
+        beat_period = 0.92
+        phase = np.mod(t, beat_period)
+        hb1 = np.exp(-phase * 26.0) * np.sin(2 * math.pi * 52.0 * phase)
+        hb2 = np.where(phase > 0.23, np.exp(-(phase - 0.23) * 30.0) * np.sin(2 * math.pi * 46.0 * (phase - 0.23)), 0.0)
+        heartbeat = 0.42 * (hb1 + 0.72 * hb2)
+        riser = 0.09 * np.sin(2 * math.pi * (146.83 + 12.0 * np.sin(2 * math.pi * 0.0625 * t)) * t)
+        sig = 0.55 * drone + heartbeat + riser
     pcm = np.clip(sig * 0.45 * 32767.0, -32767, 32767).astype(np.int16)
     with wave.open(str(out_wav), "wb") as wf:
         wf.setnchannels(1)
