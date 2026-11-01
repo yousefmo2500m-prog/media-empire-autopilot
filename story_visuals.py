@@ -123,25 +123,47 @@ def _try_meta_ai_scene(prompt: str) -> Optional[Image.Image]:
 
 
 def _try_hf_flux(prompt: str, hf_token: str) -> Optional[Image.Image]:
-    if not hf_token:
-        return None
-    try:
-        from gradio_client import Client
+    """توليد مشاهد ذكاء اصطناعي FLUX مجاناً 100% (يعمل حتى بدون HF_TOKEN عبر multimodalart/FLUX.1-merged)."""
+    spaces = ["black-forest-labs/FLUX.1-schnell", "multimodalart/FLUX.1-merged"] if hf_token else ["multimodalart/FLUX.1-merged"]
+    for sp in spaces:
+        try:
+            from gradio_client import Client
+            client = Client(sp, token=hf_token or None)
+            res = client.predict(
+                prompt=prompt,
+                seed=0,
+                randomize_seed=True,
+                width=1280,
+                height=720,
+                num_inference_steps=4,
+                api_name="/infer",
+            )
+            item = res[0] if isinstance(res, (list, tuple)) else res
+            p = item["path"] if isinstance(item, dict) else str(item)
+            if p and Path(p).exists():
+                return Image.open(p).convert("RGB")
+        except Exception:
+            continue
+    return None
 
-        client = Client("black-forest-labs/FLUX.1-schnell", token=hf_token)
-        res, _ = client.predict(
-            prompt=prompt,
-            seed=0,
-            randomize_seed=True,
-            width=1280,
-            height=720,
-            num_inference_steps=4,
-            api_name="/infer",
-        )
-        p = res["path"] if isinstance(res, dict) else str(res)
-        return Image.open(p).convert("RGB")
-    except Exception:
-        return None
+
+def _try_pollinations_flux_zerokey(prompt: str, seed_idx: int = 1) -> Optional[Image.Image]:
+    """محرك احتياطي مجاني 100% بدون أي مفتاح عبر Pollinations FLUX مع احترام مهلة الـ 46 ثانية."""
+    import time
+    import urllib.parse
+    enc = urllib.parse.quote(prompt[:320])
+    url = f"https://image.pollinations.ai/prompt/{enc}?width=1280&height=720&model=flux&nologo=true&seed={100 + seed_idx * 37}"
+    for att in range(2):
+        try:
+            r = requests.get(url, timeout=40)
+            if r.status_code == 200 and "image" in r.headers.get("content-type", "").lower() and len(r.content) > 12_000:
+                return Image.open(io.BytesIO(r.content)).convert("RGB")
+            if r.status_code in (402, 429) and att == 0:
+                time.sleep(47.0)
+        except Exception:
+            if att == 0:
+                time.sleep(8.0)
+    return None
 
 
 def _try_pexels_photo(query: str, pexels_key: str) -> Optional[Image.Image]:
@@ -262,6 +284,7 @@ def prepare_episode_scenes(
         img = (
             _try_cloudflare_flux(prompt)
             or _try_hf_flux(prompt, hf_tok)
+            or _try_pollinations_flux_zerokey(prompt, idx)
             or _try_meta_ai_scene(prompt)
             or _try_pexels_photo(q, px_key)
             or _try_wikimedia_photo(q, used_urls)

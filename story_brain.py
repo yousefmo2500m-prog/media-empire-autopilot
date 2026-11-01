@@ -114,7 +114,8 @@ def generate_full_episode_and_short(
 {{
   "topic_key": "ملخص 5 كلمات للفكرة",
   "youtube_title": "عنوان يوتيوب ناري بالعامية المصرية يثير فضولاً لا يقاوم",
-  "short_title": "عنوان ناري للشورتس والتيك توك + #shorts #قصص",
+  "short_1_title": "عنوان ناري للشورت الأول (صدمة البداية) + #shorts #قصص",
+  "short_2_title": "عنوان ناري مختلف للشورت الثاني (المفاجأة الكبرى في قلب القصة) + #shorts #قصص",
   "description": "وصف مشوق جداً للحلقة + هاشتاجات",
   "acts_outline": [
     {{"act_num": 1, "act_title": "عنوان الفصل 1", "summary": "دخول مباشر في أول ثانية بحدث صادم ومستحيل + أول مفاجأة"}},
@@ -133,7 +134,8 @@ def generate_full_episode_and_short(
     "Wide 16:9 widescreen cinematic dark thriller film still for Scene 7, photorealistic, no text, no watermark",
     "Wide 16:9 widescreen cinematic dark thriller film still for Scene 8, photorealistic, no text, no watermark"
   ],
-  "cliffhanger_short_body": "أقوى 130 كلمة من افتتاحية القصة بالعامية المصرية الصافية تبدأ في الثانية الأولى بالصدمة وتقف فجأة في ذروة الرعب والتشويق قبل كشف من وراء الباب مباشرة!"
+  "cliffhanger_short_1_body": "أقوى 130 كلمة من افتتاحية القصة بالعامية المصرية الصافية تبدأ في الثانية الأولى بالصدمة وتقف فجأة في ذروة الرعب والتشويق قبل كشف من وراء الباب مباشرة!",
+  "cliffhanger_short_2_body": "أقوى 130 كلمة من منتصف القصة (لحظة اكتشاف الخدعة الخفية وتجهيز المصيدة) بالعامية المصرية الصافية تبدأ فجأة بدون مقدمات وتقف في ذروة الصدمة قبل وقوعهم في الكمين بثانية واحدة!"
 }}
 """
     else:
@@ -155,7 +157,8 @@ Return exact valid JSON:
 {{
   "topic_key": "5-word unique summary",
   "youtube_title": "Impossible-to-ignore high-CTR YouTube title",
-  "short_title": "Viral cliffhanger title for Shorts & TikTok #shorts #thriller",
+  "short_1_title": "Viral cliffhanger title #1 (midnight shock hook) #shorts #thriller",
+  "short_2_title": "Viral cliffhanger title #2 (mid-story secret trap hook) #shorts #mystery",
   "description": "Gripping description + hashtags",
   "acts_outline": [
     {{"act_num": 1, "act_title": "Act 1 Title", "summary": "Immediate 3-second shock hook + first escalation"}},
@@ -174,7 +177,8 @@ Return exact valid JSON:
     "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 7, photorealistic, no text, no watermark",
     "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 8, photorealistic, no text, no watermark"
   ],
-  "cliffhanger_short_body": "135-word heart-pounding opening hook starting in second one and cutting RIGHT at the sharpest cliffhanger before the reveal!"
+  "cliffhanger_short_1_body": "135-word heart-pounding opening hook starting in second one and cutting RIGHT at the sharpest cliffhanger before the reveal!",
+  "cliffhanger_short_2_body": "135-word mid-story escalation starting right when the hidden second twist/clue is found and cutting ONE SECOND before the trap snaps shut!"
 }}
 """
 
@@ -218,21 +222,39 @@ Strict rules:
         acts_full.append({"act_num": anum, "act_title": atitle, "narration": txt})
         prev_tail = " ".join(txt.split()[-35:])
 
-    cliff_body = re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("cliffhanger_short_body") or " ".join(acts_full[0]["narration"].split()[:130])).strip())
-    short_full_text = f"{cliff_body} {channel_cfg['cta_spoken']}"
+    cliff_1 = re.sub(
+        r"[\u064B-\u065F\u0670]",
+        "",
+        str(plan.get("cliffhanger_short_1_body") or plan.get("cliffhanger_short_body") or " ".join(acts_full[0]["narration"].split()[:130])).strip(),
+    )
+    mid_act_idx = min(2, len(acts_full) - 1)
+    cliff_2 = re.sub(
+        r"[\u064B-\u065F\u0670]",
+        "",
+        str(plan.get("cliffhanger_short_2_body") or " ".join(acts_full[mid_act_idx]["narration"].split()[:130])).strip(),
+    )
+    short_1_full = f"{cliff_1} {channel_cfg['cta_spoken']}"
+    short_2_full = f"{cliff_2} {channel_cfg['cta_spoken']}"
 
     tk = str(plan.get("topic_key") or plan.get("youtube_title", cid))[:80]
     if tk:
         memory[cid].setdefault("used_topics", []).append(tk)
 
+    sh1_title = plan.get("short_1_title") or plan.get("short_title") or f"{plan.get('youtube_title', '')[:60]} #shorts"
+    sh2_title = plan.get("short_2_title") or f"{plan.get('youtube_title', '')[:55]} - الجزء الأخطر #shorts"
+
     return {
         "channel_id": cid,
         "topic_key": tk,
         "youtube_title": plan.get("youtube_title", channel_cfg["brand_name"]),
-        "short_title": plan.get("short_title", f"{plan.get('youtube_title', '')[:60]} #shorts"),
+        "short_title": sh1_title,
+        "short_1_title": sh1_title,
+        "short_2_title": sh2_title,
         "description": plan.get("description", ""),
         "acts": acts_full,
         "scene_prompts": (plan.get("scene_prompts") or [f"Wide 16:9 dark thriller film still scene {i+1}, no text" for i in range(8)])[:8],
-        "short_narration": short_full_text,
+        "short_narration": short_1_full,
+        "short_1_narration": short_1_full,
+        "short_2_narration": short_2_full,
         "cta_banner": channel_cfg["cta_banner"],
     }
