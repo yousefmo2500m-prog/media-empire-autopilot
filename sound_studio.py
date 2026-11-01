@@ -60,6 +60,52 @@ def _split_into_paragraphs(text: str, max_chars: int = 1500) -> List[str]:
     return chunks or [clean[:max_chars]]
 
 
+def _try_gemini_tts_chunk(text: str, is_arabic: bool, out_mp3: Path) -> bool:
+    """توليد صوت بشري تمثيلي باللهجة المصرية الأصيلة أو الإنجليزية مجاناً عبر Google AI Studio (GEMINI_API_KEY)."""
+    gkey = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not gkey:
+        return False
+    import base64
+    voice_name = "Kore" if is_arabic else "Puck"
+    style_prefix = (
+        "احكي النص التالي بلهجة مصرية قاهرية طبيعية جداً ودافئة ومليئة بالتشويق والحماس بدون أي تقطيع: "
+        if is_arabic
+        else "Narrate the following story in a gripping, natural, suspenseful American voice: "
+    )
+    for model_id in ("gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"):
+        try:
+            r = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={gkey}",
+                json={
+                    "contents": [{"parts": [{"text": style_prefix + text}]}],
+                    "generationConfig": {
+                        "responseModalities": ["AUDIO"],
+                        "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice_name}}},
+                    },
+                },
+                timeout=90,
+            )
+            if r.status_code == 200:
+                part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
+                pcm_bytes = base64.b64decode(part["data"])
+                raw_pcm = out_mp3.with_suffix(".pcm")
+                raw_pcm.write_bytes(pcm_bytes)
+                subprocess.run(
+                    [
+                        FFMPEG_BIN, "-y", "-f", "s16le", "-ar", "24000", "-ac", "1",
+                        "-i", str(raw_pcm), "-c:a", "libmp3lame", "-b:a", "192k",
+                        "-loglevel", "error", str(out_mp3),
+                    ],
+                    check=True,
+                )
+                raw_pcm.unlink(missing_ok=True)
+                if out_mp3.exists() and out_mp3.stat().st_size > 800:
+                    return True
+        except Exception:
+            continue
+    return False
+
+
 async def _synth_chunks_parallel(
     chunks: List[str],
     voice_name: str,
@@ -72,6 +118,9 @@ async def _synth_chunks_parallel(
         async with sem:
             await asyncio.sleep(0.5 * (idx % 2))
             last_err = None
+            p_gem = work_dir / f"chunk_{idx:04d}.mp3"
+            if await asyncio.to_thread(_try_gemini_tts_chunk, txt, "ar-" in voice_name, p_gem):
+                return p_gem, []
             for att in range(6):
                 try:
                     comm = edge_tts.Communicate(txt, voice_name, rate=rate)

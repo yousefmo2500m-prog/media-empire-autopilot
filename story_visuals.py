@@ -79,6 +79,49 @@ def _extract_search_keywords(prompt: str) -> str:
     return " ".join(picked[:4]) if picked else "dramatic architecture interior"
 
 
+def _try_cloudflare_flux(prompt: str) -> Optional[Image.Image]:
+    """توليد مشاهد ذكاء اصطناعي مجاناً للأبد عبر Cloudflare Workers AI Free Tier (@cf/black-forest-labs/flux-1-schnell)."""
+    acc_id = os.environ.get("CF_ACCOUNT_ID", "").strip()
+    cf_tok = os.environ.get("CF_API_TOKEN", "").strip()
+    if not (acc_id and cf_tok):
+        return None
+    try:
+        import base64
+        r = requests.post(
+            f"https://api.cloudflare.com/client/v4/accounts/{acc_id}/ai/run/@cf/black-forest-labs/flux-1-schnell",
+            headers={"Authorization": f"Bearer {cf_tok}"},
+            json={"prompt": prompt, "num_steps": 4},
+            timeout=35,
+        )
+        if r.status_code == 200:
+            b64 = (r.json().get("result") or {}).get("image")
+            if b64:
+                return Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
+    except Exception:
+        pass
+    return None
+
+
+def _try_meta_ai_scene(prompt: str) -> Optional[Image.Image]:
+    """دعم اختياري لتوليد المشاهد عبر Meta AI إذا وفّر المستخدم الكوكيز في Secrets."""
+    datr = os.environ.get("META_DATR_COOKIE", "").strip()
+    ecto = os.environ.get("META_ECTO_COOKIE", "").strip()
+    if not (datr and ecto):
+        return None
+    try:
+        from metaai_api import MetaAI
+        ai = MetaAI(cookies={"datr": datr, "ecto_1_sess": ecto})
+        res = ai.generate_image_new(prompt)
+        urls = res.get("image_urls") or []
+        ai.close()
+        if urls:
+            raw = requests.get(urls[0], timeout=25).content
+            return Image.open(io.BytesIO(raw)).convert("RGB")
+    except Exception:
+        pass
+    return None
+
+
 def _try_hf_flux(prompt: str, hf_token: str) -> Optional[Image.Image]:
     if not hf_token:
         return None
@@ -217,7 +260,9 @@ def prepare_episode_scenes(
             else _extract_search_keywords(prompt)
         )
         img = (
-            _try_hf_flux(prompt, hf_tok)
+            _try_cloudflare_flux(prompt)
+            or _try_hf_flux(prompt, hf_tok)
+            or _try_meta_ai_scene(prompt)
             or _try_pexels_photo(q, px_key)
             or _try_wikimedia_photo(q, used_urls)
         )
