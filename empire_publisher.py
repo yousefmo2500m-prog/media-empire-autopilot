@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-الناشر السحابي المستقل للقنوات الربحية الأربع (Zero-Cost Multi-Channel Publisher)
-- يرفع الفيديو والصورة المصغرة سحابياً عبر Zernio API المجاني (كل حساب مجاني يربط قناة يوتيوب + صفحة فيسبوك بنشر غير محدود مدى الحياة بدون بطاقة بنكية).
-- يفعّل تلقائياً خيار الإفصاح عن المحتوى المولّد بالذكاء الاصطناعي (containsSyntheticMedia: True)
-  التزاماً بتحديث يوتيوب (يوليو 2026) لحماية تفعيل الربح 100%.
-- يكتب أول تعليق تفاعلي تلقائياً (ويدعم إضافة رابط/كود أفلييت اختياري في أول تعليق).
+الناشر السحابي لمنظومة التحويل الثلاثية V4.0 (YouTube + Facebook Long-Form -> Shorts + TikTok First-Comment Funnel)
+لكل قناة من القنوات الأربع:
+1) يرفع وينشر الحلقة الكاملة (15+ دقيقة 16:9) على يوتيوب وفيسبوك لتفعيل إعلانات الفواصل (Mid-Roll Ads).
+2) يلتقط رابط الحلقة المنشورة تلقائياً.
+3) يرفع وينشر الشورت التشويقي الحماسي (9:16) على YouTube Shorts + TikTok + Facebook Reels،
+   ويضع رابط الحلقة الكاملة تلقائياً في **أول تعليق** لتحويل المشاهدات السريعة فوراً إلى الفيديو الطويل!
 """
 
 import json
@@ -12,7 +13,7 @@ import os
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 ZERNIO_BASE = "https://zernio.com/api/v1"
 
@@ -22,14 +23,14 @@ def _zernio_req(
     path: str,
     api_key: str,
     payload: Optional[Dict[str, Any]] = None,
-    timeout: int = 180,
+    timeout: int = 240,
 ) -> tuple[int, Dict[str, Any]]:
     url = f"{ZERNIO_BASE}{path}"
     data = json.dumps(payload, ensure_ascii=False).encode("utf-8") if payload is not None else None
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Accept": "application/json",
-        "User-Agent": "MediaEmpire-Autopilot/1.0",
+        "User-Agent": "MediaEmpire-Autopilot/4.0",
     }
     if data is not None:
         headers["Content-Type"] = "application/json; charset=utf-8"
@@ -58,7 +59,7 @@ def upload_asset_to_zernio(file_path: Path, content_type: str, api_key: str) -> 
             "contentType": content_type,
             "size": len(data),
         },
-        timeout=45,
+        timeout=60,
     )
     if st not in (200, 201) or "uploadUrl" not in presign:
         raise RuntimeError(f"فشل حجز مساحة رفع Zernio ({st}): {presign}")
@@ -69,7 +70,7 @@ def upload_asset_to_zernio(file_path: Path, content_type: str, api_key: str) -> 
         headers={"Content-Type": content_type},
         method="PUT",
     )
-    with urllib.request.urlopen(put_req, timeout=240) as resp:
+    with urllib.request.urlopen(put_req, timeout=420) as resp:
         if resp.getcode() not in (200, 201, 204):
             raise RuntimeError(f"فشل رفع الملف إلى سحابة Zernio: HTTP {resp.getcode()}")
     return str(presign["publicUrl"])
@@ -90,93 +91,153 @@ def get_zernio_accounts(api_key: str) -> Dict[str, str]:
     return out
 
 
-def publish_channel_episode(
+def _extract_published_url(resp_data: Dict[str, Any]) -> str:
+    """يستخرج رابط الفيديو المنشور على يوتيوب أو فيسبوك لوضعه في أول تعليق على الشورتس والتيك توك."""
+    raw_str = json.dumps(resp_data)
+    import re
+    for pat in (
+        r"https?://(?:www\.)?youtube\.com/watch\?v=[A-Za-z0-9_\-]+",
+        r"https?://youtu\.be/[A-Za-z0-9_\-]+",
+        r"https?://(?:www\.)?facebook\.com/[^\s\"']+",
+    ):
+        m = re.search(pat, raw_str)
+        if m:
+            return m.group(0)
+    return ""
+
+
+def publish_full_and_short_funnel(
     channel_cfg: Dict[str, Any],
-    script_data: Dict[str, Any],
-    video_path: Path,
-    thumbnail_path: Optional[Path] = None,
+    episode_data: Dict[str, Any],
+    long_video_path: Path,
+    short_video_path: Path,
 ) -> Dict[str, Any]:
     prefix = channel_cfg["env_prefix"]
-    api_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
-    affiliate_footer = os.environ.get("AFFILIATE_COMMENT_FOOTER", "").strip()
+    main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
+    tiktok_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or main_key
+    fallback_channel_url = os.environ.get(f"{prefix}_CHANNEL_URL", "").strip()
+    is_ar = channel_cfg["language"] == "ar"
 
-    if not api_key:
-        print(f"[{channel_cfg['id']}] لم يتم ضبط {prefix}_ZERNIO_KEY بعد — تم حفظ الفيديو محلياً وجاهز للنشر فور إضافة المفتاح.")
+    if not main_key:
+        print(f"⏭️ [{channel_cfg['id']}] لم يتم ضبط {prefix}_ZERNIO_KEY بعد — الفيديوهات جاهزة للنشر فور ربط الحسابات.")
         return {"skipped_no_key": True}
 
-    accounts = get_zernio_accounts(api_key)
-    video_url = upload_asset_to_zernio(video_path, "video/mp4", api_key)
-    thumb_url = None
-    if thumbnail_path and thumbnail_path.exists():
-        try:
-            thumb_url = upload_asset_to_zernio(thumbnail_path, "image/jpeg", api_key)
-        except Exception as exc:
-            print(f"[Thumbnail Upload Warning] {exc}")
+    results: Dict[str, Any] = {}
+    main_accounts = get_zernio_accounts(main_key)
 
-    first_comment = script_data.get("first_comment", "").strip()
-    if affiliate_footer:
-        first_comment = f"{first_comment}\n\n{affiliate_footer}".strip()
-
-    yt_title = script_data.get("youtube_title") or script_data.get("episode_title", channel_cfg["brand_name"])
-    desc = script_data.get("description", "")
-    results: Dict[str, Any] = {"video_url": video_url, "platforms": {}}
-
-    # 1) النشر على يوتيوب (Public + إفصاح AI رسمي + أول تعليق + صورة مصغرة)
-    if "youtube" in accounts:
-        yt_spec: Dict[str, Any] = {
-            "title": yt_title[:95],
-            "visibility": "public",
-            "categoryId": "24" if channel_cfg["id"] == "ch1_novels" else "27",
-            "madeForKids": False,
-            "containsSyntheticMedia": True,  # التزام كامل بسياسة يوتيوب يوليو 2026
-            "firstComment": first_comment[:1900],
-        }
-        if thumb_url:
-            yt_spec["thumbnailUrl"] = thumb_url
-
-        st, resp = _zernio_req(
-            "POST",
-            "/posts",
-            api_key,
-            payload={
-                "content": desc[:4800],
-                "mediaItems": [{"type": "video", "url": video_url}],
-                "platforms": [
-                    {
-                        "platform": "youtube",
-                        "accountId": accounts["youtube"],
-                        "platformSpecificData": yt_spec,
-                    }
-                ],
-                "publishNow": True,
+    # 1) نشر الفيلم الكامل (15+ دقيقة) على يوتيوب + فيسبوك
+    long_url_cloud = upload_asset_to_zernio(long_video_path, "video/mp4", main_key)
+    long_platforms: List[Dict[str, Any]] = []
+    if "youtube" in main_accounts:
+        long_platforms.append({
+            "platform": "youtube",
+            "accountId": main_accounts["youtube"],
+            "platformSpecificData": {
+                "title": episode_data["youtube_title"][:100],
+                "visibility": "public",
+                "containsSyntheticMedia": True,
+                "firstComment": (
+                    "لو وصلت لهنا قولي رأيك في التصرف ده في التعليقات! واشترك عشان متفوتكش حلقة بكرة 🔥"
+                    if is_ar
+                    else "Drop your thoughts in the comments below and subscribe for tomorrow's full story! 🔥"
+                ),
             },
-        )
-        results["platforms"]["youtube"] = {"status": st, "response": resp}
-        print(f"[{channel_cfg['id']} -> YouTube] HTTP {st}")
+        })
+    if "facebook" in main_accounts:
+        long_platforms.append({
+            "platform": "facebook",
+            "accountId": main_accounts["facebook"],
+            "platformSpecificData": {
+                "title": episode_data["youtube_title"][:100],
+            },
+        })
 
-    # 2) النشر على صفحة فيسبوك (للتأهل لربح Facebook Content Monetization في مصر)
-    if "facebook" in accounts:
-        fb_caption = f"{yt_title}\n\n{desc}"
-        st, resp = _zernio_req(
+    full_episode_link = fallback_channel_url
+    if long_platforms:
+        st_l, res_l = _zernio_req(
             "POST",
             "/posts",
-            api_key,
+            main_key,
             payload={
-                "content": fb_caption[:4500],
-                "mediaItems": [{"type": "video", "url": video_url}],
+                "content": f"{episode_data['youtube_title']}\n\n{episode_data['description']}",
+                "publishNow": True,
+                "mediaItems": [{"type": "video", "url": long_url_cloud}],
+                "platforms": long_platforms,
+            },
+            timeout=300,
+        )
+        results["long_post"] = {"status": st_l, "response": res_l}
+        detected = _extract_published_url(res_l)
+        if detected:
+            full_episode_link = detected
+
+    comment_cta = (
+        f"🎬 اسمع القصة كاملة (16 دقيقة) بالتفصيل من الرابط ده:\n{full_episode_link}".strip()
+        if is_ar
+        else f"🎬 Watch the FULL 16-minute story right here:\n{full_episode_link}".strip()
+    )
+    short_caption = (
+        f"الرابط في أول تعليق 👇\n{episode_data['short_title']}"
+        if is_ar
+        else f"Full video link in the first comment 👇\n{episode_data['short_title']}"
+    )
+
+    # 2) نشر الشورت الحماسي على YouTube Shorts (+ Facebook Reels) مع رابط الفيديو الطويل في أول تعليق
+    short_url_main = upload_asset_to_zernio(short_video_path, "video/mp4", main_key)
+    short_platforms: List[Dict[str, Any]] = []
+    if "youtube" in main_accounts:
+        short_platforms.append({
+            "platform": "youtube",
+            "accountId": main_accounts["youtube"],
+            "platformSpecificData": {
+                "title": episode_data["short_title"][:100],
+                "visibility": "public",
+                "containsSyntheticMedia": True,
+                "firstComment": comment_cta,
+            },
+        })
+    if short_platforms:
+        st_s, res_s = _zernio_req(
+            "POST",
+            "/posts",
+            main_key,
+            payload={
+                "content": f"{short_caption}\n\n{comment_cta}",
+                "publishNow": True,
+                "mediaItems": [{"type": "video", "url": short_url_main}],
+                "platforms": short_platforms,
+            },
+            timeout=240,
+        )
+        results["youtube_short"] = {"status": st_s, "response": res_s}
+
+    # 3) نشر نفس الجزء الحماسي على حساب التيك توك الخاص بالقناة مع تعليق الرابط الكامل
+    tt_accounts = main_accounts if tiktok_key == main_key else get_zernio_accounts(tiktok_key)
+    if "tiktok" in tt_accounts:
+        short_url_tt = short_url_main if tiktok_key == main_key else upload_asset_to_zernio(short_video_path, "video/mp4", tiktok_key)
+        st_t, res_t = _zernio_req(
+            "POST",
+            "/posts",
+            tiktok_key,
+            payload={
+                "content": short_caption,
+                "publishNow": True,
+                "mediaItems": [{"type": "video", "url": short_url_tt}],
                 "platforms": [
                     {
-                        "platform": "facebook",
-                        "accountId": accounts["facebook"],
+                        "platform": "tiktok",
+                        "accountId": tt_accounts["tiktok"],
                         "platformSpecificData": {
-                            "firstComment": first_comment[:1900],
+                            "privacyLevel": "PUBLIC_TO_EVERYONE",
+                            "allowComment": True,
+                            "aigcLabel": True,
+                            "firstComment": comment_cta,
                         },
                     }
                 ],
-                "publishNow": True,
             },
+            timeout=240,
         )
-        results["platforms"]["facebook"] = {"status": st, "response": resp}
-        print(f"[{channel_cfg['id']} -> Facebook] HTTP {st}")
+        results["tiktok_short"] = {"status": st_t, "response": res_t}
 
     return results

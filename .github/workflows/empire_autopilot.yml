@@ -1,35 +1,37 @@
-name: Autonomous 4-Channel Viral Shorts Empire
+name: Autonomous 4-Channel 15+ Min Movie & Shorts/TikTok Funnel
 
 on:
   schedule:
-    # نشر يومي منتظم على مدار السنتين لجميع القنوات الأربع
-    - cron: '15 11 * * *'   # 01:15 ظهراً بتوقيت القاهرة: القناة المصرية (CH1) + القناة الإنجليزية (CH2)
-    - cron: '15 18 * * *'   # 08:15 مساءً بتوقيت القاهرة: القناة المصرية الثانية (CH3) + القناة الإنجليزية الثانية (CH4)
+    # 4 مواعيد يومية موزعة بانتظام لضمان استقرار الريندر الطويل (+15 دقيقة) لكل قناة من القنوات الأربع
+    - cron: '0 10 * * *'   # 12:00 ظهراً بتوقيت القاهرة: القناة 1 (حكايات رد الاعتبار - مصري)
+    - cron: '0 14 * * *'   # 04:00 عصراً بتوقيت القاهرة: القناة 2 (خفايا وألغاز حقيقية - مصري)
+    - cron: '0 18 * * *'   # 08:00 مساءً بتوقيت القاهرة: القناة 3 (Karma Chronicles - إنجليزي دولاري)
+    - cron: '0 22 * * *'   # 12:00 منتصف الليل بتوقيت القاهرة: القناة 4 (Untold True Mysteries - إنجليزي دولاري)
   workflow_dispatch:
     inputs:
       channel:
-        description: 'Channel to run (all, ch1_eg_karma, ch2_en_karma, ch3_eg_twists, ch4_en_workplace)'
+        description: 'Channel to run (ch1_eg_karma, ch2_eg_mystery, ch3_en_karma, ch4_en_mystery, or all)'
         required: true
-        default: 'all'
+        default: 'ch1_eg_karma'
 
 permissions:
   contents: write
 
 concurrency:
-  group: viral-shorts-empire
+  group: empire-v4-funnel
   cancel-in-progress: false
 
 jobs:
   produce-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Set up Python 3.12 & Node.js
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -40,31 +42,36 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Select Scheduled Channels
+      - name: Select Scheduled Channel
         id: pick
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "targets=${{ inputs.channel }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "15 11 * * *" ]; then
-            echo "targets=ch1_eg_karma ch2_en_karma" >> $GITHUB_OUTPUT
+            echo "target=${{ inputs.channel }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 10 * * *" ]; then
+            echo "target=ch1_eg_karma" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 14 * * *" ]; then
+            echo "target=ch2_eg_mystery" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "0 18 * * *" ]; then
+            echo "target=ch3_en_karma" >> $GITHUB_OUTPUT
           else
-            echo "targets=ch3_eg_twists ch4_en_workplace" >> $GITHUB_OUTPUT
+            echo "target=ch4_en_mystery" >> $GITHUB_OUTPUT
           fi
 
-      - name: Produce & Publish Viral Shorts
+      - name: Produce 15+ Min Movie + Shorts/TikTok Teaser & Publish
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
+          CH1_TIKTOK_ZERNIO_KEY: ${{ secrets.CH1_TIKTOK_ZERNIO_KEY }}
           CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
+          CH2_TIKTOK_ZERNIO_KEY: ${{ secrets.CH2_TIKTOK_ZERNIO_KEY }}
           CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}
+          CH3_TIKTOK_ZERNIO_KEY: ${{ secrets.CH3_TIKTOK_ZERNIO_KEY }}
           CH4_ZERNIO_KEY: ${{ secrets.CH4_ZERNIO_KEY }}
-          AFFILIATE_COMMENT_FOOTER: ${{ secrets.AFFILIATE_COMMENT_FOOTER }}
+          CH4_TIKTOK_ZERNIO_KEY: ${{ secrets.CH4_TIKTOK_ZERNIO_KEY }}
         run: |
-          for ch in ${{ steps.pick.outputs.targets }}; do
-            python run_empire.py --channel "$ch" --publish --out-dir /tmp/empire_out
-          done
+          python run_empire.py --channel "${{ steps.pick.outputs.target }}" --publish --out-dir /var/tmp/empire_out
 
       - name: Persist 2-Year Story History
         run: |
@@ -74,6 +81,6 @@ jobs:
           if ! git diff --cached --quiet; then
             git pull --rebase origin main || true
             git add state/empire_memory.json
-            git commit -m "chore(memory): save published story topics [skip ci]"
+            git commit -m "chore(memory): save published 15-min episode topic [skip ci]"
             git push origin HEAD:main
           fi

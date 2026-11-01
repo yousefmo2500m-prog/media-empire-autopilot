@@ -1,18 +1,6 @@
 {
-  "ch1_eg_karma": {
-    "used_topics": [
-      "مقاول بسيط في معرض سيارات فاخرة"
-    ]
-  },
-  "ch2_en_karma": {
-    "used_topics": [
-      "retired carpenter buys six luxury watches"
-    ]
-  },
-  "ch3_eg_twists": {
-    "used_topics": []
-  },
-  "ch4_en_workplace": {
-    "used_topics": []
-  }
+  "ch1_eg_karma": {"used_topics": ["المهندسة سلمى وبراءة اختراع الجهاز الطبي"]},
+  "ch2_eg_mystery": {"used_topics": ["لغز خزنة فندق الإسكندرية وفاتورة القهوة"]},
+  "ch3_en_karma": {"used_topics": ["family diner land deed legal payback"]},
+  "ch4_en_mystery": {"used_topics": ["atlantic cargo ship sealed vault weight mystery"]}
 }
