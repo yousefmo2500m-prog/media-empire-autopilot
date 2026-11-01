@@ -68,12 +68,16 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
           CH1_TIKTOK_ZERNIO_KEY: ${{ secrets.CH1_TIKTOK_ZERNIO_KEY }}
+          CH1_TIKTOK_ACCOUNT_ID: ${{ secrets.CH1_TIKTOK_ACCOUNT_ID }}
           CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
           CH2_TIKTOK_ZERNIO_KEY: ${{ secrets.CH2_TIKTOK_ZERNIO_KEY }}
+          CH2_TIKTOK_ACCOUNT_ID: ${{ secrets.CH2_TIKTOK_ACCOUNT_ID }}
           CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}
           CH3_TIKTOK_ZERNIO_KEY: ${{ secrets.CH3_TIKTOK_ZERNIO_KEY }}
+          CH3_TIKTOK_ACCOUNT_ID: ${{ secrets.CH3_TIKTOK_ACCOUNT_ID }}
           CH4_ZERNIO_KEY: ${{ secrets.CH4_ZERNIO_KEY }}
           CH4_TIKTOK_ZERNIO_KEY: ${{ secrets.CH4_TIKTOK_ZERNIO_KEY }}
+          CH4_TIKTOK_ACCOUNT_ID: ${{ secrets.CH4_TIKTOK_ACCOUNT_ID }}
         run: |
           python run_empire.py --channel "${{ steps.pick.outputs.target }}" --publish --out-dir /var/tmp/empire_out
 

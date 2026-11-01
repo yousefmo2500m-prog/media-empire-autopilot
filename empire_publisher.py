@@ -202,6 +202,7 @@ def publish_full_and_short_funnel(
     prefix = channel_cfg["env_prefix"]
     main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
     tiktok_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or main_key
+    explicit_tt_id = os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip()
     fallback_channel_url = os.environ.get(f"{prefix}_CHANNEL_URL", "").strip()
     is_ar = channel_cfg["language"] == "ar"
 
@@ -211,7 +212,9 @@ def publish_full_and_short_funnel(
 
     results: Dict[str, Any] = {}
     main_accounts = get_zernio_accounts(main_key)
-    tt_accounts = main_accounts if tiktok_key == main_key else get_zernio_accounts(tiktok_key)
+    tt_accounts = dict(main_accounts if tiktok_key == main_key else get_zernio_accounts(tiktok_key))
+    if explicit_tt_id:
+        tt_accounts["tiktok"] = explicit_tt_id
 
     # 1) نشر الفيلم الكامل (+15 دقيقة) على يوتيوب + فيسبوك
     long_url_cloud = upload_asset_to_zernio(long_video_path, "video/mp4", main_key)
