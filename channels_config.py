@@ -49,7 +49,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
     "ch3_en_thriller": {
         "id": "ch3_en_thriller",
         "env_prefix": "CH3",
-        "brand_name": "OffScript",
+        "brand_name": "Velvet Tales",
         "language": "en",
         "niche": "en_diverse_stories",
         "min_duration_sec": 940,
