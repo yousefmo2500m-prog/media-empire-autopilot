@@ -17,7 +17,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
     "ch1_eg_thriller": {
         "id": "ch1_eg_thriller",
         "env_prefix": "CH1",
-        "brand_name": "شريط حكايات",
+        "brand_name": "دفتر راوي",
         "language": "ar",
         "niche": "eg_diverse_novels",
         "min_duration_sec": 940,
@@ -49,7 +49,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
     "ch3_en_thriller": {
         "id": "ch3_en_thriller",
         "env_prefix": "CH3",
-        "brand_name": "OffScript Stories",
+        "brand_name": "OffScript",
         "language": "en",
         "niche": "en_diverse_stories",
         "min_duration_sec": 940,
@@ -78,4 +78,6 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "cta_spoken": "Freeze right there—can you spot the one tiny contradiction that shattered the alibi? Watch the full sixteen minute mystery unfold from the link in the first comment!",
         "cta_banner": "SOLVE THE FULL 16-MIN CASE IN FIRST COMMENT!",
     },
+}
+   },
 }
