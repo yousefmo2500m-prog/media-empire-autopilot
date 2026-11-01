@@ -1,15 +1,14 @@
-name: Autonomous 4-Channel Profit Empire
+name: Autonomous 4-Channel Viral Shorts Empire
 
 on:
   schedule:
-    # تشغيل موزع على مدار اليوم لتفادي أي ضغط وضمان الانتظام اليومي لمدة سنتين
-    - cron: '15 10 * * *'   # 12:15 ظهراً بتوقيت القاهرة: القناة الإنجليزية العالمية (CH2) + قناة التاريخ (CH3)
-    - cron: '15 16 * * *'   # 06:15 مساءً بتوقيت القاهرة: قناة ألغاز المحقق التفاعلية (CH4)
-    - cron: '15 19 * * *'   # 09:15 مساءً بتوقيت القاهرة: مسرح الروايات المتسلسلة (CH1 - ذروة الاستماع الليلي)
+    # نشر يومي منتظم على مدار السنتين لجميع القنوات الأربع
+    - cron: '15 11 * * *'   # 01:15 ظهراً بتوقيت القاهرة: القناة المصرية (CH1) + القناة الإنجليزية (CH2)
+    - cron: '15 18 * * *'   # 08:15 مساءً بتوقيت القاهرة: القناة المصرية الثانية (CH3) + القناة الإنجليزية الثانية (CH4)
   workflow_dispatch:
     inputs:
       channel:
-        description: 'Channel to run (all, ch1_novels, ch2_en_mystery, ch3_ar_history, ch4_riddles)'
+        description: 'Channel to run (all, ch1_eg_karma, ch2_en_karma, ch3_eg_twists, ch4_en_workplace)'
         required: true
         default: 'all'
 
@@ -17,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: media-empire-prod
+  group: viral-shorts-empire
   cancel-in-progress: false
 
 jobs:
@@ -30,7 +29,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.12 & Node.js
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -41,23 +40,22 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Determine Scheduled Channel(s)
+      - name: Select Scheduled Channels
         id: pick
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "targets=${{ inputs.channel }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "15 10 * * *" ]; then
-            echo "targets=ch2_en_mystery ch3_ar_history" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "15 16 * * *" ]; then
-            echo "targets=ch4_riddles" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "15 11 * * *" ]; then
+            echo "targets=ch1_eg_karma ch2_en_karma" >> $GITHUB_OUTPUT
           else
-            echo "targets=ch1_novels" >> $GITHUB_OUTPUT
+            echo "targets=ch3_eg_twists ch4_en_workplace" >> $GITHUB_OUTPUT
           fi
 
-      - name: Produce & Publish Episodes
+      - name: Produce & Publish Viral Shorts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
           CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
           CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}
@@ -65,10 +63,10 @@ jobs:
           AFFILIATE_COMMENT_FOOTER: ${{ secrets.AFFILIATE_COMMENT_FOOTER }}
         run: |
           for ch in ${{ steps.pick.outputs.targets }}; do
-            python run_empire.py --channel "$ch" --mode full --publish --out-dir /tmp/empire_out
+            python run_empire.py --channel "$ch" --publish --out-dir /tmp/empire_out
           done
 
-      - name: Save 2-Year Story & Novel Memory
+      - name: Persist 2-Year Story History
         run: |
           git config user.name "MediaEmpire Bot"
           git config user.email "bot@users.noreply.github.com"
@@ -76,6 +74,6 @@ jobs:
           if ! git diff --cached --quiet; then
             git pull --rebase origin main || true
             git add state/empire_memory.json
-            git commit -m "chore(memory): update serialized novel & topic history [skip ci]"
+            git commit -m "chore(memory): save published story topics [skip ci]"
             git push origin HEAD:main
           fi

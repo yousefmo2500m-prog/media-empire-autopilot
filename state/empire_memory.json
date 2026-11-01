@@ -1,22 +1,18 @@
 {
-  "ch1_novels": {
-    "active_novel": {
-      "novel_title": "كاسيت الحارة السري",
-      "genre": "غموض وإثارة نفسية في شقة قديمة بوسط البلد — سر شريط كاسيت أو غرفة مغلقة",
-      "total_episodes": 4,
-      "next_episode": 2,
-      "story_so_far": "الراوي صحى على خبطات باب غريبة، لقى كاسيت قديم على الأرض، سمع صوت غامض بيحكي عن غرفة مقفولة. بنت غامضة ظهرت في الظل، والسر بدأ يتكشف مع كل شغلة. دلوقتي في باب سري ورا الخزانة بيستناهم يفتحه."
-    },
-    "completed_novels": [],
-    "genre_index": 0
+  "ch1_eg_karma": {
+    "used_topics": [
+      "مقاول بسيط في معرض سيارات فاخرة"
+    ]
   },
-  "ch2_en_mystery": {
+  "ch2_en_karma": {
+    "used_topics": [
+      "retired carpenter buys six luxury watches"
+    ]
+  },
+  "ch3_eg_twists": {
     "used_topics": []
   },
-  "ch3_ar_history": {
-    "used_topics": []
-  },
-  "ch4_riddles": {
+  "ch4_en_workplace": {
     "used_topics": []
   }
 }
