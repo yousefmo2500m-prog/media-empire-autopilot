@@ -57,6 +57,7 @@ jobs:
       - name: Produce & Publish Episodes
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
           CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
           CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}

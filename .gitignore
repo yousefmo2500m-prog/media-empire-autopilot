@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
 demo_outputs/
+demo_shots/
+demo_audio/
 _work/
 .env

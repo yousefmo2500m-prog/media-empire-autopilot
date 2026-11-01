@@ -1,104 +1,134 @@
 # -*- coding: utf-8 -*-
 """
-إمبراطورية القنوات الأربع المستقلة (Autonomous 4-Channel Media Empire)
-مصممة خصيصاً للتوافق مع سياسات ربح يوتيوب (تحديث يوليو 2026) وربح محتوى فيسبوك في مصر.
+إمبراطورية القنوات الترفيهية السينمائية V2.0 (Netflix-Style Audio-Visual Entertainment Studio)
+- أصوات بودكاست وتمثيل مصري طبيعي 100% (VoiceTut-TTS المدرب على 380 ساعة بودكاست مصري) + Chatterbox الإنجليزي التمثيلي.
+- مشاهد سينمائية واقعية 35mm متجددة مع كل جملة (FLUX.1-schnell بدون علامات مائية) + مطر وبرق وحركة كاميرا.
+- بيانو درامي وتشيلو ومؤثرات صوتية حقيقية (خبط باب، نبض قلب، رعد، خطوات، كاسيت) — صفر إحساس مذاكرة!
 """
 
 CHANNELS = {
     "ch1_novels": {
         "id": "ch1_novels",
-        "brand_name": "مسرح الروايات الصوتية",
-        "tagline": "روايات غموض وتشويق أصلية — حلقات متسلسلة بأداء تمثيلي سينمائي",
-        "language": "ar",
-        "aspect_primary": "16:9",     # حلقات كاملة لتجميع 4000 ساعة مشاهدة بسرعة
-        "also_render_short": True,    # مقطع تشويقي 9:16 لجلب المشتركين من الشورتس والريلز
-        "sound_mood": "suspense_noir",
-        "palette": {
-            "bg_top": (12, 14, 26),
-            "bg_bottom": (28, 16, 36),
-            "accent": (234, 179, 8),      # ذهبي درامي
-            "badge_bg": (20, 22, 38, 225),
-            "text_main": (252, 250, 245),
-        },
+        "brand_name": "الليلة التالتة — روايات مسموعة",
+        "tagline": "حكايات غموض وإثارة مصرية بالعامية السينمائية — كل ليلة حلقة تشدك لآخر ثانية",
+        "language": "ar_eg",
+        "aspect_primary": "16:9",
+        "also_render_short": True,
+        "music_key": "thriller_piano",
+        "subtitle_color": (255, 218, 68),  # أصفر سينمائي كلاسيكي مثل نتفليكس
         "voices": {
-            "narrator": {"voice": "ar-SA-HamedNeural", "rate": "-4%", "pitch": "-2Hz", "label": "🎙️ الراوي"},
-            "male_lead": {"voice": "ar-EG-ShakirNeural", "rate": "-2%", "pitch": "+0Hz", "label": "🕯️ بطل القصة"},
-            "detective": {"voice": "ar-AE-HamdanNeural", "rate": "-5%", "pitch": "-3Hz", "label": "🕵️ المحقق"},
-            "female_lead": {"voice": "ar-JO-SanaNeural", "rate": "-2%", "pitch": "+1Hz", "label": "🌙 البطلة"},
+            "narrator": {
+                "engine": "voicetut",
+                "speaker": "Hassan",
+                "speed": 1.02,
+                "fallback_edge": "ar-EG-ShakirNeural",
+            },
+            "male_lead": {
+                "engine": "voicetut",
+                "speaker": "Yehia",
+                "speed": 1.03,
+                "fallback_edge": "ar-EG-ShakirNeural",
+            },
+            "mystery_man": {
+                "engine": "voicetut",
+                "speaker": "Tareq",
+                "speed": 0.96,
+                "tape_fx": True,  # فلتر شريط كاسيت/مكالمة غامضة عند اللزوم
+                "fallback_edge": "ar-AE-HamdanNeural",
+            },
+            "female_lead": {
+                "engine": "voicetut",
+                "speaker": "Mariam",
+                "speed": 1.02,
+                "fallback_edge": "ar-EG-SalmaNeural",
+            },
         },
         "genres_rotation": [
-            "غموض وجريمة في قصر معزول (بدون عنف دموي - تحقيق ذكي)",
-            "تشويق نفسي ورسائل غامضة من الماضي",
-            "مغامرة تاريخية ومخطوطة مفقودة في القاهرة القديمة",
-            "خيال علمي درامي عن تجربة زمنية غير متوقعة",
+            "غموض وإثارة نفسية في شقة قديمة بوسط البلد — سر شريط كاسيت أو غرفة مغلقة",
+            "جريمة ذكية ولغز اختفاء غامض في قطار الليل المتجه للإسكندرية",
+            "حكاية فندق مهجور على البحر فيه أوضة رقمها ممسوح من السجلات",
+            "خيال درامي مشوق: مكالمة تليفون بتوصلك من نفسك بعد 5 سنين",
         ],
         "env_prefix": "CH1",
-        "synthetic_disclosure": True,
     },
     "ch2_en_mystery": {
         "id": "ch2_en_mystery",
-        "brand_name": "Untold Science & Enigmas",
-        "tagline": "Real Scientific Anomalies, Vanished Expeditions & Deep History",
+        "brand_name": "Dark File Stories",
+        "tagline": "Gripping Midnight True Mysteries & Vanished Expeditions",
         "language": "en",
-        "aspect_primary": "9:16",     # High-RPM US/UK Shorts + Long compilations
+        "aspect_primary": "9:16",
         "also_render_short": False,
-        "sound_mood": "dark_sci",
-        "palette": {
-            "bg_top": (8, 18, 30),
-            "bg_bottom": (14, 34, 52),
-            "accent": (56, 189, 248),     # Cyan documentary highlight
-            "badge_bg": (10, 22, 38, 225),
-            "text_main": (248, 250, 252),
-        },
+        "music_key": "dark_pulse_piano",
+        "subtitle_color": (255, 230, 90),
         "voices": {
-            "narrator": {"voice": "en-US-ChristopherNeural", "rate": "+2%", "pitch": "-2Hz", "label": "🎙️ ARCHIVE HOST"},
-            "quote": {"voice": "en-GB-RyanNeural", "rate": "-3%", "pitch": "-2Hz", "label": "📜 EYEWITNESS LOG"},
+            "narrator": {
+                "engine": "chatterbox",
+                "exaggeration": 0.62,
+                "fallback_edge": "en-US-ChristopherNeural",
+            },
+            "witness": {
+                "engine": "voicetut_en",
+                "speaker": "Karim",
+                "speed": 0.98,
+                "fallback_edge": "en-GB-RyanNeural",
+            },
         },
         "env_prefix": "CH2",
-        "synthetic_disclosure": True,
     },
     "ch3_ar_history": {
         "id": "ch3_ar_history",
-        "brand_name": "أسرار الحضارات والخرائط",
-        "tagline": "وثائقيات التاريخ المدهش والجغرافيا الغريبة والحضارات المفقودة",
-        "language": "ar",
+        "brand_name": "كواليس التاريخ الممنوع",
+        "tagline": "قصص حقيقية مذهلة وأسرار مدن وكنوز اختفت في ظروف غامضة",
+        "language": "ar_eg",
         "aspect_primary": "9:16",
         "also_render_short": False,
-        "sound_mood": "epic_history",
-        "palette": {
-            "bg_top": (24, 18, 12),
-            "bg_bottom": (44, 28, 16),
-            "accent": (245, 158, 11),     # عنبر تاريخي فخم
-            "badge_bg": (30, 20, 12, 225),
-            "text_main": (254, 249, 239),
-        },
+        "music_key": "ancient_mystery",
+        "subtitle_color": (255, 218, 68),
         "voices": {
-            "narrator": {"voice": "ar-AE-HamdanNeural", "rate": "-3%", "pitch": "-2Hz", "label": "🗺️ السجل التاريخي"},
-            "quote": {"voice": "ar-SA-HamedNeural", "rate": "-6%", "pitch": "-3Hz", "label": "📜 وثيقة تاريخية"},
+            "narrator": {
+                "engine": "voicetut",
+                "speaker": "Ahmed",
+                "speed": 1.03,
+                "fallback_edge": "ar-EG-ShakirNeural",
+            },
+            "witness": {
+                "engine": "voicetut",
+                "speaker": "Shaker",
+                "speed": 0.97,
+                "fallback_edge": "ar-SA-HamedNeural",
+            },
         },
         "env_prefix": "CH3",
-        "synthetic_disclosure": True,
     },
     "ch4_riddles": {
         "id": "ch4_riddles",
-        "brand_name": "ألغاز المحقق — تحدي الـ 60 ثانية",
-        "tagline": "ألغاز ذكاء وتحقيق جنائي تفاعلي — هل تكتشف الخيط المفقود قبل انتهاء الوقت؟",
-        "language": "ar",
+        "brand_name": "مسرح الجريمة — مين الكداب؟",
+        "tagline": "قضية في 60 ثانية وغلطه واحدة كشفت المجرم — تقدر تطلعها؟",
+        "language": "ar_eg",
         "aspect_primary": "9:16",
         "also_render_short": False,
-        "sound_mood": "detective_tick",
-        "palette": {
-            "bg_top": (18, 12, 34),
-            "bg_bottom": (38, 16, 52),
-            "accent": (16, 185, 129),     # زمردي تفاعلي
-            "badge_bg": (22, 14, 42, 230),
-            "text_main": (250, 250, 255),
-        },
+        "music_key": "crime_clock",
+        "subtitle_color": (255, 230, 90),
         "voices": {
-            "narrator": {"voice": "ar-EG-ShakirNeural", "rate": "+3%", "pitch": "+0Hz", "label": "🕵️ ملف القضية"},
-            "witness": {"voice": "ar-EG-SalmaNeural", "rate": "+2%", "pitch": "+1Hz", "label": "💬 شهادة المشتبه"},
+            "narrator": {
+                "engine": "voicetut",
+                "speaker": "Youssef",
+                "speed": 1.05,
+                "fallback_edge": "ar-EG-ShakirNeural",
+            },
+            "suspect_m": {
+                "engine": "voicetut",
+                "speaker": "Ramy",
+                "speed": 1.02,
+                "fallback_edge": "ar-AE-HamdanNeural",
+            },
+            "suspect_f": {
+                "engine": "voicetut",
+                "speaker": "Yara",
+                "speed": 1.03,
+                "fallback_edge": "ar-EG-SalmaNeural",
+            },
         },
         "env_prefix": "CH4",
-        "synthetic_disclosure": True,
     },
 }
