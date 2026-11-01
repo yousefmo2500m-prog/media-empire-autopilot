@@ -65,7 +65,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
     "ch4_en_mystery": {
         "id": "ch4_en_mystery",
         "env_prefix": "CH4",
-        "brand_name": "The Alibi Room",
+        "brand_name": "Mindlock",
         "language": "en",
         "niche": "en_detective_mystery",
         "min_duration_sec": 940,
