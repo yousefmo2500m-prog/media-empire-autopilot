@@ -1,0 +1,16 @@
+{
+  "ch1_novels": {
+    "active_novel": null,
+    "completed_novels": [],
+    "genre_index": 0
+  },
+  "ch2_en_mystery": {
+    "used_topics": []
+  },
+  "ch3_ar_history": {
+    "used_topics": []
+  },
+  "ch4_riddles": {
+    "used_topics": []
+  }
+}

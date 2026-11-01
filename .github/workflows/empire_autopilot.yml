@@ -1,0 +1,80 @@
+name: Autonomous 4-Channel Profit Empire
+
+on:
+  schedule:
+    # تشغيل موزع على مدار اليوم لتفادي أي ضغط وضمان الانتظام اليومي لمدة سنتين
+    - cron: '15 10 * * *'   # 12:15 ظهراً بتوقيت القاهرة: القناة الإنجليزية العالمية (CH2) + قناة التاريخ (CH3)
+    - cron: '15 16 * * *'   # 06:15 مساءً بتوقيت القاهرة: قناة ألغاز المحقق التفاعلية (CH4)
+    - cron: '15 19 * * *'   # 09:15 مساءً بتوقيت القاهرة: مسرح الروايات المتسلسلة (CH1 - ذروة الاستماع الليلي)
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Channel to run (all, ch1_novels, ch2_en_mystery, ch3_ar_history, ch4_riddles)'
+        required: true
+        default: 'all'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: media-empire-prod
+  cancel-in-progress: false
+
+jobs:
+  produce-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Determine Scheduled Channel(s)
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "targets=${{ inputs.channel }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "15 10 * * *" ]; then
+            echo "targets=ch2_en_mystery ch3_ar_history" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.schedule }}" = "15 16 * * *" ]; then
+            echo "targets=ch4_riddles" >> $GITHUB_OUTPUT
+          else
+            echo "targets=ch1_novels" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Produce & Publish Episodes
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
+          CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
+          CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}
+          CH4_ZERNIO_KEY: ${{ secrets.CH4_ZERNIO_KEY }}
+          AFFILIATE_COMMENT_FOOTER: ${{ secrets.AFFILIATE_COMMENT_FOOTER }}
+        run: |
+          for ch in ${{ steps.pick.outputs.targets }}; do
+            python run_empire.py --channel "$ch" --mode full --publish --out-dir /tmp/empire_out
+          done
+
+      - name: Save 2-Year Story & Novel Memory
+        run: |
+          git config user.name "MediaEmpire Bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state/empire_memory.json
+          if ! git diff --cached --quiet; then
+            git pull --rebase origin main || true
+            git add state/empire_memory.json
+            git commit -m "chore(memory): update serialized novel & topic history [skip ci]"
+            git push origin HEAD:main
+          fi
