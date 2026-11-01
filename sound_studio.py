@@ -106,21 +106,86 @@ def _try_gemini_tts_chunk(text: str, is_arabic: bool, out_mp3: Path) -> bool:
     return False
 
 
+def _try_groq_orpheus_chunk(text: str, voice_id: str, out_mp3: Path) -> bool:
+    """توليد صوت بشري إنجليزي سينمائي مجاني 100% عبر Groq Orpheus-V1-English."""
+    gkey = os.environ.get("GROQ_API_KEY", "").strip()
+    if not gkey:
+        return False
+    try:
+        chunks = [text[i : i + 190] for i in range(0, len(text), 190)]
+        wav_parts: List[Path] = []
+        for ci, sub in enumerate(chunks):
+            r = requests.post(
+                "https://api.groq.com/openai/v1/audio/speech",
+                headers={"Authorization": f"Bearer {gkey}", "Content-Type": "application/json"},
+                json={"model": "canopylabs/orpheus-v1-english", "input": sub, "voice": voice_id or "troy", "response_format": "wav"},
+                timeout=60,
+            )
+            if r.status_code != 200:
+                return False
+            wp = out_mp3.parent / f"_orph_{out_mp3.stem}_{ci}.wav"
+            wp.write_bytes(r.content)
+            wav_parts.append(wp)
+        lst = out_mp3.parent / f"_orph_{out_mp3.stem}.txt"
+        lst.write_text("\n".join(f"file '{p.resolve()}'" for p in wav_parts), encoding="utf-8")
+        subprocess.run(
+            [FFMPEG_BIN, "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-c:a", "libmp3lame", "-b:a", "192k", "-loglevel", "error", str(out_mp3)],
+            check=True,
+        )
+        for p in wav_parts + [lst]:
+            p.unlink(missing_ok=True)
+        return out_mp3.exists() and out_mp3.stat().st_size > 800
+    except Exception:
+        return False
+
+
+def _try_hf_egyptian_chunk(text: str, speaker: str, out_mp3: Path) -> bool:
+    """توليد صوت بودكاست مصري بشري عبر VoiceTut-TTS على Hugging Face مجاناً عند توفر HF_TOKEN."""
+    hf_tok = os.environ.get("HF_TOKEN", "").strip()
+    if not hf_tok:
+        return False
+    try:
+        from gradio_client import Client
+        import shutil
+        client = Client("oddadmix/VoiceTut-TTS", token=hf_tok)
+        res = client.predict(text=text, speaker=speaker or "Mariam", api_name="/generate_speech")
+        wav_p = res[0] if isinstance(res, (list, tuple)) else res
+        if wav_p and Path(str(wav_p)).exists():
+            subprocess.run(
+                [FFMPEG_BIN, "-y", "-i", str(wav_p), "-c:a", "libmp3lame", "-b:a", "192k", "-loglevel", "error", str(out_mp3)],
+                check=True,
+            )
+            return out_mp3.exists() and out_mp3.stat().st_size > 800
+    except Exception:
+        pass
+    return False
+
+
 async def _synth_chunks_parallel(
     chunks: List[str],
     voice_name: str,
     rate: str,
     work_dir: Path,
+    voice_cfg: Optional[Dict[str, Any]] = None,
 ) -> List[Tuple[Path, List[Dict[str, Any]]]]:
     sem = asyncio.Semaphore(2)
+    vcfg = voice_cfg or {}
 
     async def _one(idx: int, txt: str) -> Tuple[Path, List[Dict[str, Any]]]:
         async with sem:
             await asyncio.sleep(0.5 * (idx % 2))
+            is_ar = "ar-" in voice_name
+            p_out = work_dir / f"chunk_{idx:04d}.mp3"
+            # 1) المحرك الأول: Google Gemini Native Egyptian/English Human TTS (مجاني للأبد في Google AI Studio)
+            if await asyncio.to_thread(_try_gemini_tts_chunk, txt, is_ar, p_out):
+                return p_out, []
+            # 2) المحرك الثاني: VoiceTut المصري (للعربي) أو Groq Orpheus البشري (للإنجليزي)
+            if is_ar and await asyncio.to_thread(_try_hf_egyptian_chunk, txt, vcfg.get("voicetut_speaker", "Mariam"), p_out):
+                return p_out, []
+            if (not is_ar) and await asyncio.to_thread(_try_groq_orpheus_chunk, txt, vcfg.get("orpheus_voice", "troy"), p_out):
+                return p_out, []
+            # 3) المحرك الاحتياطي للطوارئ فقط
             last_err = None
-            p_gem = work_dir / f"chunk_{idx:04d}.mp3"
-            if await asyncio.to_thread(_try_gemini_tts_chunk, txt, "ar-" in voice_name, p_gem):
-                return p_gem, []
             for att in range(6):
                 try:
                     comm = edge_tts.Communicate(txt, voice_name, rate=rate)
@@ -171,7 +236,7 @@ def synthesize_long_episode_audio(
             all_chunks.append(ch)
             chunk_act_map.append(int(act["act_num"]))
 
-    results = asyncio.run(_synth_chunks_parallel(all_chunks, voice_name, rate, work_dir))
+    results = asyncio.run(_synth_chunks_parallel(all_chunks, voice_name, rate, work_dir, voice_cfg))
 
     # إنشاء وقفة درامية قصيرة (1.1 ثانية) بين الفصول
     pause_mp3 = work_dir / "act_pause.mp3"
@@ -296,37 +361,58 @@ def synthesize_short_audio_and_words(
     """يسجّل الشورت الحماسي (55–68 ثانية) ويستخرج توقيت كل كلمة بالمللي ثانية."""
     work_dir.mkdir(parents=True, exist_ok=True)
     voice_name = voice_cfg.get("edge_voice", "ar-EG-SalmaNeural")
+    is_ar = "ar-" in voice_name
     raw_mp3 = work_dir / "short_raw.mp3"
     clean_short = _sanitize_tts_text(short_text)
-    last_err = None
-    for att in range(6):
-        try:
-            comm = edge_tts.Communicate(clean_short, voice_name, rate="+8%")
-            asyncio.run(comm.save(str(raw_mp3)))
-            if raw_mp3.exists() and raw_mp3.stat().st_size > 500:
-                break
-        except Exception as exc:
-            last_err = exc
-            import time
-            time.sleep(3.0 * (att + 1))
-    else:
-        raise RuntimeError(f"Short TTS failed after retries: {last_err}")
 
-    paced_mp3 = work_dir / "short_master.mp3"
+    synth_ok = _try_gemini_tts_chunk(clean_short, is_ar, raw_mp3)
+    if not synth_ok and is_ar:
+        synth_ok = _try_hf_egyptian_chunk(clean_short, voice_cfg.get("voicetut_speaker", "Mariam"), raw_mp3)
+    if not synth_ok and not is_ar:
+        synth_ok = _try_groq_orpheus_chunk(clean_short, voice_cfg.get("orpheus_voice", "troy"), raw_mp3)
+    if not synth_ok:
+        last_err = None
+        for att in range(6):
+            try:
+                comm = edge_tts.Communicate(clean_short, voice_name, rate="+6%")
+                asyncio.run(comm.save(str(raw_mp3)))
+                if raw_mp3.exists() and raw_mp3.stat().st_size > 500:
+                    break
+            except Exception as exc:
+                last_err = exc
+                import time
+                time.sleep(3.0 * (att + 1))
+        else:
+            raise RuntimeError(f"Short TTS failed after retries: {last_err}")
+
+    voice_clean = work_dir / "short_voice_clean.mp3"
     subprocess.run(
         [
             FFMPEG_BIN, "-y", "-i", str(raw_mp3),
-            "-af", "silenceremove=stop_periods=-1:stop_duration=0.20:stop_threshold=-38dB,acompressor=threshold=-16dB:ratio=3,loudnorm=I=-14:TP=-1.5:LRA=8",
-            "-ar", "44100", "-ac", "2", "-b:a", "192k", "-loglevel", "error", str(paced_mp3),
+            "-af", "silenceremove=stop_periods=-1:stop_duration=0.22:stop_threshold=-38dB,acompressor=threshold=-16dB:ratio=2.8,loudnorm=I=-14:TP=-1.5:LRA=8",
+            "-ar", "44100", "-ac", "2", "-b:a", "192k", "-loglevel", "error", str(voice_clean),
         ],
         check=True,
     )
 
-    # استخراج توقيت الكلمات عبر Groq Whisper-Large-V3-Turbo
+    pad_wav = _build_warm_cinema_pad(work_dir / "short_thriller_pad.wav", duration_sec=40.0)
+    paced_mp3 = work_dir / "short_master.mp3"
+    subprocess.run(
+        [
+            FFMPEG_BIN, "-y",
+            "-i", str(voice_clean),
+            "-stream_loop", "-1", "-i", str(pad_wav),
+            "-filter_complex", "[1:a]volume=0.14[bg];[0:a][bg]amix=inputs=2:duration=first:dropout_transition=1[out]",
+            "-map", "[out]", "-ar", "44100", "-ac", "2", "-b:a", "192k", "-loglevel", "error", str(paced_mp3),
+        ],
+        check=True,
+    )
+
+    # استخراج توقيت الكلمات من الصوت الصافي عبر Groq Whisper-Large-V3-Turbo
     words: List[Dict[str, Any]] = []
     if groq_key:
         try:
-            with open(paced_mp3, "rb") as fh:
+            with open(voice_clean, "rb") as fh:
                 resp = requests.post(
                     "https://api.groq.com/openai/v1/audio/transcriptions",
                     headers={"Authorization": f"Bearer {groq_key}"},
@@ -359,31 +445,22 @@ def synthesize_short_audio_and_words(
 
 
 def _build_warm_cinema_pad(out_wav: Path, duration_sec: float = 48.0) -> Path:
-    """يولّد مقطوعة تشيلو وبيانو دافئة متغيرة التناغم قابلة للتكرار السلس تحت السرد الطويل."""
+    """يولّد خلفية إثارة نفسية سينمائية داكنة (نبض قلب 52Hz + تشيلو تشويقي خافت D-Minor) قابلة للتكرار السلس."""
     sr = 24000
     n = int(sr * duration_sec)
     t = np.linspace(0.0, duration_sec, n, endpoint=False, dtype=np.float32)
-    chords = [
-        (110.0, 130.81, 164.81),  # A minor warm
-        (87.31, 130.81, 174.61),  # F major7
-        (130.81, 164.81, 196.00), # C major
-        (98.00, 146.83, 196.00),  # G5
-    ]
-    seg_len = n // len(chords)
-    sig = np.zeros(n, dtype=np.float32)
-    for ci, (f1, f2, f3) in enumerate(chords):
-        s_i = ci * seg_len
-        e_i = n if ci == len(chords) - 1 else (ci + 1) * seg_len
-        tt = t[s_i:e_i] - t[s_i]
-        d_seg = max(0.1, float(e_i - s_i) / sr)
-        env = np.sin(np.pi * tt / d_seg) ** 0.45
-        wave_c = (
-            0.50 * np.sin(2 * math.pi * f1 * tt)
-            + 0.32 * np.sin(2 * math.pi * f2 * tt)
-            + 0.22 * np.sin(2 * math.pi * f3 * tt)
-        ) * env
-        sig[s_i:e_i] = wave_c
-
+    drone = (
+        0.34 * np.sin(2 * math.pi * 73.42 * t)
+        + 0.22 * np.sin(2 * math.pi * 87.31 * t + 0.4)
+        + 0.14 * np.sin(2 * math.pi * 110.00 * t + 1.1)
+    ) * (0.72 + 0.28 * np.sin(2 * math.pi * 0.11 * t))
+    beat_period = 0.92
+    phase = np.mod(t, beat_period)
+    hb1 = np.exp(-phase * 26.0) * np.sin(2 * math.pi * 52.0 * phase)
+    hb2 = np.where(phase > 0.23, np.exp(-(phase - 0.23) * 30.0) * np.sin(2 * math.pi * 46.0 * (phase - 0.23)), 0.0)
+    heartbeat = 0.42 * (hb1 + 0.72 * hb2)
+    riser = 0.09 * np.sin(2 * math.pi * (146.83 + 12.0 * np.sin(2 * math.pi * 0.0625 * t)) * t)
+    sig = 0.55 * drone + heartbeat + riser
     pcm = np.clip(sig * 0.45 * 32767.0, -32767, 32767).astype(np.int16)
     with wave.open(str(out_wav), "wb") as wf:
         wf.setnchannels(1)

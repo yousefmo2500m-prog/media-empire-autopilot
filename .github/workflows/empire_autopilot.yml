@@ -1,24 +1,23 @@
-name: Autonomous 4-Channel 15+ Min Movie & Shorts/TikTok Funnel
+name: Autonomous 4-Channel 15+ Min Thriller & Shorts/TikTok Funnel
 
 on:
   schedule:
-    # 4 مواعيد يومية موزعة بانتظام لضمان استقرار الريندر الطويل (+15 دقيقة) لكل قناة من القنوات الأربع
-    - cron: '0 10 * * *'   # 12:00 ظهراً بتوقيت القاهرة: القناة 1 (حكايات رد الاعتبار - مصري)
-    - cron: '0 14 * * *'   # 04:00 عصراً بتوقيت القاهرة: القناة 2 (خفايا وألغاز حقيقية - مصري)
-    - cron: '0 18 * * *'   # 08:00 مساءً بتوقيت القاهرة: القناة 3 (Karma Chronicles - إنجليزي دولاري)
-    - cron: '0 22 * * *'   # 12:00 منتصف الليل بتوقيت القاهرة: القناة 4 (Untold True Mysteries - إنجليزي دولاري)
+    - cron: '0 10 * * *'   # 12:00 ظهراً بتوقيت القاهرة: القناة 1 (أسرار الليل ورد الاعتبار - مصري)
+    - cron: '0 14 * * *'   # 04:00 عصراً بتوقيت القاهرة: القناة 2 (ملفات محيّرة لا تُصدّق - مصري)
+    - cron: '0 18 * * *'   # 08:00 مساءً بتوقيت القاهرة: القناة 3 (Midnight Twist Stories - إنجليزي دولاري)
+    - cron: '0 22 * * *'   # 12:00 منتصف الليل بتوقيت القاهرة: القناة 4 (Unsolved & Impossible - إنجليزي دولاري)
   workflow_dispatch:
     inputs:
       channel:
-        description: 'Channel to run (ch1_eg_karma, ch2_eg_mystery, ch3_en_karma, ch4_en_mystery, or all)'
+        description: 'Channel to run (ch1_eg_thriller, ch2_eg_mystery, ch3_en_thriller, ch4_en_mystery, or all)'
         required: true
-        default: 'ch1_eg_karma'
+        default: 'ch1_eg_thriller'
 
 permissions:
   contents: write
 
 concurrency:
-  group: empire-v4-funnel
+  group: empire-v6-funnel
   cancel-in-progress: false
 
 jobs:
@@ -48,16 +47,16 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "target=${{ inputs.channel }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "0 10 * * *" ]; then
-            echo "target=ch1_eg_karma" >> $GITHUB_OUTPUT
+            echo "target=ch1_eg_thriller" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "0 14 * * *" ]; then
             echo "target=ch2_eg_mystery" >> $GITHUB_OUTPUT
           elif [ "${{ github.event.schedule }}" = "0 18 * * *" ]; then
-            echo "target=ch3_en_karma" >> $GITHUB_OUTPUT
+            echo "target=ch3_en_thriller" >> $GITHUB_OUTPUT
           else
             echo "target=ch4_en_mystery" >> $GITHUB_OUTPUT
           fi
 
-      - name: Produce 15+ Min Movie + Shorts/TikTok Teaser & Publish
+      - name: Produce 15+ Min Thriller Movie + Shorts/TikTok Teaser & Publish
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -86,6 +85,6 @@ jobs:
           if ! git diff --cached --quiet; then
             git pull --rebase origin main || true
             git add state/empire_memory.json
-            git commit -m "chore(memory): save published 15-min episode topic [skip ci]"
+            git commit -m "chore(memory): save published thriller episode topic [skip ci]"
             git push origin HEAD:main
           fi

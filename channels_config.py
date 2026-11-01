@@ -1,80 +1,77 @@
 # -*- coding: utf-8 -*-
 """
-إعدادات القنوات الأربع V4.0 — إمبراطورية الفيديوهات الطويلة (15+ دقيقة) + شورتس وتيك توك التحويل السريع
-لكل قناة من القنوات الأربع يتم إنتاج فيديوهين متكاملين في كل حلقة:
-1) الفيديو الرئيسي الكامل (15–17 دقيقة أفقياً 16:9): يُنشر على يوتيوب + فيسبوك (تفعيل إعلانات الفواصل Mid-Roll Ads الأعلى ربحاً).
-2) الشورت التشويقي الحماسي (60 ثانية رأسياً 9:16): يعرض أقوى لحظة حماسية من نفس الحلقة ويقف عند الذروة مع دعوة صريحة:
-   «لسماع الفيديو كامل رابط الفيديو في أول تعليق» — يُنشر على YouTube Shorts + TikTok + Facebook Reels،
-   ويضع رابط الفيديو الكامل تلقائياً في أول تعليق لتحويل المشاهدات المليونية السريعة إلى أرباح طويلة!
+إعدادات القنوات الأربع V6.0 — إمبراطورية الإثارة النفسية والألغاز الفيروسية (15+ دقيقة + شورتس وتيك توك)
+كل قناة تنتج يومياً بشكل مستقل 100%:
+1) فيلم حلقة كامل (16–18 دقيقة، 16:9 HD) ليوتيوب وفيسبوك (لتفعيل إعلانات الفواصل المتعددة Mid-Roll Ads).
+2) فيديو شورت تشويقي ناري (60–75 ثانية، 9:16 HD) ليوتيوب شورتس وتيك توك، يقف في ذروة الصدمة
+   ويوجّه المشاهد صوتياً وبصرياً إلى رابط الفيلم الكامل في أول تعليق!
 """
 
 from typing import Any, Dict
 
 CHANNELS: Dict[str, Dict[str, Any]] = {
-    "ch1_eg_karma": {
-        "id": "ch1_eg_karma",
+    "ch1_eg_thriller": {
+        "id": "ch1_eg_thriller",
         "env_prefix": "CH1",
-        "brand_name": "حكايات رد الاعتبار",
+        "brand_name": "أسرار الليل ورد الاعتبار",
         "language": "ar",
-        "niche": "eg_social_karma",
-        "niche_label_ar": "قصص واقعية درامية ومواقف رد اعتبار ذكية بالعامية المصرية",
-        "min_duration_sec": 920,  # 15 دقيقة و20 ثانية كحد أدنى مضمون
+        "niche": "eg_psych_thriller",
+        "min_duration_sec": 940,
         "voice": {
-            "engine": "voicetut_female",
+            "gemini_voice": "Kore",
             "voicetut_speaker": "Mariam",
             "edge_voice": "ar-EG-SalmaNeural",
             "edge_rate": "+4%",
         },
-        "cta_spoken": "استنوا لحظة! اللي حصل بعد كده قلب القاعة كلها رأساً على عقب! عشان تسمعوا الحكاية كاملة وتعرفوا النهاية بالتفصيل، هتلاقوا رابط الفيديو الكامل في أول تعليق تحت الفيديو ده!",
-        "cta_banner": "القصة لسه في أولها! 🔥 الفيديو الكامل (16 دقيقة) في أول تعليق 👇",
+        "cta_spoken": "ثانية واحدة! إنتوا متخيلين مين اللي طلع ورا الباب وإزاي اتقلبت الترابيزة عليهم بالصوت والصورة؟ الصدمة اللي جاية مستحيل تخطر على بال بشر! عشان تسمعوا القصة كاملة من غير ما تاخدوا نفسكم، ادخلوا حالاً على رابط الفيديو الكامل في أول تعليق!",
+        "cta_banner": "باقي القصة الصادمة في الفيديو الكامل! الرابط في أول تعليق",
     },
     "ch2_eg_mystery": {
         "id": "ch2_eg_mystery",
         "env_prefix": "CH2",
-        "brand_name": "خفايا وألغاز حقيقية",
+        "brand_name": "ملفات محيّرة لا تُصدّق",
         "language": "ar",
-        "niche": "eg_detective_mystery",
-        "niche_label_ar": "ألغاز واقعية محيّرة وتحقيقات ذكية تكشف المستور خطوة بخطوة بالعامية المصرية",
-        "min_duration_sec": 920,
+        "niche": "eg_impossible_mystery",
+        "min_duration_sec": 940,
         "voice": {
-            "engine": "voicetut_female",
+            "gemini_voice": "Aoede",
             "voicetut_speaker": "Sarah",
             "edge_voice": "ar-EG-SalmaNeural",
-            "edge_rate": "+3%",
+            "edge_rate": "+4%",
         },
-        "cta_spoken": "وهنا بالظبط المحقق لمح التفصيلة اللي قلبت القضية كلها! لو عايز تعرف مين اللي عملها وإزاي اتكشف السر بالكامل، ادخل دلوقتي على رابط الفيديو الكامل في أول تعليق!",
-        "cta_banner": "سر اللغز الكامل في الفيديو الطويل! 🕵️‍♀️ الرابط في أول تعليق 👇",
+        "cta_spoken": "استنوا لحظة! اللغز اللي طلع مستخبي ورا التفصيلة دي صدم المهندسين والمباحث نفسهم! عشان تعرفوا السر الكامل خطوة بخطوة، ادخلوا حالاً على رابط الفيديو الكامل في أول تعليق!",
+        "cta_banner": "سر اللغز الكامل في الفيديو الطويل! الرابط في أول تعليق",
     },
-    "ch3_en_karma": {
-        "id": "ch3_en_karma",
+    "ch3_en_thriller": {
+        "id": "ch3_en_thriller",
         "env_prefix": "CH3",
-        "brand_name": "Karma Chronicles",
+        "brand_name": "Midnight Twist Stories",
         "language": "en",
-        "niche": "en_deep_karma",
-        "niche_label_ar": "قصص كارما وعدالة درامية طويلة بالإنجليزية (أعلى عائد إعلانات Mid-Roll دولاري)",
-        "min_duration_sec": 920,
+        "niche": "en_psych_thriller",
+        "min_duration_sec": 940,
         "voice": {
-            "engine": "chatterbox_en",
+            "gemini_voice": "Puck",
+            "orpheus_voice": "troy",
             "edge_voice": "en-US-AndrewMultilingualNeural",
             "edge_rate": "+2%",
         },
-        "cta_spoken": "Hold on, because what happened five seconds later left the entire room speechless! To hear the full sixteen-minute story and see how it all went down, tap the full video link in the first comment right now!",
-        "cta_banner": "WATCH THE FULL 16-MIN STORY! 🔥 Link in the First Comment 👇",
+        "cta_spoken": "Hold on, because how the entire trap snapped shut before sunrise left their own lawyers speechless! Watch the full sixteen minute story right now from the link pinned in the first comment!",
+        "cta_banner": "FULL 16-MIN STORY IN THE FIRST COMMENT!",
     },
     "ch4_en_mystery": {
         "id": "ch4_en_mystery",
         "env_prefix": "CH4",
-        "brand_name": "Untold True Mysteries",
+        "brand_name": "Unsolved & Impossible",
         "language": "en",
-        "niche": "en_detective_mystery",
-        "niche_label_ar": "قضايا وألغاز غامضة حقيقية بأسلوب تشويقي عالمي بالإنجليزية (RPM دولاري مرتفع)",
-        "min_duration_sec": 920,
+        "niche": "en_impossible_mystery",
+        "min_duration_sec": 940,
         "voice": {
-            "engine": "chatterbox_en",
+            "gemini_voice": "Charon",
+            "orpheus_voice": "daniel",
             "edge_voice": "en-US-BrianMultilingualNeural",
             "edge_rate": "+2%",
         },
-        "cta_spoken": "And right there was the one impossible detail nobody could explain! To hear how investigators cracked the entire mystery step by step, check the full video link pinned in the first comment!",
-        "cta_banner": "HEAR THE FULL INVESTIGATION! 🕵️‍♂️ Full Video Link in First Comment 👇",
+        "cta_spoken": "Wait until you hear what investigators uncovered next and how the entire impossible mystery unraveled! Tap the full sixteen minute investigation link in the first comment right now!",
+        "cta_banner": "WATCH THE FULL 16-MIN INVESTIGATION IN FIRST COMMENT!",
     },
 }

@@ -49,8 +49,8 @@ def run_single_channel(
     shutil.rmtree(work_dir, ignore_errors=True)
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    mood = "mystery" if "mystery" in ch_cfg["niche"] else "warm"
-    print(f"🎨 [{channel_id}] تجهيز الـ 8 مشاهد البصرية المعبرة عن أحداث القصة...")
+    mood = "mystery"
+    print(f"🎨 [{channel_id}] تجهيز الـ 8 مشاهد السينمائية المخصصة لأحداث القصة...")
     scenes = prepare_episode_scenes(episode["scene_prompts"], work_dir / "scenes", mood=mood)
 
     print(f"🎙️ [{channel_id}] تسجيل الصوت الكامل للحلقة (+15 دقيقة)...")

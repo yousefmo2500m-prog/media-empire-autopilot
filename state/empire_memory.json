@@ -1,6 +1,22 @@
 {
-  "ch1_eg_karma": {"used_topics": ["المهندسة سلمى وبراءة اختراع الجهاز الطبي"]},
-  "ch2_eg_mystery": {"used_topics": ["لغز خزنة فندق الإسكندرية وفاتورة القهوة"]},
-  "ch3_en_karma": {"used_topics": ["family diner land deed legal payback"]},
-  "ch4_en_mystery": {"used_topics": ["atlantic cargo ship sealed vault weight mystery"]}
+  "ch1_eg_thriller": {
+    "used_topics": [
+      "رسالة الفجر وبث الكاميرا المخفية ومصيدة التوكيل المزور"
+    ]
+  },
+  "ch2_eg_mystery": {
+    "used_topics": [
+      "لغز الدور الـ 13 السري وبصمة الإيد المختفية من 14 سنة"
+    ]
+  },
+  "ch3_en_thriller": {
+    "used_topics": [
+      "2:47 AM baby monitor whisper and forged power of attorney sting"
+    ]
+  },
+  "ch4_en_mystery": {
+    "used_topics": [
+      "Ghost cargo vessel sealed container welded from inside"
+    ]
+  }
 }

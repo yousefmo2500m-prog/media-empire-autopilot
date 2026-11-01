@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-مؤلف الحلقات الدرامية الطويلة (15–17 دقيقة) + الشورتس التشويقية V4.0
-يبني كل حلقة على 5 فصول متصاعدة التوتر (5 Escalating Acts) مع الترابط الكامل للشخصيات والأحداث:
-- إجمالي الكلمات: 2,200 إلى 2,650 كلمة متصلة ومشوقة بدون حشو ممل (تضمن مدة 15.5 إلى 17 دقيقة).
-- يولّد معها 8 أوصاف مشاهد سينمائية دقيقة (Scene Visual Prompts) تعبّر عما يحدث في القصة أمام عين المشاهد.
-- يقتطع أو يصيغ الجزء الحماسي الأكثر تشويقاً (Cliffhanger Teaser ~50-60s) ليُنشر على YouTube Shorts و TikTok
-  مع توجيه المشاهد صراحةً لفتح الفيديو الكامل من الرابط في أول تعليق!
+مؤلف الإثارة النفسية وحلقات الدوبامين المفتوحة V6.0 (Psychological Open-Loop Thriller Brain)
+يطبق قوانين علم نفس الانتباه والاحتفاظ بالمشاهد (Zeigarnik Effect & Dopamine Loops):
+1) ممنوع نهائياً المقدمات التقليدية ("تعالوا أحكيلكم"، "في يوم من الأيام") — تبدأ القصة في الثانية الأولى بلحظة صدمة أو تناقض مستحيل (الساعة 3 الفجر، غرفة مغلقة من الداخل، رسالة من شخص مختفٍ، كاميرا تلتقط مستحيلاً).
+2) كل فصل يفتح لغزاً أكبر قبل إغلاق اللغز السابق ليبقى المشاهد مشدوداً لمدة 16–18 دقيقة متواصلة.
+3) عامية مصرية قاهرية حقيقية ونظيفة 100% بدون تشكيل غريب أو جمل مترجمة ركيكة، وآمنة تماماً لإعلانات يوتيوب وفيسبوك وتيك توك.
+4) يولّد 10 أوصاف مشاهد ذكاء اصطناعي سينمائية داكنة (Dark Thriller Cinema Stills) تعبّر عما يحدث لحظة بلحظة.
 """
 
 import json
@@ -30,25 +30,12 @@ def load_memory(memory_path: Path) -> Dict[str, Any]:
             return json.loads(memory_path.read_text(encoding="utf-8"))
         except Exception:
             pass
-    return {k: {"used_topics": []} for k in ("ch1_eg_karma", "ch2_eg_mystery", "ch3_en_karma", "ch4_en_mystery")}
+    return {k: {"used_topics": []} for k in ("ch1_eg_thriller", "ch2_eg_mystery", "ch3_en_thriller", "ch4_en_mystery")}
 
 
 def save_memory(memory_path: Path, data: Dict[str, Any]) -> None:
     memory_path.parent.mkdir(parents=True, exist_ok=True)
     memory_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def _pick_groq_model(api_key: str) -> str:
-    try:
-        r = requests.get(f"{GROQ_BASE}/models", headers={"Authorization": f"Bearer {api_key}"}, timeout=15)
-        if r.status_code == 200:
-            avail = {m["id"] for m in r.json().get("data", [])}
-            for cand in PREFERRED_MODELS:
-                if cand in avail:
-                    return cand
-    except Exception:
-        pass
-    return PREFERRED_MODELS[0]
 
 
 def _extract_json(raw: str) -> Dict[str, Any]:
@@ -63,12 +50,11 @@ def _extract_json(raw: str) -> Dict[str, Any]:
     return json.loads(cleaned)
 
 
-def _groq_json(api_key: str, model: str, sys_prompt: str, usr_prompt: str, max_tokens: int = 4500) -> Dict[str, Any]:
+def _groq_json(api_key: str, sys_prompt: str, usr_prompt: str, max_tokens: int = 5000) -> Dict[str, Any]:
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    candidates = [model] + [m for m in PREFERRED_MODELS if m != model]
     last_err = None
     for attempt in range(9):
-        cur_model = candidates[attempt % len(candidates)]
+        cur_model = PREFERRED_MODELS[attempt % len(PREFERRED_MODELS)]
         try:
             payload = {
                 "model": cur_model,
@@ -76,18 +62,17 @@ def _groq_json(api_key: str, model: str, sys_prompt: str, usr_prompt: str, max_t
                     {"role": "system", "content": sys_prompt},
                     {"role": "user", "content": usr_prompt},
                 ],
-                "temperature": 0.82,
+                "temperature": 0.84,
                 "max_tokens": max_tokens,
                 "response_format": {"type": "json_object"},
             }
-            resp = requests.post(f"{GROQ_BASE}/chat/completions", headers=headers, json=payload, timeout=90)
+            resp = requests.post(f"{GROQ_BASE}/chat/completions", headers=headers, json=payload, timeout=95)
             if resp.status_code == 429:
-                wait_s = min(15.0, float(resp.headers.get("retry-after", 4.0)))
-                time.sleep(wait_s)
+                time.sleep(min(14.0, float(resp.headers.get("retry-after", 4.5))))
                 continue
             if resp.status_code != 200:
                 payload.pop("response_format", None)
-                resp = requests.post(f"{GROQ_BASE}/chat/completions", headers=headers, json=payload, timeout=90)
+                resp = requests.post(f"{GROQ_BASE}/chat/completions", headers=headers, json=payload, timeout=95)
                 if resp.status_code == 429:
                     time.sleep(5.0)
                     continue
@@ -103,174 +88,137 @@ def generate_full_episode_and_short(
     channel_cfg: Dict[str, Any],
     api_key: str,
     memory: Dict[str, Any],
-    forced_premise: str = "",
 ) -> Dict[str, Any]:
-    """
-    يبني مخطط الحلقة الكامل (5 فصول + 8 مشاهد بصرية + نص الشورت التشويقي)،
-    ثم يكتب كل فصل بعمق روائي مشوق (450–550 كلمة لكل فصل = ~2,400+ كلمة إجمالاً) لضمان تجاوز 15 دقيقة بسهولة.
-    """
     cid = channel_cfg["id"]
     used = memory.setdefault(cid, {"used_topics": []}).get("used_topics", [])[-60:]
     lang = channel_cfg["language"]
     niche = channel_cfg["niche"]
-    model = _pick_groq_model(api_key)
 
     if lang == "ar":
         style_guide = (
-            "أنتِ حكّاءة مصرية محترفة ومحبوبة جداً بتحكي قصص طويلة ومشوقة بالعامية المصرية الطبيعية السلسة الدافئة "
-            "(بصيغة الراوية المؤنثة: «تعالوا أحكيلكم»، «شفتوا اللي حصل»، بدون أي فصحى مدرسية معقدة نهائياً!). "
-            "القصة لازم تكون آمنة 100% لإعلانات يوتيوب وفيسبوك (بدون دموية أو عنف، بل ذكاء وتشويق وإنسانيات)."
+            "أنتِ كاتبة سيناريو إثارة نفسية وتشويق من الطراز الأول، تكتبين بالعامية المصرية القاهرية الطبيعية 100% "
+            "كما يحكي المصريون في الحقيقة تماماً (بدون أي فصحى مدرسية، وبدون أي شدّات أو تشكيل يربك النطق، وبدون مقدمات مثل «تعالوا أحكيلكم»). "
+            "تطبقين علم نفس الحلقات المفتوحة (Zeigarnik Open Loops): أول ثانية تبدأ داخل قلب الحدث بصدمة مستحيلة أو خطر غامض، "
+            "وكل 60 ثانية تظهر مفاجأة تقلب توقعات المستمع بالكامل، مع التزام كامل بمعايير أمان الإعلانات (تشويق نفسي وذكاء قانوني بدون عنف دموي)."
         )
         niche_desc = (
-            "قصة اجتماعية وإنسانية واقعية طويلة عن شخص مجتهد أو بسيط اتعرض لظلم وتكبر وطمع، "
-            "فخطط بهدوء وصبر وذكاء قانوني خارق لحد ما قلب الترابيزة قدام الكل واسترد حقه مضاعف."
-            if niche == "eg_social_karma"
-            else "قصة لغز وتحقيق ذكي محيّر جداً (سرقة مستحيلة أو خدعة محكمة أو اختفاء محيّر بدون أي عنف دموي) "
-                 "وإزاي المحقق الذكي كشف الخيوط خطوة بخطوة من تفصيلة صغيرة محدش انتبه ليها."
+            "إثارة نفسية عائلية/مالية تحبس الأنفاس (مثل رسالة في الفجر تكشف مؤامرة كبرى من أقرب الناس، وكيف يقلب البطل الفخ بذكاء قانوني مذهل)"
+            if niche == "eg_psych_thriller"
+            else "لغز غامض ومستحيل عقلياً في مكان واقعي بمصر (مثل طابق سري غير موجود في الخريطة، أو غرفة مغلقة اختفى منها شيء مستحيل، وكيف يتكشف السر المذهل خطوة بخطوة)"
         )
         blueprint_prompt = f"""
-الأفكار المستعملة سابقاً (ممنوع تكرارها): {used}
-{f"الفكرة المطلوبة لهذه الحلقة تحديداً: {forced_premise}" if forced_premise else ""}
+الأفكار المستعملة سابقاً (ممنوع تكرارها نهائياً): {used}
 
-صمّمي مخطط حلقة كاملة مدتها 16 دقيقة من نوع: {niche_desc}
-أخرجي JSON صالح بالهيكل التالي بالضبط:
+صمّمي حلقة إثارة وتشويق نفسي كاملة مدتها 16–17 دقيقة من نوع: {niche_desc}
+أخرجي JSON صالح بالهيكل التالي:
 {{
   "topic_key": "ملخص 5 كلمات للفكرة",
-  "youtube_title": "عنوان يوتيوب طويل ناري بالعامية المصرية يشد الفضول لأقصى درجة",
-  "short_title": "عنوان قصير ناري للشورتس والتيك توك + #shorts #حكايات",
-  "description": "وصف مشوق للحلقة على يوتيوب وفيسبوك مع هاشتاجات",
+  "youtube_title": "عنوان يوتيوب ناري بالعامية المصرية يثير فضولاً لا يقاوم",
+  "short_title": "عنوان ناري للشورتس والتيك توك + #shorts #قصص",
+  "description": "وصف مشوق جداً للحلقة + هاشتاجات",
   "acts_outline": [
-    {{"act_num": 1, "act_title": "عنوان الفصل الأول", "summary": "ملخص تفصيلي لأحداث الفصل الأول والمواجهة الأولى"}},
-    {{"act_num": 2, "act_title": "عنوان الفصل الثاني", "summary": "ملخص تفصيلي للخلفية السرية وبداية الخطة أو التحقيق"}},
-    {{"act_num": 3, "act_title": "عنوان الفصل الثالث", "summary": "ملخص تفصيلي لتصاعد الأحداث وتعقيد الموقف"}},
-    {{"act_num": 4, "act_title": "عنوان الفصل الرابع", "summary": "ملخص تفصيلي للحظة المواجهة الكبرى وكشف الحقيقة الصادمة"}},
-    {{"act_num": 5, "act_title": "عنوان الفصل الخامس", "summary": "ملخص تفصيلي للنهاية الشافية والجزاء العادل والعبرة"}}
+    {{"act_num": 1, "act_title": "عنوان الفصل 1", "summary": "دخول مباشر في أول ثانية بحدث صادم ومستحيل + أول مفاجأة"}},
+    {{"act_num": 2, "act_title": "عنوان الفصل 2", "summary": "اكتشاف الدليل المخفي واتساع دائرة الشك"}},
+    {{"act_num": 3, "act_title": "عنوان الفصل 3", "summary": "المفاجأة الصادمة عن الشريك الخفي وتصميم الفخ النفسي"}},
+    {{"act_num": 4, "act_title": "عنوان الفصل 4", "summary": "المواجهة الحابسة للأنفاس ولحظة الوقوع في المصيدة"}},
+    {{"act_num": 5, "act_title": "عنوان الفصل 5", "summary": "كشف كل الخيوط وانقلاب الطاولة والعدالة الكاملة + سؤال تفاعلي"}}
   ],
   "scene_prompts": [
-    "Detailed English cinematic photorealistic film-still prompt for Scene 1 (no text in image, vivid faces, lighting, setting)",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 2",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 3",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 4",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 5",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 6",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 7",
-    "Detailed English cinematic photorealistic film-still prompt for Scene 8"
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 1, photorealistic, dramatic chiaroscuro lighting, expressive faces, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 2, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 3, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 4, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 5, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 6, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 7, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller film still for Scene 8, photorealistic, no text, no watermark"
   ],
-  "cliffhanger_short_body": "نص حماسي سريع جداً بالعامية المصرية (حوالي 110 إلى 130 كلمة فقط) يحكي أقوى جزء مشوق من بداية القصة ويقف فجأة عند أخطر لحظة قبل كشف السر مباشرة بدون حرق النهاية!"
+  "cliffhanger_short_body": "أقوى 130 كلمة من افتتاحية القصة بالعامية المصرية الصافية تبدأ في الثانية الأولى بالصدمة وتقف فجأة في ذروة الرعب والتشويق قبل كشف من وراء الباب مباشرة!"
 }}
 """
     else:
         style_guide = (
-            "You are a master American long-form YouTube storyteller (in the gripping, vivid narrative style of MrBallen and top Karma story channels). "
-            "Your storytelling is conversational, deeply immersive, rich in dialogue and concrete sensory details, and 100% advertiser-safe."
+            "You are an elite psychological thriller & mystery storyteller (combining MrBallen's claustrophobic suspense with razor-sharp legal/twist payoffs). "
+            "NEVER write slow introductions—drop the listener into an impossible, heart-pounding sensory moment at 2:47 AM in sentence one. "
+            "Use nested Zeigarnik open loops every 60 seconds and keep content 100% advertiser-safe (psychological tension, zero gore)."
         )
         niche_desc = (
-            "a deep, multi-twist family/business/inheritance betrayal & brilliant legal/financial karma story where quiet preparation leads to an unforgettable public reckoning"
-            if niche == "en_deep_karma"
-            else "a baffling, edge-of-your-seat true-style mystery & mastermind investigation unraveled clue by clue through brilliant deduction (zero gore, pure suspense)"
+            "a high-adrenaline domestic/financial psychological thriller with a jaw-dropping midnight discovery, hidden betrayal, and genius legal trap"
+            if niche == "en_psych_thriller"
+            else "an impossible locked-room / vanished-vessel / hidden-floor real-style mystery investigation where every clue deepens the paranoia until a mind-blowing reveal"
         )
         blueprint_prompt = f"""
-Previously used premises (do NOT repeat): {used}
-{f"Required episode premise: {forced_premise}" if forced_premise else ""}
+Avoid all previously used premises: {used}
 
-Design a complete 16-minute 5-Act episode outline for: {niche_desc}.
+Design a complete 16-minute 5-Act thriller episode for: {niche_desc}.
 Return exact valid JSON:
 {{
-  "topic_key": "5-word summary",
-  "youtube_title": "High-CTR curiosity-driven YouTube long-form title",
-  "short_title": "Viral hook title for Shorts & TikTok #shorts #storytime",
-  "description": "Engaging YouTube/Facebook description + hashtags",
+  "topic_key": "5-word unique summary",
+  "youtube_title": "Impossible-to-ignore high-CTR YouTube title",
+  "short_title": "Viral cliffhanger title for Shorts & TikTok #shorts #thriller",
+  "description": "Gripping description + hashtags",
   "acts_outline": [
-    {{"act_num": 1, "act_title": "Act 1 Title", "summary": "Detailed plot beats for Act 1"}},
-    {{"act_num": 2, "act_title": "Act 2 Title", "summary": "Detailed plot beats for Act 2"}},
-    {{"act_num": 3, "act_title": "Act 3 Title", "summary": "Detailed plot beats for Act 3"}},
-    {{"act_num": 4, "act_title": "Act 4 Title", "summary": "Detailed plot beats for Act 4 (The Big Reveal)"}},
-    {{"act_num": 5, "act_title": "Act 5 Title", "summary": "Detailed plot beats for Act 5 (Full Aftermath)"}}
+    {{"act_num": 1, "act_title": "Act 1 Title", "summary": "Immediate 3-second shock hook + first escalation"}},
+    {{"act_num": 2, "act_title": "Act 2 Title", "summary": "Hidden clue & deepening paranoia"}},
+    {{"act_num": 3, "act_title": "Act 3 Title", "summary": "Second shocking twist & setting the trap"}},
+    {{"act_num": 4, "act_title": "Act 4 Title", "summary": "High-wire confrontation & irreversible mistake by antagonist"}},
+    {{"act_num": 5, "act_title": "Act 5 Title", "summary": "Jaw-dropping reveal, full justice & closing comment question"}}
   ],
   "scene_prompts": [
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 1 (vivid expressions, environment, dramatic lighting, no text)",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 2",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 3",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 4",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 5",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 6",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 7",
-    "Detailed cinematic 16:9 photorealistic movie-still prompt for Scene 8"
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 1, photorealistic, dramatic shadows, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 2, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 3, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 4, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 5, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 6, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 7, photorealistic, no text, no watermark",
+    "Wide 16:9 widescreen cinematic dark thriller movie still for Scene 8, photorealistic, no text, no watermark"
   ],
-  "cliffhanger_short_body": "Fast-paced, gripping 120-to-140-word hook telling the opening setup of this exact story and stopping RIGHT at the sharpest cliffhanger moment without spoiling the reveal!"
+  "cliffhanger_short_body": "135-word heart-pounding opening hook starting in second one and cutting RIGHT at the sharpest cliffhanger before the reveal!"
 }}
 """
 
-    plan = _groq_json(api_key, model, style_guide, blueprint_prompt, max_tokens=5000)
-    if not plan.get("acts_outline") or len(plan.get("acts_outline", [])) < 5:
-        plan = _groq_json(api_key, PREFERRED_MODELS[0], style_guide, blueprint_prompt, max_tokens=5500)
+    plan = _groq_json(api_key, style_guide, blueprint_prompt, max_tokens=5000)
 
-    # كتابة الفصول الخمسة بالتتابع لضمان وصول الحلقة لـ 2,350 - 2,750 كلمة ممتعة ومترابطة (15.5 - 17 دقيقة)
     acts_full: List[Dict[str, Any]] = []
     prev_tail = ""
-    for act in plan["acts_outline"]:
+    for act in plan.get("acts_outline", []):
         anum = act["act_num"]
         atitle = act["act_title"]
         asum = act["summary"]
 
         if lang == "ar":
             act_prompt = f"""
-عنوان القصة: {plan['youtube_title']}
-ملخص كل الفصول للترابط: {json.dumps(plan['acts_outline'], ensure_ascii=False)}
-آخر جملتين من الفصل السابق (كمّلي بعدها بسلاسة بدون تكرار): "{prev_tail}"
+عنوان القصة: {plan.get('youtube_title')}
+مخطط الفصول: {json.dumps(plan.get('acts_outline'), ensure_ascii=False)}
+نهاية الفصل السابق (أكملي بعدها مباشرة بتصاعد ناري بدون تكرار): "{prev_tail}"
 
-اكتبي الآن النص الكامل المسموع لـ **الفصل رقم {anum} ({atitle})** بناءً على هذا الملخص: {asum}
-الشروط الصارمة:
-1. الطول المطلوب لهذا الفصل وحده: **بين 460 و 540 كلمة كاملة** بالعامية المصرية الطبيعية الحلوة الممتعة (بدون فصحى مدرسية وبدون إيموجي أو عناوين جانبية داخل النص).
-2. غني بالتفاصيل البصرية والحوارات الطبيعية السريعة والمشاعر اللي تخلي المستمع شايف المشهد قدام عينيه ومشدود لكل ثانية.
-3. لو ده الفصل الأول ابدئي فوراً بهوك ناري من أول ثانية، ولو الفصل الخامس اختمي القصة بسؤال تفاعلي للمشاهدين يكتبوا رأيهم في التعليقات.
-
-أرجعي JSON فقط: {{"narration": "النص الكامل المتصل للفصل بالعامية المصرية"}}
+اكتبي النص الكامل المسموع لـ **الفصل {anum} ({atitle})** بحيث يغطي: {asum}
+قواعد صارمة لا تقبل التهاون:
+1. الطول: **بين 490 و 550 كلمة كاملة** بالعامية المصرية القاهرية الطبيعية السلسة بدون أي تشكيل أو شدّات وبدون أي جمل فصحى مدرسية.
+2. ممنوع أي مقدمات إنشائية! ادخلي فوراً في الحركة، الأصوات، الحوارات المتوترة، والتفاصيل النفسية الدقيقة.
+3. أرجعي JSON فقط: {{"narration": "النص الكامل المتصل للفصل"}}
 """
         else:
             act_prompt = f"""
-Story Title: {plan['youtube_title']}
-Full 5-Act Outline: {json.dumps(plan['acts_outline'])}
-Last lines of previous act (continue seamlessly without repeating): "{prev_tail}"
+Title: {plan.get('youtube_title')}
+Outline: {json.dumps(plan.get('acts_outline'))}
+Previous ending (continue seamlessly): "{prev_tail}"
 
 Write the full spoken narration for **Act {anum} ({atitle})** covering: {asum}
 Strict rules:
-1. Length for THIS single act MUST be **between 500 and 580 words** of vivid, gripping conversational American English storytelling (no stage directions, no emojis, no markdown headers inside narration).
-2. Include realistic spoken dialogue, micro-details, tension, and pacing so the listener sees every scene playing out in their mind.
-3. If Act 1, hook immediately in sentence one. If Act 5, deliver the full satisfying aftermath and end with an engaging question for the comments.
-
-Return JSON only: {{"narration": "Full continuous spoken text for this act"}}
+1. Length: **between 500 and 560 words** of taut, sensory, conversational American thriller storytelling.
+2. Zero fluff or generic summary—use real-time suspense, dialogue, micro-clues, and open loops.
+3. Return JSON only: {{"narration": "Full spoken text"}}
 """
-        act_res = _groq_json(api_key, model, style_guide, act_prompt, max_tokens=3200)
+        act_res = _groq_json(api_key, style_guide, act_prompt, max_tokens=3400)
         txt = str(act_res.get("narration", "")).strip()
-        acts_full.append({
-            "act_num": anum,
-            "act_title": atitle,
-            "narration": txt,
-        })
+        # إزالة أي تشكيل عربي يربك محركات النطق
+        txt = re.sub(r"[\u064B-\u065F\u0670]", "", txt)
+        acts_full.append({"act_num": anum, "act_title": atitle, "narration": txt})
         prev_tail = " ".join(txt.split()[-35:])
 
-    # إذا كان مجموع الكلمات أقل من الهدف المطلوب لـ 15.5 دقيقة، نضيف فقرة تفصيلية غنية للفصل الرابع/الخامس
-    total_words = sum(len(a["narration"].split()) for a in acts_full)
-    min_words = 2150 if lang == "ar" else 2350
-    if total_words < min_words:
-        need = min_words - total_words + 180
-        if lang == "ar":
-            ext_p = (
-                f"القصة بعنوان «{plan['youtube_title']}»، ونهاية الفصل الرابع كانت: «{acts_full[3]['narration'][-300:]}». "
-                f"اكتبي مشهد إضافي مشوق جداً بالعامية المصرية بطول {need} كلمة يوضح تفاصيل ردود أفعال الحاضرين وكواليس خطة كشف الحقيقة قبل الانتقال للفصل الأخير. "
-                f'أرجعي JSON فقط: {{"extra": "النص الإضافي بالعامية المصرية"}}'
-            )
-        else:
-            ext_p = (
-                f"In the story '{plan['youtube_title']}', Act 4 ended with: '{acts_full[3]['narration'][-300:]}'. "
-                f"Write an additional {need}-word gripping scene expanding the exact reactions in the room and the hidden evidence breakdown right before Act 5. "
-                f'Return JSON only: {{"extra": "additional spoken narration"}}'
-            )
-        ext_res = _groq_json(api_key, model, style_guide, ext_p, max_tokens=2500)
-        acts_full[3]["narration"] = acts_full[3]["narration"] + "\n\n" + str(ext_res.get("extra", "")).strip()
-
-    cliff_body = str(plan.get("cliffhanger_short_body") or " ".join(acts_full[0]["narration"].split()[:125])).strip()
+    cliff_body = re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("cliffhanger_short_body") or " ".join(acts_full[0]["narration"].split()[:130])).strip())
     short_full_text = f"{cliff_body} {channel_cfg['cta_spoken']}"
 
     tk = str(plan.get("topic_key") or plan.get("youtube_title", cid))[:80]
@@ -284,7 +232,7 @@ Return JSON only: {{"narration": "Full continuous spoken text for this act"}}
         "short_title": plan.get("short_title", f"{plan.get('youtube_title', '')[:60]} #shorts"),
         "description": plan.get("description", ""),
         "acts": acts_full,
-        "scene_prompts": (plan.get("scene_prompts") or [f"Cinematic 16:9 dramatic film still for {plan.get('youtube_title', '')} scene {i+1}, no text" for i in range(8)])[:8],
+        "scene_prompts": (plan.get("scene_prompts") or [f"Wide 16:9 dark thriller film still scene {i+1}, no text" for i in range(8)])[:8],
         "short_narration": short_full_text,
         "cta_banner": channel_cfg["cta_banner"],
     }
