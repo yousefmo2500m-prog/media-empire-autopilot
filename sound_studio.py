@@ -60,49 +60,66 @@ def _split_into_paragraphs(text: str, max_chars: int = 1500) -> List[str]:
     return chunks or [clean[:max_chars]]
 
 
-def _try_gemini_tts_chunk(text: str, is_arabic: bool, out_mp3: Path) -> bool:
-    """توليد صوت بشري تمثيلي باللهجة المصرية الأصيلة أو الإنجليزية مجاناً عبر Google AI Studio (GEMINI_API_KEY)."""
+def _try_gemini_tts_chunk(
+    text: str,
+    is_arabic: bool,
+    out_mp3: Path,
+    gemini_voice: str = "",
+    chunk_idx: int = 0,
+) -> bool:
+    """توليد صوت بشري تمثيلي باللهجة المصرية الأصيلة (ar-EG) أو الإنجليزية (en-US) مجاناً عبر نماذج Gemini 3.8 TTS المستقرة."""
     gkey = os.environ.get("GEMINI_API_KEY", "").strip()
     if not gkey:
         return False
     import base64
-    voice_name = "Kore" if is_arabic else "Puck"
-    style_prefix = (
-        "احكي النص التالي بلهجة مصرية قاهرية طبيعية جداً ودافئة ومليئة بالتشويق والحماس بدون أي تقطيع: "
-        if is_arabic
-        else "Narrate the following story in a gripping, natural, suspenseful American voice: "
+    import time
+
+    vname = gemini_voice or ("Kore" if is_arabic else "Puck")
+    lang_code = "ar-EG" if is_arabic else "en-US"
+    models = (
+        ("gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts", "gemini-3.1-flash-tts-preview")
+        if chunk_idx % 2 == 0
+        else ("gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview")
     )
-    for model_id in ("gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"):
-        try:
-            r = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={gkey}",
-                json={
-                    "contents": [{"parts": [{"text": style_prefix + text}]}],
-                    "generationConfig": {
-                        "responseModalities": ["AUDIO"],
-                        "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice_name}}},
+    for model_id in models:
+        for att in range(2):
+            try:
+                r = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={gkey}",
+                    json={
+                        "contents": [{"parts": [{"text": text}]}],
+                        "generationConfig": {
+                            "responseModalities": ["AUDIO"],
+                            "speechConfig": {
+                                "languageCode": lang_code,
+                                "voiceConfig": {"prebuiltVoiceConfig": {"voiceName": vname}},
+                            },
+                        },
                     },
-                },
-                timeout=90,
-            )
-            if r.status_code == 200:
-                part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
-                pcm_bytes = base64.b64decode(part["data"])
-                raw_pcm = out_mp3.with_suffix(".pcm")
-                raw_pcm.write_bytes(pcm_bytes)
-                subprocess.run(
-                    [
-                        FFMPEG_BIN, "-y", "-f", "s16le", "-ar", "24000", "-ac", "1",
-                        "-i", str(raw_pcm), "-c:a", "libmp3lame", "-b:a", "192k",
-                        "-loglevel", "error", str(out_mp3),
-                    ],
-                    check=True,
+                    timeout=110,
                 )
-                raw_pcm.unlink(missing_ok=True)
-                if out_mp3.exists() and out_mp3.stat().st_size > 800:
-                    return True
-        except Exception:
-            continue
+                if r.status_code == 429 and att == 0:
+                    time.sleep(10.0)
+                    continue
+                if r.status_code == 200:
+                    part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
+                    audio_bytes = base64.b64decode(part["data"])
+                    mime = str(part.get("mimeType", "")).lower()
+                    is_wav = ("wav" in mime) or (audio_bytes[:4] == b"RIFF")
+                    tmp_in = out_mp3.with_suffix(".wav" if is_wav else ".pcm")
+                    tmp_in.write_bytes(audio_bytes)
+                    cmd = (
+                        [FFMPEG_BIN, "-y", "-i", str(tmp_in), "-c:a", "libmp3lame", "-b:a", "192k", "-loglevel", "error", str(out_mp3)]
+                        if is_wav
+                        else [FFMPEG_BIN, "-y", "-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(tmp_in), "-c:a", "libmp3lame", "-b:a", "192k", "-loglevel", "error", str(out_mp3)]
+                    )
+                    subprocess.run(cmd, check=True)
+                    tmp_in.unlink(missing_ok=True)
+                    if out_mp3.exists() and out_mp3.stat().st_size > 800:
+                        return True
+                break
+            except Exception:
+                break
     return False
 
 
@@ -177,7 +194,7 @@ async def _synth_chunks_parallel(
             is_ar = "ar-" in voice_name
             p_out = work_dir / f"chunk_{idx:04d}.mp3"
             # 1) المحرك الأول: Google Gemini Native Egyptian/English Human TTS (مجاني للأبد في Google AI Studio)
-            if await asyncio.to_thread(_try_gemini_tts_chunk, txt, is_ar, p_out):
+            if await asyncio.to_thread(_try_gemini_tts_chunk, txt, is_ar, p_out, vcfg.get("gemini_voice", ""), idx):
                 return p_out, []
             # 2) المحرك الثاني: VoiceTut المصري (للعربي) أو Groq Orpheus البشري (للإنجليزي)
             if is_ar and await asyncio.to_thread(_try_hf_egyptian_chunk, txt, vcfg.get("voicetut_speaker", "Mariam"), p_out):
@@ -231,7 +248,7 @@ def synthesize_long_episode_audio(
     all_chunks: List[str] = []
     chunk_act_map: List[int] = []
     for act in acts:
-        act_chunks = _split_into_paragraphs(act["narration"], max_chars=950)
+        act_chunks = _split_into_paragraphs(act["narration"], max_chars=1800)
         for ch in act_chunks:
             all_chunks.append(ch)
             chunk_act_map.append(int(act["act_num"]))
@@ -365,7 +382,7 @@ def synthesize_short_audio_and_words(
     raw_mp3 = work_dir / "short_raw.mp3"
     clean_short = _sanitize_tts_text(short_text)
 
-    synth_ok = _try_gemini_tts_chunk(clean_short, is_ar, raw_mp3)
+    synth_ok = _try_gemini_tts_chunk(clean_short, is_ar, raw_mp3, voice_cfg.get("gemini_voice", ""), 0)
     if not synth_ok and is_ar:
         synth_ok = _try_hf_egyptian_chunk(clean_short, voice_cfg.get("voicetut_speaker", "Mariam"), raw_mp3)
     if not synth_ok and not is_ar:
