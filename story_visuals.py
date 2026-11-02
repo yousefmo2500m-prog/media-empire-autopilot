@@ -272,7 +272,7 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
     for attempt in range(8):
         with _HORDE_SEM:
             payload = {
-                "prompt": f"{prompt}, bright dramatic rim light, clear sharp focus, detailed realistic scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark",
+                "prompt": f"{prompt}, modest everyday clothing, jacket or hoodie, bright dramatic rim light, clear sharp focus, detailed realistic scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, nudity, lingerie, underwear, cleavage, text, watermark",
                 "params": {
                     "width": h_w,
                     "height": h_h,
@@ -462,7 +462,7 @@ def generate_8sec_shots_batch(
                     break
                 with _HORDE_SEM:
                     payload = {
-                        "prompt": f"{lead_p}, bright dramatic rim light, clear sharp focus, detailed realistic cinema scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark",
+                        "prompt": f"{lead_p}, modest everyday clothing, jacket or hoodie, bright dramatic rim light, clear sharp focus, detailed realistic cinema scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, nudity, lingerie, underwear, cleavage, text, watermark",
                         "params": {
                             "width": h_w,
                             "height": h_h,
