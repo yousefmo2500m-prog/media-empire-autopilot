@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-الناشر السحابي لمنظومة التحويل المضاعفة V7.0:
+الناشر السحابي الرسمي عبر Zernio API v1 (متوافق 100% مع مواصفات https://zernio.com/llms.txt)
 لكل قناة يومياً:
-1) ينشر الفيلم الكامل (+15 دقيقة، 16:9) على يوتيوب وفيسبوك لتفعيل إعلانات الفواصل المتعددة (Mid-Roll Ads).
-2) يلتقط رابط الفيلم الكامل تلقائياً.
+1) يرفع وينشر الفيلم الكامل (+16 دقيقة، 16:9) على يوتيوب وفيسبوك لتفعيل إعلانات الفواصل المتعددة (Mid-Roll Ads).
+2) يلتقط رابط الفيلم الكامل المنشور تلقائياً (أو يسترجعه من GET /v1/posts/{postId}).
 3) ينشر الشورت التشويقي الأول (Short #1) فوراً على YouTube Shorts + TikTok مع وضع رابط الفيلم الكامل في أول تعليق.
-4) يجدول/ينشر الشورت التشويقي الثاني (Short #2 — بعد 3 ساعات) على YouTube Shorts + TikTok مع وضع نفس رابط الفيلم الكامل في أول تعليق لمضاعفة المشاهدات!
+4) يجدول الشورت التشويقي الثاني (Short #2 — بعد 3 ساعات) على YouTube Shorts + TikTok مع وضع نفس رابط الفيلم الكامل في أول تعليق!
 """
 
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -32,7 +33,7 @@ def _zernio_req(
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Accept": "application/json",
-        "User-Agent": "MediaEmpire-Autopilot/7.0",
+        "User-Agent": "MediaEmpire-Autopilot/7.6",
     }
     if data is not None:
         headers["Content-Type"] = "application/json; charset=utf-8"
@@ -59,7 +60,6 @@ def upload_asset_to_zernio(file_path: Path, content_type: str, api_key: str) -> 
         payload={
             "filename": file_path.name,
             "contentType": content_type,
-            "size": len(data),
         },
         timeout=60,
     )
@@ -72,24 +72,28 @@ def upload_asset_to_zernio(file_path: Path, content_type: str, api_key: str) -> 
         headers={"Content-Type": content_type},
         method="PUT",
     )
-    with urllib.request.urlopen(put_req, timeout=420) as resp:
+    with urllib.request.urlopen(put_req, timeout=480) as resp:
         if resp.getcode() not in (200, 201, 204):
             raise RuntimeError(f"فشل رفع الملف إلى سحابة Zernio: HTTP {resp.getcode()}")
     return str(presign["publicUrl"])
 
 
-def get_zernio_accounts(api_key: str) -> Dict[str, str]:
-    st, data = _zernio_req("GET", "/accounts", api_key, timeout=30)
-    if st != 200:
-        raise RuntimeError(f"تعذر قراءة حسابات Zernio ({st}): {data}")
-    rows = data.get("accounts") or data.get("data") or []
+def get_zernio_accounts(api_key: str, profile_id: str = "") -> Dict[str, str]:
+    paths = [f"/accounts?profileId={profile_id}", "/accounts"] if profile_id else ["/accounts"]
     out: Dict[str, str] = {}
-    for acc in rows:
-        if isinstance(acc, dict):
-            plat = str(acc.get("platform", "")).lower().strip()
-            aid = acc.get("_id") or acc.get("id") or acc.get("accountId")
-            if plat and aid and plat not in out:
-                out[plat] = str(aid)
+    for p in paths:
+        st, data = _zernio_req("GET", p, api_key, timeout=30)
+        if st != 200:
+            continue
+        rows = data.get("accounts") or data.get("data") or []
+        for acc in rows:
+            if isinstance(acc, dict) and acc.get("isActive", True) is not False:
+                plat = str(acc.get("platform", "")).lower().strip()
+                aid = acc.get("_id") or acc.get("id") or acc.get("accountId")
+                if plat and aid and plat not in out:
+                    out[plat] = str(aid)
+        if out and profile_id and p.startswith("/accounts?profileId="):
+            break
     return out
 
 
@@ -98,7 +102,7 @@ def _extract_published_url(resp_data: Dict[str, Any]) -> str:
     for pat in (
         r"https?://(?:www\.)?youtube\.com/watch\?v=[A-Za-z0-9_\-]+",
         r"https?://youtu\.be/[A-Za-z0-9_\-]+",
-        r"https?://(?:www\.)?facebook\.com/[^\s\"']+",
+        r"https?://(?:www\.)?facebook\.com/[^\s\"'\\]+",
     ):
         m = re.search(pat, raw_str)
         if m:
@@ -133,13 +137,15 @@ def _publish_one_short(
     if "youtube" in main_accounts:
         yt_payload: Dict[str, Any] = {
             "content": f"{short_caption}\n\n{comment_cta}",
+            "title": short_title[:98],
+            "visibility": "public",
             "mediaItems": [{"type": "video", "url": short_url_main}],
             "platforms": [
                 {
                     "platform": "youtube",
                     "accountId": main_accounts["youtube"],
                     "platformSpecificData": {
-                        "title": short_title[:100],
+                        "title": short_title[:98],
                         "visibility": "public",
                         "containsSyntheticMedia": True,
                         "firstComment": comment_cta,
@@ -149,12 +155,14 @@ def _publish_one_short(
         }
         if sched_iso:
             yt_payload["scheduledFor"] = sched_iso
+            yt_payload["timezone"] = "UTC"
         else:
             yt_payload["publishNow"] = True
 
         st_s, res_s = _zernio_req("POST", "/posts", main_key, payload=yt_payload, timeout=240)
         if st_s not in (200, 201) and sched_iso:
             yt_payload.pop("scheduledFor", None)
+            yt_payload.pop("timezone", None)
             yt_payload["publishNow"] = True
             st_s, res_s = _zernio_req("POST", "/posts", main_key, payload=yt_payload, timeout=240)
         out["youtube_short"] = {"status": st_s, "response": res_s}
@@ -162,29 +170,40 @@ def _publish_one_short(
     if "tiktok" in tt_accounts:
         short_url_tt = short_url_main if tiktok_key == main_key else upload_asset_to_zernio(short_video_path, "video/mp4", tiktok_key)
         tt_payload: Dict[str, Any] = {
-            "content": short_caption,
+            "content": f"{short_caption}\n{comment_cta}"[:2100],
             "mediaItems": [{"type": "video", "url": short_url_tt}],
             "platforms": [
                 {
                     "platform": "tiktok",
                     "accountId": tt_accounts["tiktok"],
                     "platformSpecificData": {
-                        "privacyLevel": "PUBLIC_TO_EVERYONE",
-                        "allowComment": True,
-                        "aigcLabel": True,
                         "firstComment": comment_cta,
                     },
                 }
             ],
+            "tiktokSettings": {
+                "privacy_level": "PUBLIC_TO_EVERYONE",
+                "allow_comment": True,
+                "allow_duet": True,
+                "allow_stitch": True,
+                "commercial_content_type": "none",
+                "content_preview_confirmed": True,
+                "express_consent_given": True,
+                "media_type": "video",
+                "auto_add_music": False,
+                "video_made_with_ai": True,
+            },
         }
         if sched_iso:
             tt_payload["scheduledFor"] = sched_iso
+            tt_payload["timezone"] = "UTC"
         else:
             tt_payload["publishNow"] = True
 
         st_t, res_t = _zernio_req("POST", "/posts", tiktok_key, payload=tt_payload, timeout=240)
         if st_t not in (200, 201) and sched_iso:
             tt_payload.pop("scheduledFor", None)
+            tt_payload.pop("timezone", None)
             tt_payload["publishNow"] = True
             st_t, res_t = _zernio_req("POST", "/posts", tiktok_key, payload=tt_payload, timeout=240)
         out["tiktok_short"] = {"status": st_t, "response": res_t}
@@ -211,27 +230,36 @@ def publish_full_and_short_funnel(
         return {"skipped_no_key": True}
 
     results: Dict[str, Any] = {}
-    main_accounts = get_zernio_accounts(main_key)
-    tt_accounts = dict(main_accounts if tiktok_key == main_key else get_zernio_accounts(tiktok_key))
+    main_accounts = get_zernio_accounts(main_key, channel_cfg.get("main_profile_id", ""))
+    tt_accounts = dict(
+        main_accounts
+        if (tiktok_key == main_key and not channel_cfg.get("tiktok_profile_id"))
+        else get_zernio_accounts(tiktok_key, channel_cfg.get("tiktok_profile_id", ""))
+    )
     if explicit_tt_id:
         tt_accounts["tiktok"] = explicit_tt_id
 
-    # 1) نشر الفيلم الكامل (+15 دقيقة) على يوتيوب + فيسبوك
+    if not main_accounts and not tt_accounts:
+        print(f"⚠️ [{channel_cfg['id']}] المفتاح صحيح لكن لم يتم الضغط على رابط ربط يوتيوب/فيسبوك/تيك توك بعد.")
+        return {"waiting_oauth_connection": True}
+
+    # 1) نشر الفيلم الكامل (+16 دقيقة) على يوتيوب + فيسبوك
     long_url_cloud = upload_asset_to_zernio(long_video_path, "video/mp4", main_key)
+    engage_comment = (
+        "لو وصلت لهنا قولي رأيك أو استنتاجك في التعليقات! واشترك عشان متفوتكش حلقة بكرة 🔥"
+        if is_ar
+        else "Drop your thoughts or theory in the comments below and subscribe for tomorrow's full story! 🔥"
+    )
     long_platforms: List[Dict[str, Any]] = []
     if "youtube" in main_accounts:
         long_platforms.append({
             "platform": "youtube",
             "accountId": main_accounts["youtube"],
             "platformSpecificData": {
-                "title": episode_data["youtube_title"][:100],
+                "title": episode_data["youtube_title"][:98],
                 "visibility": "public",
                 "containsSyntheticMedia": True,
-                "firstComment": (
-                    "لو وصلت لهنا قولي رأيك في التصرف ده في التعليقات! واشترك عشان متفوتكش حلقة بكرة 🔥"
-                    if is_ar
-                    else "Drop your thoughts in the comments below and subscribe for tomorrow's full story! 🔥"
-                ),
+                "firstComment": engage_comment,
             },
         })
     if "facebook" in main_accounts:
@@ -239,7 +267,8 @@ def publish_full_and_short_funnel(
             "platform": "facebook",
             "accountId": main_accounts["facebook"],
             "platformSpecificData": {
-                "title": episode_data["youtube_title"][:100],
+                "title": episode_data["youtube_title"][:98],
+                "firstComment": engage_comment,
             },
         })
 
@@ -251,6 +280,8 @@ def publish_full_and_short_funnel(
             main_key,
             payload={
                 "content": f"{episode_data['youtube_title']}\n\n{episode_data['description']}",
+                "title": episode_data["youtube_title"][:98],
+                "visibility": "public",
                 "publishNow": True,
                 "mediaItems": [{"type": "video", "url": long_url_cloud}],
                 "platforms": long_platforms,
@@ -259,14 +290,31 @@ def publish_full_and_short_funnel(
         )
         results["long_post"] = {"status": st_l, "response": res_l}
         detected = _extract_published_url(res_l)
+        if not detected:
+            post_id = (res_l.get("post") or {}).get("_id")
+            if post_id:
+                for _ in range(4):
+                    time.sleep(6.0)
+                    st_p, res_p = _zernio_req("GET", f"/posts/{post_id}", main_key, timeout=30)
+                    if st_p == 200:
+                        detected = _extract_published_url(res_p)
+                        if detected:
+                            break
         if detected:
             full_episode_link = detected
 
-    comment_cta = (
-        f"🎬 اسمع القصة كاملة (+16 دقيقة) بالتفصيل من الرابط ده:\n{full_episode_link}".strip()
-        if is_ar
-        else f"🎬 Watch the FULL 16-minute story right here:\n{full_episode_link}".strip()
-    )
+    if full_episode_link:
+        comment_cta = (
+            f"🎬 اسمع القصة كاملة (+16 دقيقة) بالتفصيل من الرابط ده:\n{full_episode_link}"
+            if is_ar
+            else f"🎬 Watch the FULL 16-minute story right here:\n{full_episode_link}"
+        )
+    else:
+        comment_cta = (
+            f"🎬 اسمع القصة كاملة (+16 دقيقة) دلوقتي على قناتنا الرسمية على يوتيوب وفيسبوك: «{channel_cfg['brand_name']}» 🔥"
+            if is_ar
+            else f"🎬 Watch the FULL 16-minute story right now on our official YouTube & Facebook channel: {channel_cfg['brand_name']} 🔥"
+        )
 
     # 2) الشورت الأول فوراً على YouTube Shorts + TikTok
     results["short_1"] = _publish_one_short(
