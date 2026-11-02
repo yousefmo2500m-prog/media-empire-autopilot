@@ -397,7 +397,7 @@ Previous tail (continue seamlessly): "{prev_tail}"
 Write the full spoken narration for these 4 scenes: {json.dumps(batch_slice)}
 
 Retention Rules:
-1. Length per scene: **230 to 265 words** of hyper-realistic, conversational spoken American storytelling with subtle `...` pauses.
+1. Length per scene: **260 to 295 words** of hyper-realistic, conversational spoken American storytelling with subtle `...` pauses.
 2. Add a natural spoken retention bridge in Scene 4 and Scene 10 ("But hold on—because what showed up two minutes later changed everything...").
 3. End Scene 2 on Peak Climax #1, and end Scene 7 one heartbeat before the mid-story twist!
 
