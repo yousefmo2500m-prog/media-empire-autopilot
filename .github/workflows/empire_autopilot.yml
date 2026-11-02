@@ -1,95 +1,91 @@
-name: Autonomous 4-Channel V9.0 Psychological Thriller, Chapters, Thumbnail & Shorts Funnel
+name: 4-Channel Media Empire Autopilot V10.0
 
 on:
   schedule:
-    - cron: '0 10 * * *'   # 12:00 ظهراً بتوقيت القاهرة: القناة 1 (دفتر راوي - مصري)
-    - cron: '0 14 * * *'   # 04:00 عصراً بتوقيت القاهرة: القناة 2 (الدليل الأخير - مصري)
-    - cron: '0 18 * * *'   # 08:00 مساءً بتوقيت القاهرة: القناة 3 (Velvet Tales - إنجليزي)
-    - cron: '0 22 * * *'   # 12:00 منتصف الليل بتوقيت القاهرة: القناة 4 (Mindlock - إنجليزي)
+    # مواعيد الذروة اليومية الموزعة للقنوات الأربع (حلقة كاملة >15 دقيقة + غلاف ناري + شورتين يومياً لكل قناة)
+    - cron: '15 16 * * *'   # 6:15 مساءً القاهرة — دفتر راوي
+    - cron: '15 18 * * *'   # 8:15 مساءً القاهرة — الدليل الأخير
+    - cron: '15 21 * * *'   # 11:15 مساءً القاهرة — Velvet Tales (US Prime)
+    - cron: '45 23 * * *'   # 1:45 فجراً القاهرة — Mindlock (US Late Prime)
   workflow_dispatch:
     inputs:
-      channel:
-        description: 'Channel to run (ch1_eg_thriller, ch2_eg_mystery, ch3_en_thriller, ch4_en_mystery, or all)'
+      channel_id:
+        description: 'معرف القناة للتشغيل اليدوي الفوري'
         required: true
         default: 'ch1_eg_thriller'
-
-permissions:
-  contents: write
+        type: choice
+        options:
+          - ch1_eg_thriller
+          - ch2_eg_mystery
+          - ch3_en_thriller
+          - ch4_en_mystery
+          - all
 
 concurrency:
-  group: empire-${{ github.event.inputs.channel || github.event.schedule }}
+  group: empire-v10-${{ github.event.inputs.channel_id || github.event.schedule || 'manual' }}
   cancel-in-progress: false
 
 jobs:
   produce-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 58
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
 
-      - name: Install Arabic HarfBuzz/Raqm Typography Libraries
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends libraqm0 libfribidi0 libharfbuzz0b
-
-      - name: Set up Python 3.12
+      - name: Set up Python 3.11 & FFmpeg Subtitles Engine
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.11'
           cache: 'pip'
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libass-dev fonts-hosny-amiri
+          pip install -q -r requirements.txt
 
-      - name: Select Scheduled Channel
-        id: pick
+      - name: Select target channel from schedule or manual input
+        id: target
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "target=${{ inputs.channel }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "0 10 * * *" ]; then
-            echo "target=ch1_eg_thriller" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "0 14 * * *" ]; then
-            echo "target=ch2_eg_mystery" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.schedule }}" = "0 18 * * *" ]; then
-            echo "target=ch3_en_thriller" >> $GITHUB_OUTPUT
+            echo "channel=${{ github.event.inputs.channel_id }}" >> $GITHUB_OUTPUT
           else
-            echo "target=ch4_en_mystery" >> $GITHUB_OUTPUT
+            case "${{ github.event.schedule }}" in
+              "15 16 * * *") echo "channel=ch1_eg_thriller" >> $GITHUB_OUTPUT ;;
+              "15 18 * * *") echo "channel=ch2_eg_mystery" >> $GITHUB_OUTPUT ;;
+              "15 21 * * *") echo "channel=ch3_en_thriller" >> $GITHUB_OUTPUT ;;
+              "45 23 * * *") echo "channel=ch4_en_mystery" >> $GITHUB_OUTPUT ;;
+              *) echo "channel=ch1_eg_thriller" >> $GITHUB_OUTPUT ;;
+            esac
           fi
 
-      - name: Produce V9.0 16+ Min Movie + Custom Thumbnail + 2 Full-Frame Climax Shorts & Publish
+      - name: Produce 16-min 8s-Shot FLUX Movie + High-CTR Thumbnail + 2 Shorts & Publish
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_TOKEN_2: ${{ secrets.HF_TOKEN_2 }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
-          CH1_TIKTOK_ZERNIO_KEY: ${{ secrets.CH1_TIKTOK_ZERNIO_KEY }}
-          CH1_TIKTOK_ACCOUNT_ID: ${{ secrets.CH1_TIKTOK_ACCOUNT_ID }}
-          CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
-          CH2_TIKTOK_ZERNIO_KEY: ${{ secrets.CH2_TIKTOK_ZERNIO_KEY }}
-          CH2_TIKTOK_ACCOUNT_ID: ${{ secrets.CH2_TIKTOK_ACCOUNT_ID }}
-          CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}
-          CH3_TIKTOK_ZERNIO_KEY: ${{ secrets.CH3_TIKTOK_ZERNIO_KEY }}
-          CH3_TIKTOK_ACCOUNT_ID: ${{ secrets.CH3_TIKTOK_ACCOUNT_ID }}
-          CH4_ZERNIO_KEY: ${{ secrets.CH4_ZERNIO_KEY }}
-          CH4_TIKTOK_ZERNIO_KEY: ${{ secrets.CH4_TIKTOK_ZERNIO_KEY }}
-          CH4_TIKTOK_ACCOUNT_ID: ${{ secrets.CH4_TIKTOK_ACCOUNT_ID }}
+          ZERNIO_KEY_CH1: ${{ secrets.ZERNIO_KEY_CH1 }}
+          ZERNIO_KEY_CH1_TIKTOK: ${{ secrets.ZERNIO_KEY_CH1_TIKTOK }}
+          ZERNIO_KEY_CH2: ${{ secrets.ZERNIO_KEY_CH2 }}
+          ZERNIO_KEY_CH2_TIKTOK: ${{ secrets.ZERNIO_KEY_CH2_TIKTOK }}
+          ZERNIO_KEY_CH3: ${{ secrets.ZERNIO_KEY_CH3 }}
+          ZERNIO_KEY_CH3_TIKTOK: ${{ secrets.ZERNIO_KEY_CH3_TIKTOK }}
+          ZERNIO_KEY_CH4: ${{ secrets.ZERNIO_KEY_CH4 }}
+          ZERNIO_KEY_CH4_TIKTOK: ${{ secrets.ZERNIO_KEY_CH4_TIKTOK }}
         run: |
-          python run_empire.py --channel "${{ steps.pick.outputs.target }}" --publish --out-dir /var/tmp/empire_out
+          python run_empire.py --channel "${{ steps.target.outputs.channel }}"
 
-      - name: Persist 2-Year Story History
+      - name: Save Non-Repetition Memory Back to Repository
         run: |
-          git config user.name "MediaEmpire Bot"
+          git config user.name "empire-autopilot-bot"
           git config user.email "bot@users.noreply.github.com"
           git add state/empire_memory.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(memory): save published episode topic [skip ci]"
-            git pull --rebase -X ours origin main || true
-            git push origin HEAD:main
-          fi
+          git diff --staged --quiet || (git commit -m "chore: save episode memory [skip ci]" && git pull --rebase -X ours origin main && git push origin main)

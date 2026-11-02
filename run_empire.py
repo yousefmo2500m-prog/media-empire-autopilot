@@ -1,200 +1,205 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-المشغّل الرئيسي لإمبراطورية القنوات الأربع V9.0 (Neuro-Psychological Retention + 1:1 Visual Sync + Chapters + Custom Thumbnail)
-ينتج وينشر يومياً لكل قناة بشكل مستقل 100%:
-1) فيلم حلقة كامل (+16 دقيقة، 16:9 HD، 12 مشهداً مخصصاً بدون تكرار أي صورة + تقسيم فصول بالدقيقة والثانية + غلاف يوتيوب ناري) -> يوتيوب + فيسبوك.
-2) الشورت العميق الأول (~115–135 ثانية، 9:16 رأسي كامل بدون قص جانبي، يقطع فجأة عند الذروة النارية الأولى) -> YouTube Shorts + TikTok.
-3) الشورت العميق الثاني (~115–135 ثانية، 9:16 رأسي كامل بدون قص جانبي، يقطع فجأة عند ذروة منتصف القصة، مجدول بعد 3 ساعات) -> YouTube Shorts + TikTok.
+المشغّل الرئيسي لإمبراطورية القنوات الأربع V10.0 (Algorithm & 8-Second FLUX Cinema Masterpiece):
+1. تأليف سيناريو إثارة نفسية واقعي / تحقيق ذكي + حزمة الخوارزميات والسيو الكاملة لعام 2026.
+2. تسجيل صوت بشري حقيقي 100% (صفر صوت آلي edge_tts!) وتقطيع الحلقة الكاملة والشورتين إلى نوافذ زمنية دقيقة كل ~8 ثوانٍ.
+3. توليد وصف بصري فريد لكل نافذة 8 ثوانٍ مطابق للكلام المنطوق فيها، ثم رسم ~145 صورة FLUX 8K فريدة بدون تكرار أي صورة مرتين + غلاف يوتيوب ناري عالي النقر (1280x720).
+4. مونتاج متوازٍ فائق السرعة للفيديو الكامل (16:9) والشورتين الطوليين الكاملين (9:16 بدون قص) + نشر خوارزمي متكامل بالتاجات والفصول وأول تعليق.
 """
 
 import argparse
-import concurrent.futures
-import json
+import hashlib
 import os
 import shutil
-from datetime import datetime, timezone
+import tempfile
 from pathlib import Path
-from typing import List
 
 from channels_config import CHANNELS
-from cinema_funnel_renderer import assemble_cliffhanger_short_mp4, assemble_long_episode_mp4
-from empire_publisher import publish_full_and_short_funnel
-from sound_studio import format_mmss, get_audio_duration, synthesize_episode_and_climax_shorts
-from story_brain import generate_full_episode_and_short, load_memory, save_memory
-from story_visuals import generate_all_episode_visuals
+from cinema_funnel_renderer import render_long_episode_mp4, render_vertical_short_mp4
+from empire_publisher import publish_channel_funnel
+from sound_studio import get_audio_duration, synthesize_episode_and_climax_shorts
+from story_brain import (
+    generate_8sec_shot_prompts,
+    generate_full_episode_and_short,
+    load_memory,
+    save_memory,
+)
+from story_visuals import build_viral_youtube_thumbnail, generate_8sec_shots_batch
 
 BASE_DIR = Path(__file__).resolve().parent
 MEMORY_PATH = BASE_DIR / "state" / "empire_memory.json"
 
 
-def run_single_channel(
-    channel_id: str,
-    groq_key: str,
-    out_dir: Path,
-    publish: bool = False,
-) -> dict:
-    ch_cfg = CHANNELS[channel_id]
-    prefix = ch_cfg["env_prefix"]
-    is_ar = ch_cfg["language"] == "ar"
-
-    if publish and not os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip():
-        print(f"⏭️ [{channel_id}] تخطّي مؤقت (بانتظار {prefix}_ZERNIO_KEY).")
-        return {"channel": channel_id, "status": "waiting_for_key"}
-
-    memory = load_memory(MEMORY_PATH)
-    print(f"🧠 [{channel_id}] تأليف الرواية النفسية الكاملة (12 مشهداً متسلسلاً) + غلاف اليوتيوب + 2 شورتس ذروة...")
-    episode = generate_full_episode_and_short(channel_cfg=ch_cfg, api_key=groq_key, memory=memory)
-
-    ch_out = out_dir / channel_id
-    work_dir = ch_out / "_work"
-    shutil.rmtree(work_dir, ignore_errors=True)
-    work_dir.mkdir(parents=True, exist_ok=True)
-
-    mood = ch_cfg["voice"].get("mood", "mystery")
-
-    print(f"⚡ [{channel_id}] تشغيل متوازٍ لـ (23 مشهداً بصرياً مخصصاً + الغلاف) بالتزامن مع (تسجيل الصوت البشري ومزامنة Whisper)...")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
-        fut_vis = ex.submit(
-            generate_all_episode_visuals,
-            episode["scene_prompts"],
-            episode["short_1_vertical_prompts"],
-            episode["short_2_vertical_prompts"],
-            episode["thumbnail_prompt"],
-            episode["thumbnail_hook_text"],
-            episode["thumbnail_badge_text"],
-            is_ar,
-            work_dir / "visuals",
-            mood,
-        )
-        fut_aud = ex.submit(
-            synthesize_episode_and_climax_shorts,
-            episode,
-            ch_cfg["voice"],
-            groq_key,
-            ch_cfg["language"],
-            work_dir / "audio",
-            float(ch_cfg.get("min_duration_sec", 950)),
-        )
-        vis_pack = fut_vis.result()
-        aud_pack = fut_aud.result()
-
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
-    long_mp4 = ch_out / f"{channel_id}_full_{stamp}.mp4"
-    short1_mp4 = ch_out / f"{channel_id}_short1_{stamp}.mp4"
-    short2_mp4 = ch_out / f"{channel_id}_short2_{stamp}.mp4"
-    thumb_jpg = ch_out / f"{channel_id}_thumb_{stamp}.jpg"
-    shutil.copy2(vis_pack["thumbnail"], thumb_jpg)
-
-    print(f"🎬 [{channel_id}] مونتاج الفيلم الكامل 16:9 HD (12 مشهداً مقفولة 1:1 بدون أي تكرار + فصول المشاهد)...")
-    assemble_long_episode_mp4(
-        master_audio_mp3=aud_pack["master_mp3"],
-        scenes=vis_pack["long_scenes"],
-        subtitles=aud_pack["subtitles"],
-        scene_timings=aud_pack["scene_timings"],
-        brand_name=ch_cfg["brand_name"],
-        is_arabic=is_ar,
-        out_mp4=long_mp4,
-        work_dir=work_dir / "vid_long",
-    )
-
-    print(f"🔥 [{channel_id}] مونتاج الشورت العميق الأول 9:16 (صورة رأسية كاملة بدون قص + توقف مفاجئ في قمة الذروة)...")
-    assemble_cliffhanger_short_mp4(
-        short_audio_mp3=aud_pack["short_1_mp3"],
-        words=aud_pack["short_1_words"],
-        vertical_scenes=vis_pack["short_1_scenes"],
-        cta_banner=ch_cfg["cta_banner"],
-        is_arabic=is_ar,
-        out_mp4=short1_mp4,
-        work_dir=work_dir / "vid_short1",
-    )
-
-    print(f"🔥 [{channel_id}] مونتاج الشورت العميق الثاني 9:16 (صورة رأسية كاملة بدون قص + ذروة منتصف القصة)...")
-    assemble_cliffhanger_short_mp4(
-        short_audio_mp3=aud_pack["short_2_mp3"],
-        words=aud_pack["short_2_words"],
-        vertical_scenes=vis_pack["short_2_scenes"],
-        cta_banner=ch_cfg["cta_banner"],
-        is_arabic=is_ar,
-        out_mp4=short2_mp4,
-        work_dir=work_dir / "vid_short2",
-    )
-
-    long_dur = get_audio_duration(long_mp4)
-    sh1_dur = get_audio_duration(short1_mp4)
-    sh2_dur = get_audio_duration(short2_mp4)
-    print(
-        f"📊 [{channel_id}] الأطوال النهائية -> الفيلم الكامل: {format_mmss(long_dur)} | "
-        f"الشورت 1: {format_mmss(sh1_dur)} | الشورت 2: {format_mmss(sh2_dur)}"
-    )
-
-    save_memory(MEMORY_PATH, memory)
-    shutil.rmtree(work_dir, ignore_errors=True)
-
-    meta = {
-        "channel_id": channel_id,
-        "brand_name": ch_cfg["brand_name"],
-        "youtube_title": episode["youtube_title"],
-        "thumbnail_hook_text": episode["thumbnail_hook_text"],
-        "short_1_title": episode["short_1_title"],
-        "short_2_title": episode["short_2_title"],
-        "durations_sec": {"long": round(long_dur, 1), "short_1": round(sh1_dur, 1), "short_2": round(sh2_dur, 1)},
-        "chapters": [
-            {
-                "scene_num": st["scene_num"],
-                "scene_title": st["scene_title"],
-                "from": format_mmss(st["start"]),
-                "to": format_mmss(st["end"]),
-            }
-            for st in aud_pack["scene_timings"]
-        ],
-        "long_video": str(long_mp4),
-        "short_1_video": str(short1_mp4),
-        "short_2_video": str(short2_mp4),
-        "thumbnail": str(thumb_jpg),
-    }
-
-    if publish:
-        meta["publish_result"] = publish_full_and_short_funnel(
-            channel_cfg=ch_cfg,
-            episode_data=episode,
-            scene_timings=aud_pack["scene_timings"],
-            long_video_path=long_mp4,
-            short_video_path=short1_mp4,
-            short_2_video_path=short2_mp4,
-            thumbnail_path=thumb_jpg,
-        )
-        # تنظيف ملفات الفيديو الكبيرة بعد النشر مباشرة للحفاظ على نظافة الخادم
-        for fp in (long_mp4, short1_mp4, short2_mp4):
-            fp.unlink(missing_ok=True)
-
-    (ch_out / f"{channel_id}_{stamp}_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    print(f"✅ [{channel_id}] اكتمل إنتاج ونشر منظومة V9.0 بالكامل بنجاح!")
-    return meta
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="4-Channel V9.0 Psychological Thriller + 1:1 Visuals + Chapters + Thumbnail Engine")
-    parser.add_argument("--channel", default="all", choices=["all", *CHANNELS.keys()])
-    parser.add_argument("--publish", action="store_true")
-    parser.add_argument("--out-dir", default=str(BASE_DIR / "demo_outputs"))
-    args = parser.parse_args()
+def run_single_channel(channel_id: str, dry_run: bool = False) -> None:
+    if channel_id not in CHANNELS:
+        raise ValueError(f"معرف قناة غير معروف: {channel_id}")
 
     groq_key = os.environ.get("GROQ_API_KEY", "").strip()
     if not groq_key:
-        raise SystemExit("❌ يرجى توفير GROQ_API_KEY.")
+        raise RuntimeError("GROQ_API_KEY غير متوفر في البيئة.")
 
-    targets: List[str] = list(CHANNELS.keys()) if args.channel == "all" else [args.channel]
-    for ch_id in targets:
-        run_single_channel(
-            channel_id=ch_id,
+    cfg = CHANNELS[channel_id]
+    memory = load_memory(MEMORY_PATH)
+    shot_interval = float(cfg.get("shot_interval_sec", 8.0))
+
+    print(f"🎬 [{cfg['brand_name']}] 1/6 تأليف سيناريو واقعي نفسي + حزمة خوارزميات يوتيوب وتيك توك V10.0...")
+    episode = generate_full_episode_and_short(cfg, groq_key, memory)
+    print(f"   ✅ العنوان: {episode['youtube_title']} | الغلاف: {episode['thumbnail_hook_text']}")
+
+    seed_base = int(hashlib.md5(episode["youtube_title"].encode("utf-8")).hexdigest()[:6], 16)
+    tmp_root = Path(tempfile.mkdtemp(prefix=f"v10_{channel_id}_"))
+
+    try:
+        print(f"🎙️ [{cfg['brand_name']}] 2/6 تسجيل الصوت البشري الحقيقي 100% ({cfg['voice']['gemini_voice']}) وتقسيم نوافذ الـ 8 ثوانٍ...")
+        audio_pack = synthesize_episode_and_climax_shorts(
+            episode=episode,
+            voice_cfg=cfg["voice"],
             groq_key=groq_key,
-            out_dir=Path(args.out_dir),
-            publish=args.publish,
+            language=cfg["language"],
+            work_dir=tmp_root / "audio",
+            min_duration_sec=float(cfg["min_duration_sec"]),
+            shot_interval_sec=shot_interval,
         )
+        long_dur = get_audio_duration(audio_pack["master_mp3"])
+        sh1_dur = get_audio_duration(audio_pack["short_1_mp3"])
+        sh2_dur = get_audio_duration(audio_pack["short_2_mp3"])
+        long_wins = audio_pack["long_8s_windows"]
+        sh1_wins = audio_pack["short_1_windows"]
+        sh2_wins = audio_pack["short_2_windows"]
+        print(
+            f"   ✅ الصوت البشري جاهز: الفيلم {long_dur/60:.2f} دقيقة ({len(long_wins)} لقطة × ~8ث) | "
+            f"شورت #1 ({sh1_dur:.1f}ث / {len(sh1_wins)} لقطة) | شورت #2 ({sh2_dur:.1f}ث / {len(sh2_wins)} لقطة)"
+        )
+
+        print(f"🧠 [{cfg['brand_name']}] 3/6 كتابة مشاهد بصرية مخصصة لكل نافذة 8 ثوانٍ مطابقة للكلام المنطوق...")
+        long_prompts = generate_8sec_shot_prompts(
+            windows=long_wins,
+            character_visual_anchor=episode["character_visual_anchor"],
+            story_title=episode["youtube_title"],
+            api_key=groq_key,
+            is_vertical=False,
+        )
+        sh1_prompts = generate_8sec_shot_prompts(
+            windows=sh1_wins,
+            character_visual_anchor=episode["character_visual_anchor"],
+            story_title=episode["short_1_title"],
+            api_key=groq_key,
+            is_vertical=True,
+        )
+        sh2_prompts = generate_8sec_shot_prompts(
+            windows=sh2_wins,
+            character_visual_anchor=episode["character_visual_anchor"],
+            story_title=episode["short_2_title"],
+            api_key=groq_key,
+            is_vertical=True,
+        )
+
+        total_unique_imgs = len(long_prompts) + len(sh1_prompts) + len(sh2_prompts) + 1
+        print(f"🎨 [{cfg['brand_name']}] 4/6 رسم {total_unique_imgs} صورة FLUX سينمائية فريدة بدون أي تكرار + غلاف يوتيوب ناري...")
+        long_imgs = generate_8sec_shots_batch(
+            prompts=long_prompts,
+            out_dir=tmp_root / "shots_16x9",
+            prefix="long16x9",
+            width=1280,
+            height=720,
+            seed_base=seed_base,
+            max_workers=4,
+        )
+        sh1_imgs = generate_8sec_shots_batch(
+            prompts=sh1_prompts,
+            out_dir=tmp_root / "shots_sh1_9x16",
+            prefix="sh1_9x16",
+            width=720,
+            height=1280,
+            seed_base=seed_base + 20000,
+            max_workers=4,
+        )
+        sh2_imgs = generate_8sec_shots_batch(
+            prompts=sh2_prompts,
+            out_dir=tmp_root / "shots_sh2_9x16",
+            prefix="sh2_9x16",
+            width=720,
+            height=1280,
+            seed_base=seed_base + 40000,
+            max_workers=4,
+        )
+        thumb_jpg = build_viral_youtube_thumbnail(
+            prompt=episode["thumbnail_prompt"],
+            hook_text=episode["thumbnail_hook_text"],
+            badge_text=episode["thumbnail_badge_text"],
+            brand_name=cfg["brand_name"],
+            language=cfg["language"],
+            out_path=tmp_root / f"{channel_id}_thumbnail_1280x720.jpg",
+            seed=seed_base + 777,
+        )
+
+        print(f"🎞️ [{cfg['brand_name']}] 5/6 مونتاج متوازٍ (صورة جديدة كل ~8 ثوانٍ بلا تكرار) للفيلم الطويل والشورتين...")
+        long_mp4 = render_long_episode_mp4(
+            shot_images=long_imgs,
+            shot_windows=long_wins,
+            audio_mp3=audio_pack["master_mp3"],
+            subtitles=audio_pack["subtitles"],
+            brand_name=cfg["brand_name"],
+            out_mp4=tmp_root / f"{channel_id}_full_episode.mp4",
+            work_dir=tmp_root / "render_long",
+        )
+        short_1_mp4 = render_vertical_short_mp4(
+            vertical_images=sh1_imgs,
+            short_windows=sh1_wins,
+            short_mp3=audio_pack["short_1_mp3"],
+            short_words=audio_pack["short_1_words"],
+            brand_name=cfg["brand_name"],
+            cta_banner=episode["cta_banner"],
+            out_mp4=tmp_root / f"{channel_id}_climax_short_1.mp4",
+            work_dir=tmp_root / "render_short_1",
+        )
+        short_2_mp4 = render_vertical_short_mp4(
+            vertical_images=sh2_imgs,
+            short_windows=sh2_wins,
+            short_mp3=audio_pack["short_2_mp3"],
+            short_words=audio_pack["short_2_words"],
+            brand_name=cfg["brand_name"],
+            cta_banner=episode["cta_banner"],
+            out_mp4=tmp_root / f"{channel_id}_climax_short_2.mp4",
+            work_dir=tmp_root / "render_short_2",
+        )
+
+        if dry_run:
+            out_dir = Path("/tmp/empire_v10_preview")
+            out_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(long_mp4, out_dir / long_mp4.name)
+            shutil.copy2(thumb_jpg, out_dir / thumb_jpg.name)
+            shutil.copy2(short_1_mp4, out_dir / short_1_mp4.name)
+            shutil.copy2(short_2_mp4, out_dir / short_2_mp4.name)
+            print(f"✅ [DRY RUN] الملفات جاهزة في {out_dir}")
+        else:
+            print(f"🚀 [{cfg['brand_name']}] 6/6 النشر الخوارزمي الكامل (غلاف + فصول + تاجات + سؤال تعليقات + شورتين)...")
+            pub_res = publish_channel_funnel(
+                channel_cfg=cfg,
+                episode=episode,
+                scene_timings=audio_pack["scene_timings"],
+                long_mp4=long_mp4,
+                thumbnail_jpg=thumb_jpg,
+                short_1_mp4=short_1_mp4,
+                short_2_mp4=short_2_mp4,
+            )
+            print(f"   🎉 نتيجة النشر: {pub_res}")
+            save_memory(MEMORY_PATH, memory)
+    finally:
+        shutil.rmtree(tmp_root, ignore_errors=True)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--channel", required=True, help="معرف القناة أو all")
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+
+    if args.channel == "all":
+        for cid in CHANNELS:
+            run_single_channel(cid, dry_run=args.dry_run)
+    else:
+        run_single_channel(args.channel, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
