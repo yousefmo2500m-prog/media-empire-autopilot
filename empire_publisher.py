@@ -222,7 +222,7 @@ def publish_full_and_short_funnel(
     main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
     tiktok_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or main_key
     explicit_tt_id = os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip()
-    fallback_channel_url = os.environ.get(f"{prefix}_CHANNEL_URL", "").strip()
+    fallback_channel_url = os.environ.get(f"{prefix}_CHANNEL_URL", "").strip() or str(channel_cfg.get("channel_url", "")).strip()
     is_ar = channel_cfg["language"] == "ar"
 
     if not main_key:
@@ -230,7 +230,12 @@ def publish_full_and_short_funnel(
         return {"skipped_no_key": True}
 
     results: Dict[str, Any] = {}
+    cfg_accs = channel_cfg.get("accounts") or {}
     main_accounts = get_zernio_accounts(main_key, channel_cfg.get("main_profile_id", ""))
+    for pl in ("youtube", "facebook"):
+        if pl not in main_accounts and cfg_accs.get(pl):
+            main_accounts[pl] = cfg_accs[pl]
+
     tt_accounts = dict(
         main_accounts
         if (tiktok_key == main_key and not channel_cfg.get("tiktok_profile_id"))
@@ -238,6 +243,8 @@ def publish_full_and_short_funnel(
     )
     if explicit_tt_id:
         tt_accounts["tiktok"] = explicit_tt_id
+    elif "tiktok" not in tt_accounts and cfg_accs.get("tiktok"):
+        tt_accounts["tiktok"] = cfg_accs["tiktok"]
 
     if not main_accounts and not tt_accounts:
         print(f"⚠️ [{channel_cfg['id']}] المفتاح صحيح لكن لم يتم الضغط على رابط ربط يوتيوب/فيسبوك/تيك توك بعد.")
