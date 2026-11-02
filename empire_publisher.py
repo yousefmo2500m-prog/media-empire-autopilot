@@ -242,7 +242,7 @@ def publish_channel_funnel(
             "mediaItems": [{
                 "type": "video",
                 "url": long_url,
-                "thumbnailUrl": thumb_url,
+                "thumbnail": thumb_url,
             }],
             "platforms": long_platforms,
         }
