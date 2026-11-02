@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-إعدادات القنوات الأربع V8.0 (Production Locked — 12/12 Verified Zernio Account IDs):
-1) القناة 1 (دفتر راوي — @daftarrawi): روايات وحكايات مصرية كاملة ومتنوعة كل يوم.
+إعدادات القنوات الأربع V9.0 (Production Locked — 12/12 Verified Zernio Account IDs + Psychological Retention Overhaul):
+1) القناة 1 (دفتر راوي — @daftarrawi): روايات تشويق نفسي وحكايات مصرية غامضة تحبس الأنفاس بتنوع يومي.
 2) القناة 2 (الدليل الأخير — @eldalilelakhir): قصص ألغاز وتحقيقات بوليسية ذكية كاملة على طريقة «المحقق كونان».
-3) القناة 3 (Velvet Tales — @velvettalesclub): قصص وروايات إنجليزية متنوعة وممتعة بـ RPM دولاري عالٍ.
-4) القناة 4 (Mindlock — @mindlockcases): قصص تحقيقات وألغاز ذكية كاملة بالإنجليزية بـ RPM دولاري عالٍ.
+3) القناة 3 (Velvet Tales — @velvettalesclub): قصص إثارة نفسية ومفاجآت أمريكية آسرة بـ RPM دولاري عالٍ.
+4) القناة 4 (Mindlock — @mindlockcases): قضايا تحقيقات وألغاز استنتاجية مستحيلة بالإنجليزية بـ RPM دولاري عالٍ.
 
-كل قناة تنتج وتنشر يومياً بشكل مستقل 100%:
-- فيلم حلقة كامل (+16 دقيقة، 16:9 HD) -> يوتيوب + فيسبوك.
-- 2 شورتس تشويقيين مختلفين (9:16 HD) لنفس الحلقة يومياً -> يوتيوب شورتس + تيك توك (الأول فوراً والثاني بعد 3 ساعات) مع رابط الفيلم الكامل في أول تعليق!
+مواصفات V9.0 الإلزامية لكل حلقة يومياً:
+- فيلم كامل (+16 دقيقة، 16:9 HD، 12 مشهداً متسلسلاً مقسمة بالدقيقة والثانية بدون تكرار أي صورة + غلاف يوتيوب احترافي جذاب) -> يوتيوب + فيسبوك.
+- 2 شورتس تشويقيين عميقين (~105–135 ثانية، 9:16 رأسي كامل بدون أي قص للصورة، يقفان فجأة في أعلى لحظة ذروة وإثارة) -> يوتيوب شورتس + تيك توك مع رابط الفيلم الكامل في أول تعليق!
 """
 
 from typing import Any, Dict
@@ -28,15 +28,18 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         },
         "language": "ar",
         "niche": "eg_diverse_novels",
-        "min_duration_sec": 940,
+        "min_duration_sec": 950,
+        "thumb_badge": "قصة تحبس الأنفاس",
         "voice": {
             "gemini_voice": "Kore",
             "voicetut_speaker": "Mariam",
-            "edge_voice": "ar-EG-SalmaNeural",
-            "edge_rate": "+4%",
+            "edge_voice": "ar-SA-ZariyahNeural",
+            "edge_rate": "+2%",
+            "mood": "thriller",
         },
-        "cta_spoken": "ثانية واحدة! اللي حصل بعد اللحظة دي بالظبط محدش فيكم ممكن يتوقعه أبداً! عشان تسمعوا الرواية كاملة من أولها لآخرها، ادخلوا حالاً على رابط الفيديو الكامل في أول تعليق!",
-        "cta_banner": "اسمع الرواية كاملة (+16 دقيقة)! الرابط في أول تعليق",
+        "cta_spoken_1": "لحظة واحدة! الصدمة اللي شافها في الثانية دي قلبت حياته كلها ومستحيل تخطر على بال حد! عشان تسمعوا القصة كاملة للنهاية، ادخلوا حالاً على رابط الفيديو الكامل في أول تعليق!",
+        "cta_spoken_2": "استنوا هنا! لأن الحقيقة اللي انكشفت بعد الجملة دي بالظبط نسفت كل حاجة فاتت! كملوا الرواية كاملة دلوقتي من الرابط الموجود في أول تعليق!",
+        "cta_banner": "الجزء الكامل (+16 دقيقة) في أول تعليق!",
     },
     "ch2_eg_mystery": {
         "id": "ch2_eg_mystery",
@@ -52,15 +55,18 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         },
         "language": "ar",
         "niche": "eg_conan_detective",
-        "min_duration_sec": 940,
+        "min_duration_sec": 950,
+        "thumb_badge": "لغز الغرفة المغلقة",
         "voice": {
             "gemini_voice": "Aoede",
             "voicetut_speaker": "Sarah",
-            "edge_voice": "ar-EG-SalmaNeural",
-            "edge_rate": "+4%",
+            "edge_voice": "ar-SA-ZariyahNeural",
+            "edge_rate": "+2%",
+            "mood": "mystery",
         },
-        "cta_spoken": "استنوا لحظة! تفتكروا مين فيهم صاحب الخدعة وإيه التفصيلة الصغيرة اللي فضحت اللغز كله؟ عشان تشوفوا الحل العبقري للقضية كاملة، ادخلوا حالاً على رابط الفيديو الكامل في أول تعليق!",
-        "cta_banner": "حل اللغز الكامل في الفيديو الطويل! الرابط في أول تعليق",
+        "cta_spoken_1": "اقفوا عند اللحظة دي! تفتكروا إزاي حصل المستحيل ده والباب مقفول من جوه؟ عشان تشوفوا التحقيق كامل وكشف الخدعة العبقرية، ادخلوا حالاً على رابط الفيديو الكامل في أول تعليق!",
+        "cta_spoken_2": "ثانية واحدة! الغلطة الصغيرة دي هي اللي وقعت الجاني الحقيقي اللي محدش شك فيه! شوفوا الحل الكامل للقضية دلوقتي من الرابط في أول تعليق!",
+        "cta_banner": "حل القضية الكامل (+16 دقيقة) في أول تعليق!",
     },
     "ch3_en_thriller": {
         "id": "ch3_en_thriller",
@@ -76,15 +82,18 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         },
         "language": "en",
         "niche": "en_diverse_stories",
-        "min_duration_sec": 940,
+        "min_duration_sec": 950,
+        "thumb_badge": "CHILLING TWIST",
         "voice": {
             "gemini_voice": "Puck",
             "orpheus_voice": "troy",
             "edge_voice": "en-US-AndrewMultilingualNeural",
             "edge_rate": "+2%",
+            "mood": "thriller",
         },
-        "cta_spoken": "Hold on, because nobody in that room saw what happened in the next five minutes coming! Watch the full sixteen minute story right now from the link pinned in the first comment!",
-        "cta_banner": "FULL 16-MIN STORY IN THE FIRST COMMENT!",
+        "cta_spoken_1": "Stop right there—because what was waiting behind that door shattered everything they believed! Watch the full sixteen minute story unfold right now from the link pinned in the first comment!",
+        "cta_spoken_2": "Hold on—because the next ten seconds flipped the entire truth upside down! Hear the full sixteen minute story right now via the link in the first comment!",
+        "cta_banner": "WATCH THE FULL 16-MIN STORY IN FIRST COMMENT!",
     },
     "ch4_en_mystery": {
         "id": "ch4_en_mystery",
@@ -100,14 +109,17 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         },
         "language": "en",
         "niche": "en_detective_mystery",
-        "min_duration_sec": 940,
+        "min_duration_sec": 950,
+        "thumb_badge": "IMPOSSIBLE CASE",
         "voice": {
             "gemini_voice": "Charon",
             "orpheus_voice": "daniel",
             "edge_voice": "en-US-BrianMultilingualNeural",
             "edge_rate": "+2%",
+            "mood": "mystery",
         },
-        "cta_spoken": "Freeze right there—can you spot the one tiny contradiction that shattered the alibi? Watch the full sixteen minute mystery unfold from the link in the first comment!",
+        "cta_spoken_1": "Freeze right at that clue—did you catch the one impossible contradiction in that room? Watch the full sixteen minute investigation from the link pinned in the first comment!",
+        "cta_spoken_2": "Wait right there—because that tiny detail just exposed the one suspect with an ironclad alibi! Solve the full case right now from the link in the first comment!",
         "cta_banner": "SOLVE THE FULL 16-MIN CASE IN FIRST COMMENT!",
     },
 }

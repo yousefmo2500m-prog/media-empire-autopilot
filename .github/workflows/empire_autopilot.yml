@@ -1,11 +1,11 @@
-name: Autonomous 4-Channel 15+ Min Thriller & Shorts/TikTok Funnel
+name: Autonomous 4-Channel V9.0 Psychological Thriller, Chapters, Thumbnail & Shorts Funnel
 
 on:
   schedule:
-    - cron: '0 10 * * *'   # 12:00 ظهراً بتوقيت القاهرة: القناة 1 (أسرار الليل ورد الاعتبار - مصري)
-    - cron: '0 14 * * *'   # 04:00 عصراً بتوقيت القاهرة: القناة 2 (ملفات محيّرة لا تُصدّق - مصري)
-    - cron: '0 18 * * *'   # 08:00 مساءً بتوقيت القاهرة: القناة 3 (Midnight Twist Stories - إنجليزي دولاري)
-    - cron: '0 22 * * *'   # 12:00 منتصف الليل بتوقيت القاهرة: القناة 4 (Unsolved & Impossible - إنجليزي دولاري)
+    - cron: '0 10 * * *'   # 12:00 ظهراً بتوقيت القاهرة: القناة 1 (دفتر راوي - مصري)
+    - cron: '0 14 * * *'   # 04:00 عصراً بتوقيت القاهرة: القناة 2 (الدليل الأخير - مصري)
+    - cron: '0 18 * * *'   # 08:00 مساءً بتوقيت القاهرة: القناة 3 (Velvet Tales - إنجليزي)
+    - cron: '0 22 * * *'   # 12:00 منتصف الليل بتوقيت القاهرة: القناة 4 (Mindlock - إنجليزي)
   workflow_dispatch:
     inputs:
       channel:
@@ -23,12 +23,17 @@ concurrency:
 jobs:
   produce-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 55
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Install Arabic HarfBuzz/Raqm Typography Libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libraqm0 libfribidi0 libharfbuzz0b
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -56,16 +61,13 @@ jobs:
             echo "target=ch4_en_mystery" >> $GITHUB_OUTPUT
           fi
 
-      - name: Produce 15+ Min Thriller Movie + Shorts/TikTok Teaser & Publish
+      - name: Produce V9.0 16+ Min Movie + Custom Thumbnail + 2 Full-Frame Climax Shorts & Publish
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          META_DATR_COOKIE: ${{ secrets.META_DATR_COOKIE }}
-          META_ECTO_COOKIE: ${{ secrets.META_ECTO_COOKIE }}
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
           CH1_TIKTOK_ZERNIO_KEY: ${{ secrets.CH1_TIKTOK_ZERNIO_KEY }}
           CH1_TIKTOK_ACCOUNT_ID: ${{ secrets.CH1_TIKTOK_ACCOUNT_ID }}

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-الناشر السحابي الرسمي عبر Zernio API v1 (متوافق 100% مع مواصفات https://zernio.com/llms.txt)
-لكل قناة يومياً:
-1) يرفع وينشر الفيلم الكامل (+16 دقيقة، 16:9) على يوتيوب وفيسبوك لتفعيل إعلانات الفواصل المتعددة (Mid-Roll Ads).
-2) يلتقط رابط الفيلم الكامل المنشور تلقائياً (أو يسترجعه من GET /v1/posts/{postId}).
-3) ينشر الشورت التشويقي الأول (Short #1) فوراً على YouTube Shorts + TikTok مع وضع رابط الفيلم الكامل في أول تعليق.
-4) يجدول الشورت التشويقي الثاني (Short #2 — بعد 3 ساعات) على YouTube Shorts + TikTok مع وضع نفس رابط الفيلم الكامل في أول تعليق!
+الناشر السحابي الرسمي V9.0 عبر Zernio API v1 (متوافق 100% مع مواصفات https://zernio.com/openapi.json):
+1) يرفع غلاف اليوتيوب المخصص عالي الجاذبية (1280x720 JPG) ويربطه عبر حقل `mediaItems[0].thumbnail` ليظهر على يوتيوب وفيسبوك فوراً.
+2) يبني جدول تقسيم المشاهد التفاعلي بالدقيقة والثانية (`00:00 المشهد 1: ... (من 00:00 إلى 01:24)`) لتفعيل فصول يوتيوب التلقائية (YouTube Chapters).
+3) ينشر الفيلم الكامل (+16 دقيقة، 16:9 HD) على يوتيوب وفيسبوك، ويلتقط رابط الفيلم المنشور تلقائياً.
+4) ينشر الشورت العميق الأول فوراً على YouTube Shorts + TikTok ويجدول الشورت العميق الثاني بعد 3 ساعات مع تثبيت رابط الفيلم الكامل في أول تعليق!
 """
 
 import json
@@ -17,6 +16,8 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+from sound_studio import format_mmss
 
 ZERNIO_BASE = "https://zernio.com/api/v1"
 
@@ -33,7 +34,7 @@ def _zernio_req(
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Accept": "application/json",
-        "User-Agent": "MediaEmpire-Autopilot/7.6",
+        "User-Agent": "MediaEmpire-Autopilot/9.0",
     }
     if data is not None:
         headers["Content-Type"] = "application/json; charset=utf-8"
@@ -110,6 +111,35 @@ def _extract_published_url(resp_data: Dict[str, Any]) -> str:
     return ""
 
 
+def build_chapters_description(
+    episode_data: Dict[str, Any],
+    scene_timings: List[Dict[str, Any]],
+    is_ar: bool,
+) -> str:
+    """
+    يبني وصف الفيديو الكامل متضمناً تقسيم المشاهد التفاعلي على شريط يوتيوب الزمني (يبدأ بـ 00:00)
+    مع كتابة المدى الزمني الواضح «من الدقيقة كذا إلى الدقيقة كذا» أمام كل مشهد.
+    """
+    intro = str(episode_data.get("description_intro") or episode_data.get("description") or "").strip()
+    hashtags = str(episode_data.get("hashtags") or "").strip()
+
+    ch_lines: List[str] = []
+    if scene_timings:
+        ch_lines.append("🎬 تقسيم مشاهد الفيديو بالدقيقة والثانية:" if is_ar else "🎬 Episode Scene Chapters:")
+        for idx, st_obj in enumerate(scene_timings):
+            s_str = "00:00" if idx == 0 else format_mmss(float(st_obj["start"]))
+            e_str = format_mmss(float(st_obj["end"]))
+            s_num = st_obj["scene_num"]
+            s_title = str(st_obj["scene_title"]).strip()
+            if is_ar:
+                ch_lines.append(f"{s_str} المشهد {s_num}: {s_title} (من {s_str} إلى {e_str})")
+            else:
+                ch_lines.append(f"{s_str} Scene {s_num}: {s_title} ({s_str} – {e_str})")
+
+    blocks = [b for b in (intro, "\n".join(ch_lines), hashtags) if b]
+    return "\n\n".join(blocks)[:4800]
+
+
 def _publish_one_short(
     short_video_path: Path,
     short_title: str,
@@ -123,9 +153,9 @@ def _publish_one_short(
 ) -> Dict[str, Any]:
     out: Dict[str, Any] = {}
     short_caption = (
-        f"الرابط في أول تعليق 👇\n{short_title}"
+        f"الرابط الكامل في أول تعليق 👇\n{short_title}"
         if is_ar
-        else f"Full video link in the first comment 👇\n{short_title}"
+        else f"Full 16-min story pinned in first comment 👇\n{short_title}"
     )
     sched_iso = (
         (datetime.now(timezone.utc) + timedelta(hours=delay_hours)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -147,6 +177,8 @@ def _publish_one_short(
                     "platformSpecificData": {
                         "title": short_title[:98],
                         "visibility": "public",
+                        "madeForKids": False,
+                        "categoryId": "24",
                         "containsSyntheticMedia": True,
                         "firstComment": comment_cta,
                     },
@@ -214,9 +246,11 @@ def _publish_one_short(
 def publish_full_and_short_funnel(
     channel_cfg: Dict[str, Any],
     episode_data: Dict[str, Any],
+    scene_timings: List[Dict[str, Any]],
     long_video_path: Path,
     short_video_path: Path,
     short_2_video_path: Optional[Path] = None,
+    thumbnail_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     prefix = channel_cfg["env_prefix"]
     main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
@@ -226,7 +260,7 @@ def publish_full_and_short_funnel(
     is_ar = channel_cfg["language"] == "ar"
 
     if not main_key:
-        print(f"⏭️ [{channel_cfg['id']}] لم يتم ضبط {prefix}_ZERNIO_KEY بعد — الفيديوهات جاهزة للنشر فور ربط الحسابات.")
+        print(f"⏭️ [{channel_cfg['id']}] لم يتم ضبط {prefix}_ZERNIO_KEY بعد.")
         return {"skipped_no_key": True}
 
     results: Dict[str, Any] = {}
@@ -247,16 +281,22 @@ def publish_full_and_short_funnel(
         tt_accounts["tiktok"] = cfg_accs["tiktok"]
 
     if not main_accounts and not tt_accounts:
-        print(f"⚠️ [{channel_cfg['id']}] المفتاح صحيح لكن لم يتم الضغط على رابط ربط يوتيوب/فيسبوك/تيك توك بعد.")
         return {"waiting_oauth_connection": True}
 
-    # 1) نشر الفيلم الكامل (+16 دقيقة) على يوتيوب + فيسبوك
+    # 1) رفع الفيلم الكامل + رفع الغلاف المخصص (Thumbnail 1280x720)
     long_url_cloud = upload_asset_to_zernio(long_video_path, "video/mp4", main_key)
+    thumb_url_cloud = ""
+    if thumbnail_path and thumbnail_path.exists():
+        thumb_url_cloud = upload_asset_to_zernio(thumbnail_path, "image/jpeg", main_key)
+        print(f"    🖼️ [{channel_cfg['id']}] تم رفع غلاف اليوتيوب المخصص: {thumb_url_cloud}")
+
+    full_description = build_chapters_description(episode_data, scene_timings, is_ar)
     engage_comment = (
-        "لو وصلت لهنا قولي رأيك أو استنتاجك في التعليقات! واشترك عشان متفوتكش حلقة بكرة 🔥"
+        "عند أي دقيقة أو مشهد عرفتوا الحقيقة قبل الكشف النهائي؟ اكتبولي في التعليقات واشتركوا لحلقة بكرة! 🔥"
         if is_ar
-        else "Drop your thoughts or theory in the comments below and subscribe for tomorrow's full story! 🔥"
+        else "Which scene timestamp gave away the twist for you? Drop your guess below & subscribe for tomorrow's episode! 🔥"
     )
+
     long_platforms: List[Dict[str, Any]] = []
     if "youtube" in main_accounts:
         long_platforms.append({
@@ -265,7 +305,10 @@ def publish_full_and_short_funnel(
             "platformSpecificData": {
                 "title": episode_data["youtube_title"][:98],
                 "visibility": "public",
+                "madeForKids": False,
+                "categoryId": "24",
                 "containsSyntheticMedia": True,
+                "notifySubscribers": True,
                 "firstComment": engage_comment,
             },
         })
@@ -279,6 +322,10 @@ def publish_full_and_short_funnel(
             },
         })
 
+    media_item_long: Dict[str, Any] = {"type": "video", "url": long_url_cloud}
+    if thumb_url_cloud:
+        media_item_long["thumbnail"] = thumb_url_cloud
+
     full_episode_link = fallback_channel_url
     if long_platforms:
         st_l, res_l = _zernio_req(
@@ -286,21 +333,21 @@ def publish_full_and_short_funnel(
             "/posts",
             main_key,
             payload={
-                "content": f"{episode_data['youtube_title']}\n\n{episode_data['description']}",
+                "content": full_description,
                 "title": episode_data["youtube_title"][:98],
                 "visibility": "public",
                 "publishNow": True,
-                "mediaItems": [{"type": "video", "url": long_url_cloud}],
+                "mediaItems": [media_item_long],
                 "platforms": long_platforms,
             },
             timeout=300,
         )
-        results["long_post"] = {"status": st_l, "response": res_l}
+        results["long_post"] = {"status": st_l, "response": res_l, "thumbnail_url": thumb_url_cloud}
         detected = _extract_published_url(res_l)
         if not detected:
             post_id = (res_l.get("post") or {}).get("_id")
             if post_id:
-                for _ in range(4):
+                for _ in range(5):
                     time.sleep(6.0)
                     st_p, res_p = _zernio_req("GET", f"/posts/{post_id}", main_key, timeout=30)
                     if st_p == 200:
@@ -312,18 +359,18 @@ def publish_full_and_short_funnel(
 
     if full_episode_link:
         comment_cta = (
-            f"🎬 اسمع القصة كاملة (+16 دقيقة) بالتفصيل من الرابط ده:\n{full_episode_link}"
+            f"🎬 كمل القصة كاملة (+16 دقيقة) وشوف اللي حصل بعد اللحظة دي فوراً من الرابط ده:\n{full_episode_link}"
             if is_ar
-            else f"🎬 Watch the FULL 16-minute story right here:\n{full_episode_link}"
+            else f"🎬 Watch the FULL 16-minute story right after that exact moment here:\n{full_episode_link}"
         )
     else:
         comment_cta = (
-            f"🎬 اسمع القصة كاملة (+16 دقيقة) دلوقتي على قناتنا الرسمية على يوتيوب وفيسبوك: «{channel_cfg['brand_name']}» 🔥"
+            f"🎬 كمل القصة كاملة (+16 دقيقة) دلوقتي على قناتنا الرسمية: «{channel_cfg['brand_name']}» 🔥"
             if is_ar
-            else f"🎬 Watch the FULL 16-minute story right now on our official YouTube & Facebook channel: {channel_cfg['brand_name']} 🔥"
+            else f"🎬 Watch the FULL 16-minute story right now on our official channel: {channel_cfg['brand_name']} 🔥"
         )
 
-    # 2) الشورت الأول فوراً على YouTube Shorts + TikTok
+    # 2) الشورت العميق الأول فوراً على YouTube Shorts + TikTok
     results["short_1"] = _publish_one_short(
         short_video_path=short_video_path,
         short_title=episode_data.get("short_1_title") or episode_data["short_title"],
@@ -336,7 +383,7 @@ def publish_full_and_short_funnel(
         delay_hours=0,
     )
 
-    # 3) الشورت الثاني بعد 3 ساعات لنفس الفيديو الطويل لمضاعفة المشاهدات اليومية!
+    # 3) الشورت العميق الثاني بعد 3 ساعات لنفس الحلقة لمضاعفة المشاهدات!
     if short_2_video_path and short_2_video_path.exists():
         results["short_2"] = _publish_one_short(
             short_video_path=short_2_video_path,

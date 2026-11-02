@@ -1,130 +1,96 @@
 # -*- coding: utf-8 -*-
 """
-محرك المشاهد القصصية السينمائية V4.0 (Zero-Cost Story Scene Visual Engine)
-يجلب ويولّد مشاهد بصرية عالية الدقة (1280x720) تطابق أحداث كل فصل في القصة بدون أي علامات مائية:
-1) إذا توفر HF_TOKEN مجاني: يولّد المشهد بالذكاء الاصطناعي عبر FLUX.1-schnell / SDXL-Lightning.
-2) إذا توفر PEXELS_API_KEY مجاني: يجلب لقطات فوتوغرافية سينمائية مطابقة لوصف المشهد.
-3) بدون أي مفاتيح نهائياً ($0.00 Zero-Key): يبحث في مكتبة Wikimedia Commons العالمية المفتوحة (CC0/CC-BY)
-   عن صور فوتوغرافية حقيقية عالية الدقة تطابق الكلمات المفتاحية لكل مشهد، ويطبّق عليها تدريج لوني سينمائي
-   موحد (Cinematic Film Color Grading + Soft Vignette) لتظهر الحلقة كلها بروح فيلم وثائقي/درامي واحد!
+محرك المشاهد الذكية وغلاف اليوتيوب الناري V9.0 (Zero-Repetition 3-Engine AI Studio + Native 9:16 + Viral Thumbnail)
+يولّد مشاهد ذكاء اصطناعي مخصصة 100% لكل مشهد في الحلقة بدون أي صور عشوائية وبدون تكرار أي صورة:
+- المحرك 1 (Hugging Face FLUX): فائق الدقة لغلاف اليوتيوب والمشاهد الافتتاحية.
+- المحرك 2 (Pollinations FLUX Parallel Worker): يولّد مشاهد FLUX أصلية بالتوازي مع قص نظيف لأي شعار سفلي.
+- المحرك 3 (AI Horde Photorealistic Cluster): عنقود متوازٍ بلا أي حد يومي (5 مهام متزامنة) عبر نماذج
+  ICBINP / Deliberate / AbsoluteReality / AlbedoBase XL بدقة 16:9 أصلية للفيلم الطويل و9:16 رأسية كاملة للشورتس!
 """
 
+import concurrent.futures
 import io
 import os
-import re
+import queue
+import threading
+import time
+import urllib.parse
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import requests
-from PIL import Image, ImageEnhance, ImageFilter
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, features
 
-STOPWORDS = {
-    "cinematic", "photorealistic", "still", "wide", "widescreen", "movie", "scene", "shot",
-    "dramatic", "lighting", "warm", "soft", "glow", "text", "watermark", "16:9", "close",
-    "closeup", "portrait", "background", "blurred", "subtle", "intense", "atmosphere",
-    "showing", "standing", "sitting", "looking", "holding", "inside", "outside", "with",
-    "from", "into", "over", "under", "through", "while", "where", "there", "their", "this",
+FONTS_DIR = Path(__file__).resolve().parent / "fonts"
+CAIRO_FONT_PATH = FONTS_DIR / "Cairo-Variable.ttf"
+
+HORDE_HEADERS = {
+    "apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000",
+    "Client-Agent": "MediaEmpireStudio:9.0:autonomous",
 }
+HORDE_REALISM_MODELS = [
+    "Deliberate",
+    "ICBINP - I Can't Believe It's Not Photography",
+    "AbsoluteReality",
+    "Dreamshaper",
+]
 
 
-def apply_cinema_grade(img: Image.Image, width: int = 1280, height: int = 720, mood: str = "warm") -> Image.Image:
-    """قص ذكي للأبعاد المطلوبة مع تدريج ألوان سينمائي درامي وتعتيم أطراف خفيف (Vignette)."""
+def apply_cinema_grade(
+    img: Image.Image,
+    width: int = 1280,
+    height: int = 720,
+    mood: str = "mystery",
+    is_vertical: bool = False,
+) -> Image.Image:
+    """ضبط المقاس بدون تشويه أو قص جانبي جائر + تدريج ألوان إثارة نفسية سينمائي حاد."""
     img = img.convert("RGB")
     src_w, src_h = img.size
-    target_ratio = width / height
-    src_ratio = src_w / max(1, src_h)
+    target_ratio = width / float(height)
+    src_ratio = src_w / float(max(1, src_h))
 
-    if src_ratio > target_ratio:
-        new_w = int(src_h * target_ratio)
-        left = (src_w - new_w) // 2
-        img = img.crop((left, 0, left + new_w, src_h))
-    else:
-        new_h = int(src_w / target_ratio)
-        top = (src_h - new_h) // 2
-        img = img.crop((0, top, src_w, top + new_h))
+    # إذا كانت الصورة مولّدة أصلاً بنسبة مطابقة تقريباً (مثل 448x768 أو 768x1344 للشورتس)، نحافظ على المشهد كاملاً!
+    if abs(src_ratio - target_ratio) > 0.08:
+        if src_ratio > target_ratio:
+            new_w = int(round(src_h * target_ratio))
+            left = max(0, (src_w - new_w) // 2)
+            img = img.crop((left, 0, left + new_w, src_h))
+        else:
+            new_h = int(round(src_w / target_ratio))
+            top = max(0, (src_h - new_h) // 2)
+            img = img.crop((0, top, src_w, top + new_h))
 
     img = img.resize((width, height), Image.Resampling.LANCZOS)
-    img = ImageEnhance.Contrast(img).enhance(1.14)
-    img = ImageEnhance.Color(img).enhance(1.08)
+    img = img.filter(ImageFilter.UnsharpMask(radius=1.15, percent=115, threshold=3))
+    img = ImageEnhance.Contrast(img).enhance(1.16)
+    img = ImageEnhance.Color(img).enhance(1.10)
 
     arr = np.asarray(img, dtype=np.float32)
-    if mood == "mystery":
-        # تدرج Teal & Amber سينمائي لأفلام الغموض والتحقيقات
-        arr[:, :, 0] *= 0.96
-        arr[:, :, 1] *= 0.99
-        arr[:, :, 2] = np.clip(arr[:, :, 2] * 1.07 + 4.0, 0, 255)
-    else:
-        # تدرج درامي دافئ للقصص الاجتماعية والكارما
-        arr[:, :, 0] = np.clip(arr[:, :, 0] * 1.05 + 3.0, 0, 255)
-        arr[:, :, 2] *= 0.95
+    # تدريج الإثارة النفسية السينمائي (Amber Highlights + Deep Teal/Midnight Shadows)
+    arr[:, :, 0] = np.clip(arr[:, :, 0] * 1.02 + 2.0, 0, 255)
+    arr[:, :, 1] *= 0.99
+    arr[:, :, 2] = np.clip(arr[:, :, 2] * 1.06 + 3.5, 0, 255)
 
-    # Vignette ناعم حول الأطراف لإبراز قلب المشهد والترجمة
     yy, xx = np.ogrid[:height, :width]
     cy, cx = height * 0.48, width * 0.50
-    dist = np.sqrt(((xx - cx) / (width * 0.62)) ** 2 + ((yy - cy) / (height * 0.62)) ** 2)
-    vig = np.clip(1.0 - 0.34 * np.clip(dist - 0.45, 0, 1.5), 0.52, 1.0)[:, :, None]
-    # تعتيم خفيف أسفل الشاشة لقراءة الترجمة بوضوح تام
+    # في الشورتس الرأسية نخفف التعتيم الجانبي جداً حتى تظل الصورة كاملة واضحة ومشرقة 100%
+    vig_strength = 0.20 if is_vertical else 0.30
+    dist = np.sqrt(((xx - cx) / (width * 0.68)) ** 2 + ((yy - cy) / (height * 0.68)) ** 2)
+    vig = np.clip(1.0 - vig_strength * np.clip(dist - 0.50, 0, 1.5), 0.62, 1.0)[:, :, None]
+
     bottom_grad = np.ones((height, 1, 1), dtype=np.float32)
-    fade_start = int(height * 0.72)
-    bottom_grad[fade_start:, 0, 0] = np.linspace(1.0, 0.55, height - fade_start)
+    fade_start = int(height * (0.78 if is_vertical else 0.74))
+    bottom_grad[fade_start:, 0, 0] = np.linspace(1.0, 0.58, height - fade_start)
 
     out_arr = np.clip(arr * vig * bottom_grad, 0, 255).astype(np.uint8)
     return Image.fromarray(out_arr)
 
 
-def _extract_search_keywords(prompt: str) -> str:
-    words = re.findall(r"[A-Za-z]{4,}", prompt.lower())
-    picked = [w for w in words if w not in STOPWORDS]
-    return " ".join(picked[:4]) if picked else "dramatic architecture interior"
-
-
-def _try_cloudflare_flux(prompt: str) -> Optional[Image.Image]:
-    """توليد مشاهد ذكاء اصطناعي مجاناً للأبد عبر Cloudflare Workers AI Free Tier (@cf/black-forest-labs/flux-1-schnell)."""
-    acc_id = os.environ.get("CF_ACCOUNT_ID", "").strip()
-    cf_tok = os.environ.get("CF_API_TOKEN", "").strip()
-    if not (acc_id and cf_tok):
-        return None
-    try:
-        import base64
-        r = requests.post(
-            f"https://api.cloudflare.com/client/v4/accounts/{acc_id}/ai/run/@cf/black-forest-labs/flux-1-schnell",
-            headers={"Authorization": f"Bearer {cf_tok}"},
-            json={"prompt": prompt, "num_steps": 4},
-            timeout=35,
-        )
-        if r.status_code == 200:
-            b64 = (r.json().get("result") or {}).get("image")
-            if b64:
-                return Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
-    except Exception:
-        pass
-    return None
-
-
-def _try_meta_ai_scene(prompt: str) -> Optional[Image.Image]:
-    """دعم اختياري لتوليد المشاهد عبر Meta AI إذا وفّر المستخدم الكوكيز في Secrets."""
-    datr = os.environ.get("META_DATR_COOKIE", "").strip()
-    ecto = os.environ.get("META_ECTO_COOKIE", "").strip()
-    if not (datr and ecto):
-        return None
-    try:
-        from metaai_api import MetaAI
-        ai = MetaAI(cookies={"datr": datr, "ecto_1_sess": ecto})
-        res = ai.generate_image_new(prompt)
-        urls = res.get("image_urls") or []
-        ai.close()
-        if urls:
-            raw = requests.get(urls[0], timeout=25).content
-            return Image.open(io.BytesIO(raw)).convert("RGB")
-    except Exception:
-        pass
-    return None
-
-
-def _try_hf_flux(prompt: str, hf_token: str) -> Optional[Image.Image]:
-    """توليد مشاهد ذكاء اصطناعي FLUX مجاناً 100% (يعمل حتى بدون HF_TOKEN عبر multimodalart/FLUX.1-merged)."""
-    spaces = ["black-forest-labs/FLUX.1-schnell", "multimodalart/FLUX.1-merged"] if hf_token else ["multimodalart/FLUX.1-merged"]
+def _try_hf_flux(prompt: str, is_vertical: bool = False, hf_token: str = "") -> Optional[Image.Image]:
+    """توليد FLUX فائق الجودة بمقاس 16:9 (1280x720) أو 9:16 رأسي كامل (768x1344)."""
+    w, h = (768, 1344) if is_vertical else (1280, 720)
+    spaces = ["multimodalart/FLUX.1-merged", "black-forest-labs/FLUX.1-schnell"]
     for sp in spaces:
         try:
             from gradio_client import Client
@@ -133,8 +99,8 @@ def _try_hf_flux(prompt: str, hf_token: str) -> Optional[Image.Image]:
                 prompt=prompt,
                 seed=0,
                 randomize_seed=True,
-                width=1280,
-                height=720,
+                width=w,
+                height=h,
                 num_inference_steps=4,
                 api_name="/infer",
             )
@@ -142,159 +108,383 @@ def _try_hf_flux(prompt: str, hf_token: str) -> Optional[Image.Image]:
             p = item["path"] if isinstance(item, dict) else str(item)
             if p and Path(p).exists():
                 return Image.open(p).convert("RGB")
-        except Exception:
+        except Exception as exc:
+            msg = str(exc).lower()
+            if "zerogpu" in msg or "quota" in msg or "exceeded" in msg:
+                return None
             continue
     return None
 
 
-def _try_pollinations_flux_zerokey(prompt: str, seed_idx: int = 1) -> Optional[Image.Image]:
-    """محرك احتياطي مجاني 100% بدون أي مفتاح عبر Pollinations FLUX مع احترام مهلة الـ 46 ثانية."""
-    import time
-    import urllib.parse
-    enc = urllib.parse.quote(prompt[:320])
-    url = f"https://image.pollinations.ai/prompt/{enc}?width=1280&height=720&model=flux&nologo=true&seed={100 + seed_idx * 37}"
-    for att in range(2):
-        try:
-            r = requests.get(url, timeout=40)
-            if r.status_code == 200 and "image" in r.headers.get("content-type", "").lower() and len(r.content) > 12_000:
-                return Image.open(io.BytesIO(r.content)).convert("RGB")
-            if r.status_code in (402, 429) and att == 0:
-                time.sleep(47.0)
-        except Exception:
-            if att == 0:
-                time.sleep(8.0)
-    return None
-
-
-def _try_pexels_photo(query: str, pexels_key: str) -> Optional[Image.Image]:
-    if not pexels_key:
-        return None
+def _try_pollinations_flux_clean(prompt: str, is_vertical: bool, seed: int) -> Optional[Image.Image]:
+    """توليد FLUX مجاني بمقاس 16:9 أو 9:16 مع قص الشريط السفلي (6%) لإزالة أي شعار زاوية بنسبة 100%."""
+    w, req_h = (768, 1420) if is_vertical else (1280, 768)
+    enc = urllib.parse.quote(prompt[:360])
+    url = f"https://image.pollinations.ai/prompt/{enc}?width={w}&height={req_h}&model=flux&nologo=true&seed={seed}"
     try:
-        r = requests.get(
-            "https://api.pexels.com/v1/search",
-            headers={"Authorization": pexels_key},
-            params={"query": query, "orientation": "landscape", "per_page": 5},
-            timeout=15,
-        )
-        if r.status_code == 200:
-            photos = r.json().get("photos", [])
-            if photos:
-                url = photos[0]["src"].get("large2x") or photos[0]["src"].get("large")
-                raw = requests.get(url, timeout=20).content
-                return Image.open(io.BytesIO(raw)).convert("RGB")
+        r = requests.get(url, timeout=38)
+        if r.status_code == 200 and "image" in r.headers.get("content-type", "").lower() and len(r.content) > 14_000:
+            im = Image.open(io.BytesIO(r.content)).convert("RGB")
+            trim_h = max(100, int(im.height * 0.935))
+            im = im.crop((0, 0, im.width, trim_h))
+            return im
     except Exception:
         pass
     return None
 
 
-def _is_modern_color_photo(img: Image.Image) -> bool:
-    """يرفض الصور الأبيض والأسود أو الرسوم التاريخية القديمة ويضمن صوراً ملونة حديثة فقط."""
-    arr = np.asarray(img.convert("RGB"), dtype=np.float32)
-    rg = np.abs(arr[:, :, 0] - arr[:, :, 1]).mean()
-    yb = np.abs(0.5 * (arr[:, :, 0] + arr[:, :, 1]) - arr[:, :, 2]).mean()
-    colorfulness = float(np.sqrt(rg ** 2 + yb ** 2))
-    return colorfulness >= 11.5
-
-
-def _try_wikimedia_photo(query: str, used_urls: set) -> Optional[Image.Image]:
-    headers = {"User-Agent": "MediaEmpireStoryBot/4.0 (https://github.com/yousefmo2500m-prog)"}
-    bad_title_words = ("diagram", "map", "icon", "logo", "chart", "stamp", "engraving", "drawing", "sketch", "statue", "monument", "coat_of_arms")
-    words = [w for w in re.findall(r"[A-Za-z]{3,}", query.lower()) if w not in STOPWORDS]
-    variants = []
-    if len(words) >= 2:
-        variants.append(f"intitle:{words[0]} intitle:{words[1]}")
-    if len(words) >= 3:
-        variants.append(f"intitle:{words[0]} intitle:{words[2]}")
-    if words:
-        variants.append(f"intitle:{words[0]} {words[1] if len(words) > 1 else ''}".strip())
-        variants.append(f"intitle:{words[0]}")
-
-    for q in variants:
+def _generate_via_aihorde_single(prompt: str, is_vertical: bool, timeout_sec: float = 135.0) -> Optional[Image.Image]:
+    """توليد مشهد فوتوغرافي واقعي عبر عنقود AI Horde المجاني بمقاس 16:9 (768x448) أو 9:16 رأسي كامل (448x768)."""
+    w, h = (448, 768) if is_vertical else (768, 448)
+    full_prompt = (
+        f"{prompt}, masterpiece, photorealistic cinema still, 35mm film grain, sharp focus, expressive faces "
+        f"### text, letters, watermark, logo, signature, cartoon, anime, 3d render, blurry, deformed, cropped head"
+    )
+    for attempt in range(2):
         try:
-            r = requests.get(
-                "https://commons.wikimedia.org/w/api.php",
-                params={
-                    "action": "query",
-                    "generator": "search",
-                    "gsrsearch": f"filetype:bitmap {q}",
-                    "gsrnamespace": 6,
-                    "gsrlimit": 20,
-                    "prop": "imageinfo",
-                    "iiprop": "url|dimensions|mime",
-                    "iiurlwidth": 1280,
-                    "format": "json",
+            jr = requests.post(
+                "https://aihorde.net/api/v2/generate/async",
+                headers=HORDE_HEADERS,
+                json={
+                    "prompt": full_prompt,
+                    "params": {
+                        "width": w,
+                        "height": h,
+                        "steps": 22,
+                        "cfg_scale": 7.0,
+                        "sampler_name": "k_euler_a",
+                    },
+                    "nsfw": False,
+                    "censor_nsfw": True,
+                    "models": HORDE_REALISM_MODELS,
+                    "r2": True,
                 },
-                headers=headers,
-                timeout=15,
+                timeout=20,
             )
-            pages = r.json().get("query", {}).get("pages", {})
-            for p in pages.values():
-                title_low = str(p.get("title", "")).lower()
-                if any(bw in title_low for bw in bad_title_words):
-                    continue
-                info = (p.get("imageinfo") or [{}])[0]
-                mime = str(info.get("mime", ""))
-                w, h = int(info.get("width", 0)), int(info.get("height", 0))
-                turl = info.get("thumburl") or info.get("url")
-                if not turl or turl in used_urls:
-                    continue
-                if "jpeg" not in mime:
-                    continue
-                if w < 900 or h < 500 or (w / max(1, h)) < 1.2:
-                    continue
-                resp = requests.get(turl, headers=headers, timeout=20)
-                if resp.status_code == 200 and len(resp.content) > 35_000:
-                    cand = Image.open(io.BytesIO(resp.content)).convert("RGB")
-                    if _is_modern_color_photo(cand):
-                        used_urls.add(turl)
-                        print(f"    [Matched Scene] '{query}' -> {p.get('title')}")
-                        return cand
+            if jr.status_code != 202:
+                time.sleep(3.0)
+                continue
+            jid = jr.json().get("id")
+            if not jid:
+                continue
+
+            t0 = time.time()
+            while time.time() - t0 < timeout_sec:
+                time.sleep(3.2)
+                st = requests.get(
+                    f"https://aihorde.net/api/v2/generate/status/{jid}",
+                    headers=HORDE_HEADERS,
+                    timeout=15,
+                ).json()
+                if st.get("done"):
+                    gens = st.get("generations") or []
+                    img_url = gens[0].get("img") if gens else None
+                    if img_url:
+                        raw = requests.get(img_url, timeout=25).content
+                        if len(raw) > 8_000:
+                            return Image.open(io.BytesIO(raw)).convert("RGB")
+                    break
+                if st.get("faulted") or not st.get("is_possible", True):
+                    break
         except Exception:
-            continue
+            time.sleep(2.5)
     return None
 
 
-def prepare_episode_scenes(
-    scene_prompts: List[str],
+def generate_all_episode_visuals(
+    long_prompts_16x9: List[str],
+    short1_prompts_9x16: List[str],
+    short2_prompts_9x16: List[str],
+    thumbnail_prompt_16x9: str,
+    thumbnail_hook_text: str,
+    thumbnail_badge_text: str,
+    is_arabic: bool,
     out_dir: Path,
-    mood: str = "warm",
-    search_queries_override: Optional[List[str]] = None,
-) -> List[Path]:
-    """يجهز 8 مشاهد قصصية عالية الدقة (1280x720) في المجلد المحدد، مع احترام أي مشاهد موجودة مسبقاً."""
+    mood: str = "mystery",
+) -> Dict[str, object]:
+    """
+    ينتج حزمة المشاهد البصرية الكاملة للحلقة بدون تكرار أي صورة إطلاقاً:
+    - 1 غلاف يوتيوب ناري مخصص (1280x720) -> thumbnail.jpg
+    - 12 مشهداً أفقياً مخصصاً (1280x720) للفيلم الطويل -> long_s01.jpg .. long_s12.jpg
+    - 5 مشاهد رأسية كاملة (720x1280) للشورت الأول -> sh1_v01.jpg .. sh1_v05.jpg
+    - 5 مشاهد رأسية كاملة (720x1280) للشورت الثاني -> sh2_v01.jpg .. sh2_v05.jpg
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     hf_tok = os.environ.get("HF_TOKEN", "").strip()
-    px_key = os.environ.get("PEXELS_API_KEY", "").strip()
-    used_urls: set = set()
-    final_paths: List[Path] = []
 
-    for idx, prompt in enumerate(scene_prompts, 1):
-        target = out_dir / f"s{idx}.jpg"
-        if target.exists() and target.stat().st_size > 15_000:
-            # نطبّق التدريج السينمائي الموحد وضبط المقاس 1280x720
-            graded = apply_cinema_grade(Image.open(target), 1280, 720, mood=mood)
-            graded.save(target, quality=90)
-            final_paths.append(target)
+    # نرتب جميع المهام مع إعطاء الأولوية القصوى للغلاف والمشهد الافتتاحي عبر FLUX أولاً
+    tasks: List[Tuple[str, str, bool, Path]] = []
+    thumb_raw_path = out_dir / "_thumb_raw.jpg"
+    tasks.append(("thumb", thumbnail_prompt_16x9, False, thumb_raw_path))
+    for i, p in enumerate(long_prompts_16x9, 1):
+        tasks.append((f"long_{i:02d}", p, False, out_dir / f"long_s{i:02d}.jpg"))
+    for i, p in enumerate(short1_prompts_9x16, 1):
+        tasks.append((f"sh1_{i:02d}", p, True, out_dir / f"sh1_v{i:02d}.jpg"))
+    for i, p in enumerate(short2_prompts_9x16, 1):
+        tasks.append((f"sh2_{i:02d}", p, True, out_dir / f"sh2_v{i:02d}.jpg"))
+
+    rendered_raw: Dict[str, Image.Image] = {}
+
+    # المرحلة 1: استغلال حصص Hugging Face FLUX السريعة للغلاف والمشهد الأول من الفيلم والمشهد الأول من الشورت!
+    priority_keys = ["thumb", "long_01", "sh1_01"] if not hf_tok else [t[0] for t in tasks]
+    for key, prm, is_vert, _ in tasks:
+        if key not in priority_keys:
             continue
+        im = _try_hf_flux(prm, is_vertical=is_vert, hf_token=hf_tok)
+        if im is not None:
+            rendered_raw[key] = im
+            print(f"    ✨ [FLUX Studio] {key} ({'9:16' if is_vert else '16:9'}) ready!")
+        else:
+            break
 
-        q = (
-            search_queries_override[idx - 1]
-            if search_queries_override and idx - 1 < len(search_queries_override)
-            else _extract_search_keywords(prompt)
+    # المرحلة 2: تشغيل عنقود متوازٍ يجمع بين عامل Pollinations FLUX (كل 47 ثانية) + 5 عمال متوازيين على AI Horde!
+    remaining_q: "queue.Queue[Tuple[int, str, str, bool]]" = queue.Queue()
+    for idx, (key, prm, is_vert, _) in enumerate(tasks):
+        if key not in rendered_raw:
+            remaining_q.put((idx + 1, key, prm, is_vert))
+
+    lock = threading.Lock()
+
+    def _pollinations_worker() -> None:
+        last_call = 0.0
+        while not remaining_q.empty():
+            wait_needed = 46.5 - (time.time() - last_call)
+            if last_call > 0 and wait_needed > 0:
+                # إذا بقي أقل من 2 مهام فقط، نترك AI Horde ينهيها بدلاً من الانتظار الطويل
+                if remaining_q.qsize() <= 1:
+                    return
+                time.sleep(min(wait_needed, 46.5))
+            try:
+                seed_i, key, prm, is_vert = remaining_q.get_nowait()
+            except queue.Empty:
+                return
+            last_call = time.time()
+            im = _try_pollinations_flux_clean(prm, is_vertical=is_vert, seed=700 + seed_i * 41)
+            if im is not None:
+                with lock:
+                    rendered_raw[key] = im
+                print(f"    ✨ [FLUX Parallel] {key} ({'9:16' if is_vert else '16:9'}) ready!")
+                remaining_q.task_done()
+            else:
+                # إعادتها للعنقود ليتولاها AI Horde فوراً
+                im2 = _generate_via_aihorde_single(prm, is_vertical=is_vert)
+                if im2 is not None:
+                    with lock:
+                        rendered_raw[key] = im2
+                    print(f"    🎬 [Cinema Cluster] {key} ({'9:16' if is_vert else '16:9'}) ready!")
+                remaining_q.task_done()
+
+    def _horde_worker() -> None:
+        while True:
+            try:
+                seed_i, key, prm, is_vert = remaining_q.get_nowait()
+            except queue.Empty:
+                return
+            im = _generate_via_aihorde_single(prm, is_vertical=is_vert)
+            if im is None:
+                # محاولة أخيرة عبر Pollinations بعد هدوء الشبكة
+                im = _try_pollinations_flux_clean(prm, is_vertical=is_vert, seed=1900 + seed_i * 29)
+            if im is not None:
+                with lock:
+                    rendered_raw[key] = im
+                print(f"    🎬 [Cinema Cluster] {key} ({'9:16' if is_vert else '16:9'}) ready!")
+            remaining_q.task_done()
+
+    if not remaining_q.empty():
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+            futs = [pool.submit(_pollinations_worker)]
+            for _ in range(4):
+                futs.append(pool.submit(_horde_worker))
+            concurrent.futures.wait(futs)
+
+    # المرحلة 3: حفظ جميع المشاهد بالتدريج اللوني السينمائي الموحد والمقاسات الدقيقة (1280x720 للفيلم و720x1280 للشورتس)
+    long_paths: List[Path] = []
+    sh1_paths: List[Path] = []
+    sh2_paths: List[Path] = []
+
+    for key, prm, is_vert, target_path in tasks:
+        if key == "thumb":
+            continue
+        raw_im = rendered_raw.get(key)
+        if raw_im is None:
+            # محاولة طوارئ منفردة حتى لا تتكرر أي صورة أبداً
+            raw_im = _generate_via_aihorde_single(prm, is_vertical=is_vert, timeout_sec=90.0) or Image.new(
+                "RGB", (720, 1280) if is_vert else (1280, 720), (18, 24, 38)
+            )
+        w, h = (720, 1280) if is_vert else (1280, 720)
+        graded = apply_cinema_grade(raw_im, width=w, height=h, mood=mood, is_vertical=is_vert)
+        graded.save(target_path, quality=92)
+        if key.startswith("long_"):
+            long_paths.append(target_path)
+        elif key.startswith("sh1_"):
+            sh1_paths.append(target_path)
+        elif key.startswith("sh2_"):
+            sh2_paths.append(target_path)
+
+    # المرحلة 4: بناء غلاف اليوتيوب الاحترافي الجاذب للنقرات (1280x720 High-CTR Thumbnail)
+    thumb_base = rendered_raw.get("thumb") or (Image.open(long_paths[0]).convert("RGB") if long_paths else Image.new("RGB", (1280, 720), (16, 20, 32)))
+    thumb_final_path = out_dir / "youtube_thumbnail.jpg"
+    build_viral_youtube_thumbnail(
+        base_img=thumb_base,
+        hook_text=thumbnail_hook_text,
+        badge_text=thumbnail_badge_text,
+        is_arabic=is_arabic,
+        out_path=thumb_final_path,
+    )
+
+    return {
+        "thumbnail": thumb_final_path,
+        "long_scenes": long_paths,
+        "short_1_scenes": sh1_paths,
+        "short_2_scenes": sh2_paths,
+    }
+
+
+def _load_cairo_bold(size: int, weight: int = 900) -> ImageFont.FreeTypeFont:
+    font = ImageFont.truetype(str(CAIRO_FONT_PATH), size)
+    try:
+        axes = font.get_variation_axes()
+        vals = []
+        for ax in axes:
+            nm = ax.get("name", b"").decode("utf-8", errors="ignore").lower()
+            vals.append(weight if "weight" in nm else ax.get("default", 0))
+        if vals:
+            font.set_variation_by_axes(vals)
+    except Exception:
+        pass
+    return font
+
+
+def _wrap_hook_lines(text: str, max_words_per_line: int = 2) -> List[str]:
+    cleaned = "".join(ch for ch in text if ord(ch) < 0x1F000).strip()
+    words = [w for w in cleaned.split() if w]
+    if not words:
+        return ["سر الليلة!"]
+    if len(words) <= 2:
+        return [" ".join(words)]
+    if len(words) == 3:
+        return [" ".join(words[:2]), words[2]]
+    lines: List[str] = []
+    for i in range(0, len(words), max_words_per_line):
+        lines.append(" ".join(words[i : i + max_words_per_line]))
+    return lines[:3]
+
+
+def build_viral_youtube_thumbnail(
+    base_img: Image.Image,
+    hook_text: str,
+    badge_text: str,
+    is_arabic: bool,
+    out_path: Path,
+) -> Path:
+    """
+    يصمّم غلاف يوتيوب (1280x720) فائق الجاذبية بأسلوب كبار صناع المحتوى:
+    - تباين درامي حاد وإضاءة أطراف حمراء/ذهبية.
+    - تدرج مظلم عميق على الجانب المخصص للنص ليقرأه المشاهد في 0.2 ثانية من شاشة الموبايل.
+    - شارة حمراء عاجلة في الأعلى + نص ضخم ثلاثي الأبعاد باللونين الأبيض والذهبي المتوهج.
+    """
+    W, H = 1280, 720
+    img = base_img.convert("RGB")
+    src_w, src_h = img.size
+    target_r = W / float(H)
+    src_r = src_w / float(max(1, src_h))
+    if src_r > target_r:
+        nw = int(src_h * target_r)
+        left = (src_w - nw) // 2
+        img = img.crop((left, 0, left + nw, src_h))
+    else:
+        nh = int(src_w / target_r)
+        top = (src_h - nh) // 2
+        img = img.crop((0, top, src_w, top + nh))
+    img = img.resize((W, H), Image.Resampling.LANCZOS)
+
+    # تعزيز التباين والألوان والحدة ليبرز الغلاف بقوة وسط صفحة اليوتيوب الرئيسية
+    img = ImageEnhance.Contrast(img).enhance(1.26)
+    img = ImageEnhance.Color(img).enhance(1.22)
+    img = ImageEnhance.Sharpness(img).enhance(1.30)
+
+    # قياس الإضاءة لاختيار الجانب الأقل إضاءة تلقائياً للنص حتى لا يغطي وجه الشخصية أبداً
+    rgb_np = np.asarray(img, dtype=np.float32)
+    left_lum = float(rgb_np[int(H * 0.15) : int(H * 0.85), : W // 2, :].mean())
+    right_lum = float(rgb_np[int(H * 0.15) : int(H * 0.85), W // 2 :, :].mean())
+    text_on_right = right_lum < (left_lum * 0.92)
+
+    arr_ov = np.zeros((H, W, 4), dtype=np.uint8)
+    x_norm = np.linspace(0.0, 1.0, W)[None, :]
+    if text_on_right:
+        side_alpha = np.clip((x_norm - 0.40) / 0.60, 0.0, 1.0) ** 1.25 * 228.0
+    else:
+        side_alpha = np.clip((0.60 - x_norm) / 0.60, 0.0, 1.0) ** 1.25 * 228.0
+    arr_ov[:, :, 0] = 6
+    arr_ov[:, :, 1] = 8
+    arr_ov[:, :, 2] = 16
+    arr_ov[:, :, 3] = side_alpha.astype(np.uint8)
+    overlay = Image.fromarray(arr_ov, mode="RGBA")
+    canvas = Image.alpha_composite(img.convert("RGBA"), overlay)
+
+    draw = ImageDraw.Draw(canvas)
+    has_raqm = bool(features.check("raqm"))
+    text_kwargs = {"direction": "rtl", "language": "ar"} if (is_arabic and has_raqm) else {}
+
+    # إطار تحذيري سينمائي رفيع متوهج حول الغلاف
+    draw.rectangle([(6, 6), (W - 7, H - 7)], outline=(255, 196, 0, 185), width=4)
+
+    # 1) شارة علوية حمراء ملفتة (Top Pill Badge)
+    clean_badge = "".join(ch for ch in badge_text if ord(ch) < 0x1F000).strip()
+    if clean_badge:
+        f_badge = _load_cairo_bold(34, weight=850)
+        bb = draw.textbbox((0, 0), clean_badge, font=f_badge, **text_kwargs)
+        bw, bh = bb[2] - bb[0], bb[3] - bb[1]
+        bx1 = (W - 56 - (bw + 48)) if text_on_right else 56
+        by1 = 56
+        bx2, by2 = bx1 + bw + 48, by1 + bh + 28
+        draw.rounded_rectangle([(bx1, by1), (bx2, by2)], radius=14, fill=(210, 18, 36, 245), outline=(255, 220, 90, 230), width=3)
+        draw.text((bx1 + 24, by1 + 10 - bb[1]), clean_badge, font=f_badge, fill=(255, 255, 255, 255), **text_kwargs)
+
+    # 2) النص الرئيسي الضخم الجاذب للنقر (2-3 أسطر بخط Cairo ExtraBlack 950)
+    lines = _wrap_hook_lines(hook_text, max_words_per_line=2)
+    font_size = 104 if max(len(ln) for ln in lines) <= 12 else (88 if max(len(ln) for ln in lines) <= 16 else 74)
+    f_main = _load_cairo_bold(font_size, weight=950)
+
+    line_heights: List[Tuple[str, Tuple[int, int, int, int]]] = []
+    for ln in lines:
+        tb = draw.textbbox((0, 0), ln, font=f_main, stroke_width=10, **text_kwargs)
+        line_heights.append((ln, tb))
+
+    total_text_h = sum((tb[3] - tb[1]) for _, tb in line_heights) + max(0, len(lines) - 1) * 18
+    cur_y = max(175, (H - total_text_h) // 2 + 24)
+
+    palette = [
+        (255, 255, 255, 255),   # أبيض ناصع
+        (255, 214, 10, 255),    # ذهبي مشع عالي التباين
+        (255, 92, 92, 255),     # أحمر توتر متوهج للسطر الثالث إن وجد
+    ]
+
+    for idx, (ln, tb) in enumerate(line_heights):
+        lw = tb[2] - tb[0]
+        tx = (W - 58 - lw) if text_on_right else 58
+        ty = cur_y - tb[1]
+        color = palette[idx % len(palette)]
+        draw.text(
+            (tx + 7, ty + 9),
+            ln,
+            font=f_main,
+            fill=(0, 0, 0, 230),
+            stroke_width=12,
+            stroke_fill=(0, 0, 0, 230),
+            **text_kwargs,
         )
-        img = (
-            _try_cloudflare_flux(prompt)
-            or _try_hf_flux(prompt, hf_tok)
-            or _try_pollinations_flux_zerokey(prompt, idx)
-            or _try_meta_ai_scene(prompt)
-            or _try_pexels_photo(q, px_key)
-            or _try_wikimedia_photo(q, used_urls)
+        draw.text(
+            (tx, ty),
+            ln,
+            font=f_main,
+            fill=color,
+            stroke_width=9,
+            stroke_fill=(8, 10, 16, 255),
+            **text_kwargs,
         )
-        if img is None:
-            # خلفية سينمائية احتياطية مضمونة في حال انقطاع الإنترنت
-            img = Image.new("RGB", (1280, 720), (24, 32, 48)).filter(ImageFilter.GaussianBlur(2))
+        cur_y += (tb[3] - tb[1]) + 18
 
-        graded = apply_cinema_grade(img, 1280, 720, mood=mood)
-        graded.save(target, quality=90)
-        final_paths.append(target)
-
-    return final_paths
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    canvas.convert("RGB").save(out_path, quality=94)
+    return out_path
