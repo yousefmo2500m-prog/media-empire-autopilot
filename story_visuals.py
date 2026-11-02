@@ -90,9 +90,9 @@ def _fit_cover_exact(img: Image.Image, target_w: int, target_h: int, polish: boo
         g_mean = float(np.asarray(cropped.convert("L"), dtype=np.float32).mean())
         if g_mean < 42.0:
             cropped = ImageEnhance.Brightness(cropped).enhance(min(1.42, 48.0 / max(14.0, g_mean)))
-        cropped = ImageEnhance.Contrast(cropped).enhance(1.14)
-        cropped = ImageEnhance.Color(cropped).enhance(1.12)
-        cropped = ImageEnhance.Sharpness(cropped).enhance(1.28)
+        cropped = ImageEnhance.Contrast(cropped).enhance(1.06)
+        cropped = ImageEnhance.Color(cropped).enhance(1.02)
+        cropped = ImageEnhance.Sharpness(cropped).enhance(1.22)
     return cropped
 
 
@@ -269,7 +269,7 @@ NEGATIVE_MODEST_CINEMA = (
     "nudity, naked, nsfw, lingerie, underwear, bikini, swimsuit, cleavage, v-neck, low cut, deep neck, open shirt, open blazer, blouse, "
     "bare shoulders, bare chest, sleeveless, strap top, camisole, tank top, crop top, mini skirt, shorts, "
     "tight dress, seductive, glamour portrait, studio portrait, beauty portrait, fashion model, looking at camera, selfie, "
-    "hijab, headscarf, niqab, burqa, cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark"
+    "hijab, headscarf, niqab, burqa, sci-fi, futuristic, superhero, mask, neon, oversaturated, cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark"
 )
 
 
@@ -290,7 +290,7 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
                     "width": h_w,
                     "height": h_h,
                     "steps": 18,
-                    "cfg_scale": 7.4,
+                    "cfg_scale": 6.5,
                     "sampler_name": "k_euler_a",
                     "seed": str((seed + attempt * 71) % 9999999),
                 },
