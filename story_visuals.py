@@ -24,8 +24,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import requests
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
-ASSETS_DIR = Path(__file__).resolve().parent / "assets"
-FONT_AR = ASSETS_DIR / "Cairo-Variable.ttf"
+FONTS_DIR = Path(__file__).resolve().parent / "fonts"
+FONT_AR = FONTS_DIR / "Cairo-Variable.ttf"
 
 _CLIENT_LOCK = threading.Lock()
 _GRADIO_CLIENTS: Dict[str, Any] = {}
@@ -107,22 +107,35 @@ def _try_hf_router_flux(prompt: str, width: int, height: int, seed: int, hf_toke
     return None
 
 
-def _try_hf_zerogpu_flux(prompt: str, width: int, height: int, seed: int, hf_token: str, slot: int = 0) -> Optional[Image.Image]:
+def _try_hf_zerogpu_flux(
+    prompt: str,
+    width: int,
+    height: int,
+    seed: int,
+    hf_token: str,
+    slot: int = 0,
+    high_res_cover: bool = False,
+) -> Optional[Image.Image]:
     if not hf_token:
         return None
-    w_req = min(1280, max(576, (width // 32) * 32))
-    h_req = min(1280, max(576, (height // 32) * 32))
+    if high_res_cover:
+        w_req, h_req = 1280, 720
+    elif width >= height:
+        w_req, h_req = 1024, 576
+    else:
+        w_req, h_req = 576, 1024
 
-    # evalstate/flux1_schnell يستهلك 10 ثوانٍ فقط من رصيد ZeroGPU ويعطي ~150 صورة FLUX يومياً للمفتاح الواحد!
+    # evalstate/flux1_schnell يستهلك ~1.1 ثانية فقط من رصيد ZeroGPU (أكثر من 800 صورة FLUX يومياً للـ 3 مفاتيح!)
     spaces_order = [
         "evalstate/flux1_schnell",
         "black-forest-labs/FLUX.1-schnell",
         "multimodalart/FLUX.1-merged",
         "Tongyi-MAI/Z-Image-Turbo",
     ]
-    ordered = spaces_order[slot % len(spaces_order) :] + spaces_order[: slot % len(spaces_order)]
+    ordered = spaces_order[slot % 2 :] + spaces_order[: slot % 2]
 
     for sp in ordered:
+        img_p = None
         try:
             client = _get_gradio_client(sp, hf_token)
             if sp == "Tongyi-MAI/Z-Image-Turbo":
@@ -150,7 +163,7 @@ def _try_hf_zerogpu_flux(prompt: str, width: int, height: int, seed: int, hf_tok
                     width=w_req,
                     height=h_req,
                     guidance_scale=3.5,
-                    num_inference_steps=6,
+                    num_inference_steps=4,
                     api_name="/infer",
                 )
                 img_p = res[0] if isinstance(res, (list, tuple)) else res
@@ -171,7 +184,13 @@ def _try_hf_zerogpu_flux(prompt: str, width: int, height: int, seed: int, hf_tok
                     img_p = img_p.get("path")
 
             if img_p and Path(str(img_p)).exists():
-                im = Image.open(str(img_p)).convert("RGB")
+                p_obj = Path(str(img_p))
+                im = Image.open(p_obj).convert("RGB")
+                im.load()
+                try:
+                    p_obj.unlink(missing_ok=True)
+                except Exception:
+                    pass
                 if im.width >= 256:
                     return _fit_cover_exact(im, width, height)
         except Exception:
@@ -266,6 +285,7 @@ def generate_single_shot_image(
     height: int,
     seed: int,
     shot_idx: int = 0,
+    high_res_cover: bool = False,
 ) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     hf_tokens = _get_hf_tokens()
@@ -274,16 +294,21 @@ def generate_single_shot_image(
     # 1) Cloudflare Workers AI Free Tier FLUX (إن وجد)
     img = _try_cloudflare_flux(prompt, width, height, seed)
 
-    # 2) مفتاح Hugging Face المجاني: Router FLUX + ZeroGPU FLUX Spaces
+    # 2) مفاتيح Hugging Face المجانية الثلاثة: دوران متوازٍ عبر ZeroGPU FLUX.1 Spaces
     if img is None and hf_tokens:
-        tok = hf_tokens[shot_idx % len(hf_tokens)]
-        if shot_idx % 3 == 0:
-            img = _try_hf_router_flux(prompt, width, height, seed, tok)
-        if img is None:
-            img = _try_hf_zerogpu_flux(prompt, width, height, seed, tok, slot=shot_idx)
-        if img is None and len(hf_tokens) > 1:
-            tok2 = hf_tokens[(shot_idx + 1) % len(hf_tokens)]
-            img = _try_hf_zerogpu_flux(prompt, width, height, seed, tok2, slot=shot_idx + 1)
+        for t_off in range(len(hf_tokens)):
+            tok = hf_tokens[(shot_idx + t_off) % len(hf_tokens)]
+            img = _try_hf_zerogpu_flux(
+                prompt,
+                width,
+                height,
+                seed,
+                tok,
+                slot=shot_idx + t_off,
+                high_res_cover=high_res_cover,
+            )
+            if img is not None:
+                break
 
     # 3) احتياطي فوتوغرافي للطوارئ القصوى فقط
     if img is None:
@@ -346,7 +371,7 @@ def build_viral_youtube_thumbnail(
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     raw_bg = out_path.parent / "_thumb_raw_flux.jpg"
-    generate_single_shot_image(prompt, raw_bg, 1280, 720, seed=seed, shot_idx=0)
+    generate_single_shot_image(prompt, raw_bg, 1280, 720, seed=seed, shot_idx=0, high_res_cover=True)
 
     base = Image.open(str(raw_bg)).convert("RGB")
     raw_bg.unlink(missing_ok=True)
@@ -357,29 +382,30 @@ def build_viral_youtube_thumbnail(
     base = ImageEnhance.Sharpness(base).enhance(1.32)
     canvas = base.convert("RGBA")
 
-    # 1) تدرج سينمائي داكن انسيابي على الثلث الأيسر والأسفل فقط (يترك وجه البطل وتفصيلة اللغز واضحين تماماً على اليمين!)
-    grad = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-    gdraw = ImageDraw.Draw(grad)
-    for x in range(740):
-        t = 1.0 - (x / 740.0)
-        alpha = int(238 * (t ** 1.35))
-        gdraw.line([(x, 0), (x, 720)], fill=(6, 9, 18, alpha))
-    for y in range(520, 720):
-        alpha = int(165 * ((y - 520) / 200.0))
-        gdraw.line([(0, y), (1280, y)], fill=(5, 7, 14, alpha))
-    # إضاءة حافة حمراء خفيفة أعلى اليمين لرفع الإحساس بالخطر
+    # 1) تدرج سينمائي داكن انسيابي بدون أي حواف حادة (يترك وجه البطل وتفصيلة اللغز واضحين تماماً على اليمين!)
+    grad_x = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+    gx_draw = ImageDraw.Draw(grad_x)
+    for x in range(720):
+        t = 1.0 - (x / 720.0)
+        alpha = int(235 * (t ** 1.45))
+        gx_draw.line([(x, 0), (x, 720)], fill=(5, 8, 16, alpha))
+
+    grad_y = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
+    gy_draw = ImageDraw.Draw(grad_y)
+    for y in range(540, 720):
+        alpha = int(175 * (((y - 540) / 180.0) ** 1.3))
+        gy_draw.line([(0, y), (1280, y)], fill=(5, 7, 14, alpha))
+
+    # إضاءة حافة حمراء خفيفة أعلى اليمين لرفع الإحساس بالخطر والتوتر السينمائي
     glow_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
     gl_draw = ImageDraw.Draw(glow_layer)
-    gl_draw.ellipse((960, -120, 1420, 320), fill=(225, 25, 45, 72))
-    # دائرة تركيز حمراء مضيئة (Mystery Clue Focus Ring) تلفت العين فوراً لتفصيلة المشهد
-    ring_cx, ring_cy, ring_r = 1065, 225, 76
-    gl_draw.ellipse((ring_cx - ring_r - 8, ring_cy - ring_r - 8, ring_cx + ring_r + 8, ring_cy + ring_r + 8), outline=(255, 30, 50, 150), width=10)
-    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=14))
+    gl_draw.ellipse((980, -130, 1430, 290), fill=(225, 22, 42, 68))
+    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=18))
 
-    canvas = Image.alpha_composite(canvas, grad)
+    canvas = Image.alpha_composite(canvas, grad_x)
+    canvas = Image.alpha_composite(canvas, grad_y)
     canvas = Image.alpha_composite(canvas, glow_layer)
     draw = ImageDraw.Draw(canvas)
-    draw.ellipse((ring_cx - ring_r, ring_cy - ring_r, ring_cx + ring_r, ring_cy + ring_r), outline=(255, 42, 56, 245), width=6)
 
     is_ar = language == "ar"
     dir_kw: Dict[str, Any] = {"direction": "rtl", "language": "ar"} if is_ar else {}

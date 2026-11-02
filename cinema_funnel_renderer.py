@@ -17,7 +17,7 @@ import imageio_ffmpeg
 from sound_studio import get_audio_duration
 
 FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
-ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+ASSETS_DIR = Path(__file__).resolve().parent / "fonts"
 
 
 def _strip_emojis(txt: str) -> str:

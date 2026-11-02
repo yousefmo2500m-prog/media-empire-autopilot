@@ -71,7 +71,13 @@ def _norm_token(word: str) -> str:
 
 def _get_gemini_keys() -> List[str]:
     keys: List[str] = []
-    for env_name in ("GEMINI_API_KEY_2", "GEMINI_API_KEY", "GEMINI_API_KEY_3"):
+    for env_name in (
+        "GEMINI_API_KEY_2",
+        "GEMINI_API_KEY_3",
+        "GEMINI_API_KEY_4",
+        "GEMINI_API_KEY_5",
+        "GEMINI_API_KEY",
+    ):
         val = os.environ.get(env_name, "").strip()
         if val and val not in keys:
             keys.append(val)
