@@ -395,7 +395,11 @@ Return valid JSON only:
     yt_title = str(plan.get("youtube_title") or channel_cfg["brand_name"]).strip()
     sh1_title = str(plan.get("short_1_title") or f"{yt_title[:60]} #shorts").strip()
     sh2_title = str(plan.get("short_2_title") or f"{yt_title[:55]} - الذروة #shorts").strip()
-    thumb_hook = re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("thumbnail_hook_text") or yt_title[:22])).strip()
+    thumb_hook = re.sub(
+        r"[\u064B-\u065F\u0670]",
+        "",
+        str(plan.get("thumbnail_hook_text") or " ".join(yt_title.split()[:4])),
+    ).strip()
 
     return {
         "channel_id": cid,

@@ -102,6 +102,22 @@ def _try_gemini_tts(
                 },
                 timeout=165,
             )
+            if r.status_code == 429 and ("PerMinute" in r.text or "per_minute" in r.text.lower()):
+                time.sleep(22.0)
+                r = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={gkey}",
+                    json={
+                        "contents": [{"parts": [{"text": text}]}],
+                        "generationConfig": {
+                            "responseModalities": ["AUDIO"],
+                            "speechConfig": {
+                                "languageCode": lang_code,
+                                "voiceConfig": {"prebuiltVoiceConfig": {"voiceName": vname}},
+                            },
+                        },
+                    },
+                    timeout=165,
+                )
             if r.status_code == 200 and "inlineData" in r.text:
                 part = r.json()["candidates"][0]["content"]["parts"][0]["inlineData"]
                 audio_bytes = base64.b64decode(part["data"])
