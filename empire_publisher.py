@@ -1,214 +1,226 @@
 # -*- coding: utf-8 -*-
 """
-الناشر الخوارزمي الذكي V10.0 (2026 YouTube / Facebook / TikTok Algorithm & SEO Growth Engine):
-1) هندسة وصف يوتيوب وفيسبوك بأقوى حيل الخوارزميات لعام 2026:
-   - أول سطرين قبل زر «عرض المزيد» (Above-the-Fold SEO + Curiosity Hook) لرفع معدل البقاء والبحث.
-   - فقرة سيو دلالية غنية بأعلى الكلمات البحثية طلباً لتوجيه خوارزمية الاقتراحات (Suggested Videos) للجمهور المستهدف بدقة.
-   - فصول يوتيوب تفاعلية رسمية (`00:00`) + صيغة «من الدقيقة كذا لكذا» لتفعيل Key Moments في جوجل وزيادة إعادة المشاهدة.
-   - سؤال تحدي ذكاء مرتبط بالحلقة (في الوصف وفي أول تعليق مثبت!) لتفجير التعليقات وإعادة تشغيل اللقطات (Rewinds).
-   - تمرير مصفوفة التاجات البحثية الأصلية (`tags` <= 480 حرفاً) مباشرة لحقل تاجات يوتيوب.
-2) غلاف مصغّر مخصص عالي النقر (`1280x720`) + قمع شورتين يومياً مع رابط الحلقة الكاملة في أول تعليق.
+ناشر الإمبراطورية V11.0 — أقصى توافق مع خوارزميات 2026 للانتشار العضوي السريع (YouTube + Facebook + TikTok)
+- يفعّل شريط الفصول التفاعلي رسمياً على يوتيوب بدءاً من `00:00 المقدمة التشويقية` ثم الـ 12 مشهداً بلا حرق!
+- يطابق أول سطرين في الوصف (`seo_hook_2lines`) مع العنوان والصورة المصغرة والمقدمة التشويقية لرفع تقييم الفهم الدلالي (Multimodal SEO)!
+- يرفع الصورة المصغرة السينمائية (1280x720) ويمرر مصفوفة الكلمات المفتاحية الأصلية (`tags`) + سؤال التفاعل (`engagement_question`) في أول تعليق!
+- ينشر مقطعي الشورتس على يوتيوب شورتس + فيسبوك ريلز + تيك توك مع رابط الحلقة الكاملة في أول تعليق!
 """
 
 import os
 import time
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
 
-from sound_studio import format_mmss
-
 ZERNIO_BASE = "https://zernio.com/api/v1"
 
 
+def _fmt_yt_timestamp(sec: float) -> str:
+    sec = max(0, int(round(sec)))
+    h = sec // 3600
+    m = (sec % 3600) // 60
+    s = sec % 60
+    if h > 0:
+        return f"{h}:{m:02d}:{s:02d}"
+    return f"{m:02d}:{s:02d}"
+
+
+def build_chapters_block(scene_timings: List[Dict[str, Any]], lang: str) -> str:
+    if not scene_timings:
+        return ""
+    lines = []
+    header = "فصول الحلقة الزمنية (بدون حرق):" if lang == "ar" else "EPISODE CHAPTERS (NO SPOILERS):"
+    lines.append(header)
+    last_sec = -15.0
+    for idx, st in enumerate(scene_timings):
+        start_s = 0.0 if idx == 0 else float(st.get("start", 0.0))
+        if idx > 0 and (start_s - last_sec) < 10.0:
+            continue
+        last_sec = start_s
+        ts = _fmt_yt_timestamp(start_s)
+        title = str(st.get("scene_title", f"Scene {idx}")).strip()
+        lines.append(f"{ts} {title}")
+    return "\n".join(lines)
+
+
+def sanitize_tags_list(raw_tags: Any, fallback_tags: List[str]) -> List[str]:
+    merged: List[str] = []
+    if isinstance(raw_tags, list):
+        for t in raw_tags:
+            s = str(t).strip().lstrip("#").replace(",", " ")
+            if s and s.lower() not in [x.lower() for x in merged]:
+                merged.append(s)
+    for t in fallback_tags:
+        s = str(t).strip().lstrip("#")
+        if s and s.lower() not in [x.lower() for x in merged]:
+            merged.append(s)
+
+    final_tags: List[str] = []
+    total_chars = 0
+    for t in merged:
+        add_len = len(t) + (1 if final_tags else 0)
+        if total_chars + add_len > 460 or len(final_tags) >= 24:
+            break
+        final_tags.append(t)
+        total_chars += add_len
+    return final_tags
+
+
 def _headers(api_key: str) -> Dict[str, str]:
-    return {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    return {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
 
 
 def upload_media_to_zernio(api_key: str, file_path: Path, mime_type: str = "video/mp4") -> str:
-    last_err = None
     for attempt in range(4):
         try:
-            presign = requests.post(
+            r = requests.post(
                 f"{ZERNIO_BASE}/media/presign",
                 headers=_headers(api_key),
                 json={"filename": file_path.name, "contentType": mime_type},
                 timeout=45,
             )
-            presign.raise_for_status()
-            pdata = presign.json()
+            r.raise_for_status()
+            pdata = r.json()
             upload_url = pdata["uploadUrl"]
             public_url = pdata["publicUrl"]
 
-            with open(file_path, "rb") as fh:
-                put_resp = requests.put(
+            with file_path.open("rb") as fh:
+                put_r = requests.put(
                     upload_url,
                     data=fh,
                     headers={"Content-Type": mime_type},
                     timeout=600,
                 )
-            put_resp.raise_for_status()
+                put_r.raise_for_status()
             return public_url
         except Exception as exc:
-            last_err = exc
+            if attempt == 3:
+                raise RuntimeError(f"فشل رفع الملف {file_path.name}: {exc}") from exc
             time.sleep(4 * (attempt + 1))
-    raise RuntimeError(f"فشل رفع الملف {file_path.name} إلى Zernio: {last_err}")
+    raise RuntimeError("Unreachable")
 
 
-def _poll_youtube_url(api_key: str, post_id: str, wait_seconds: int = 90) -> Optional[str]:
-    deadline = time.time() + wait_seconds
-    while time.time() < deadline:
-        try:
-            r = requests.get(f"{ZERNIO_BASE}/posts/{post_id}", headers=_headers(api_key), timeout=25)
-            if r.status_code == 200:
-                post_obj = r.json().get("post", r.json())
-                for p in post_obj.get("platforms", []):
-                    if p.get("platform") == "youtube" and p.get("platformPostUrl"):
-                        return str(p["platformPostUrl"])
-        except Exception:
-            pass
-        time.sleep(6)
+def _extract_youtube_url(post_resp: Dict[str, Any]) -> Optional[str]:
+    post_obj = post_resp.get("post", post_resp)
+    for p in post_obj.get("platforms", []):
+        if p.get("platform") == "youtube" and p.get("platformPostUrl"):
+            return p["platformPostUrl"]
     return None
 
 
-def _trim_youtube_tags(raw_tags: List[str], max_total_chars: int = 460) -> List[str]:
-    clean_tags: List[str] = []
-    used_chars = 0
-    for t in raw_tags:
-        s = str(t).strip().lstrip("#")
-        if not s or len(s) > 45 or s in clean_tags:
-            continue
-        add_len = len(s) + (2 if clean_tags else 0)
-        if used_chars + add_len > max_total_chars:
-            break
-        clean_tags.append(s)
-        used_chars += add_len
-    return clean_tags
-
-
-def _build_algorithm_master_description(
-    episode: Dict[str, Any],
-    scene_timings: List[Dict[str, Any]],
-    channel_cfg: Dict[str, Any],
-) -> str:
-    is_ar = channel_cfg["language"] == "ar"
-    brand = channel_cfg["brand_name"]
-    ch_url = channel_cfg["channel_url"]
-
-    hook_2lines = episode.get("seo_hook_2lines") or episode["youtube_title"]
-    synopsis = episode.get("seo_synopsis") or ""
-    question = episode.get("engagement_question") or (
-        "تفتكر إيه التفصيلة اللي كشفت الحقيقة قبل النهاية؟ اكتب توقعك في التعليقات قبل ما تشوف آخر مشهد!"
-        if is_ar
-        else "Which tiny clue gave away the truth before the ending? Drop your theory in the comments!"
-    )
-    hashtags = episode.get("hashtags") or ""
-
-    yt_chapters: List[str] = []
-    human_ranges: List[str] = []
-    for idx, st in enumerate(scene_timings):
-        t0 = "00:00" if idx == 0 else format_mmss(st["start"])
-        t1 = format_mmss(st["end"])
-        title = st["scene_title"]
-        yt_chapters.append(f"{t0} {title}")
-        if is_ar:
-            human_ranges.append(f"• من الدقيقة {t0} إلى {t1} — {title}")
-        else:
-            human_ranges.append(f"• From {t0} to {t1} — {title}")
-
-    if is_ar:
-        body = (
-            f"{hook_2lines}\n\n"
-            f"{synopsis}\n\n"
-            f"💬 تحدي الحلقة للأذكياء (اكتب رأيك في التعليقات 👇):\n"
-            f"{question}\n\n"
-            f"⏱️ تقسيم مشاهد وفصول الحلقة الكاملة:\n"
-            + "\n".join(yt_chapters)
-            + "\n\n📌 تفاصيل توقيت كل مشهد:\n"
-            + "\n".join(human_ranges)
-            + f"\n\n🔔 اشترك في قناة «{brand}» وفعل الجرس عشان توصلك أقوى القصص والتحقيقات يومياً:\n{ch_url}\n\n"
-            f"{hashtags}"
-        )
-    else:
-        body = (
-            f"{hook_2lines}\n\n"
-            f"{synopsis}\n\n"
-            f"💬 EPISODE CHALLENGE (Comment your theory below 👇):\n"
-            f"{question}\n\n"
-            f"⏱️ EPISODE CHAPTERS:\n"
-            + "\n".join(yt_chapters)
-            + "\n\n📌 DETAILED SCENE TIMELINE:\n"
-            + "\n".join(human_ranges)
-            + f"\n\n🔔 Subscribe to {brand} & turn on notifications for daily realistic thrillers & mysteries:\n{ch_url}\n\n"
-            f"{hashtags}"
-        )
-    return body[:4850]
+def wait_for_youtube_url(api_key: str, post_id: str, max_wait_sec: int = 150) -> Optional[str]:
+    deadline = time.time() + max_wait_sec
+    while time.time() < deadline:
+        try:
+            r = requests.get(f"{ZERNIO_BASE}/posts/{post_id}", headers=_headers(api_key), timeout=30)
+            if r.status_code == 200:
+                url = _extract_youtube_url(r.json())
+                if url:
+                    return url
+        except Exception:
+            pass
+        time.sleep(8)
+    return None
 
 
 def publish_channel_funnel(
-    channel_cfg: Dict[str, Any],
-    episode: Dict[str, Any],
+    ch: Dict[str, Any],
+    episode_meta: Dict[str, Any],
     scene_timings: List[Dict[str, Any]],
     long_mp4: Path,
     thumbnail_jpg: Path,
-    short_1_mp4: Path,
-    short_2_mp4: Path,
+    short1_mp4: Path,
+    short2_mp4: Path,
 ) -> Dict[str, Any]:
-    prefix = channel_cfg["env_prefix"]
-    main_key = (
-        os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
-        or os.environ.get(f"ZERNIO_KEY_{prefix}", "").strip()
-    )
-    tt_key = (
-        os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip()
-        or os.environ.get(f"ZERNIO_KEY_{prefix}_TIKTOK", "").strip()
-        or main_key
-    )
+    prefix = ch["env_prefix"]  # CH1 / CH2 / CH3 / CH4
+    main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
+    if not main_key:
+        raise RuntimeError(f"مفتاح {prefix}_ZERNIO_KEY غير موجود في Secrets")
 
-    accounts = channel_cfg.get("accounts") or {}
-    yt_acc = accounts.get("youtube") or os.environ.get(f"{prefix}_YT_ACC", "").strip()
-    fb_acc = accounts.get("facebook") or os.environ.get(f"{prefix}_FB_ACC", "").strip()
-    tt_acc = (
-        accounts.get("tiktok")
-        or os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip()
-        or os.environ.get(f"{prefix}_TT_ACC", "").strip()
-    )
+    accounts = ch.get("accounts", {})
+    yt_acc = accounts.get("youtube") or os.environ.get(f"{prefix}_YOUTUBE_ID", "").strip()
+    fb_acc = accounts.get("facebook") or os.environ.get(f"{prefix}_FACEBOOK_ID", "").strip()
 
-    is_ar = channel_cfg["language"] == "ar"
-    results: Dict[str, Any] = {"channel": channel_cfg["brand_name"], "long_post": None, "short_posts": []}
+    tt_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or main_key
+    tt_acc = os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip() or accounts.get("tiktok", "")
 
-    if not main_key or not (yt_acc or fb_acc):
-        results["status"] = "skipped_missing_credentials"
-        return results
+    lang = ch["language"]
+    yt_handle = ch["handle"]
 
-    # 1) رفع الحلقة الكاملة + الغلاف المخصص عالي النقر (1280x720) ونشرهما بالوصف الخوارزمي الكامل والتاجات وأول تعليق تفاعلي
-    long_video_url = upload_media_to_zernio(main_key, long_mp4, mime_type="video/mp4")
-    thumb_public_url = upload_media_to_zernio(main_key, thumbnail_jpg, mime_type="image/jpeg")
-
-    long_platforms: List[Dict[str, Any]] = []
-    full_desc = _build_algorithm_master_description(episode, scene_timings, channel_cfg)
-    yt_tags = _trim_youtube_tags(episode.get("seo_tags") or channel_cfg.get("base_tags") or [])
-
-    debate_comment = (
-        f"🔥 سؤال الحلقة للأذكياء: {episode.get('engagement_question', '')}\nاكتب توقعك في رد هنا قبل ما تشوف المشهد الأخير 👇"
-        if is_ar
-        else f"🔥 Episode Challenge: {episode.get('engagement_question', '')}\nDrop your guess below before watching the final scene 👇"
+    tags_list = sanitize_tags_list(
+        episode_meta.get("seo_tags", []),
+        ch.get("base_tags", []),
     )
 
+    print(f"[{ch['id']}] رفع الصورة المصغرة والحلقة الكاملة والمقطعين التشويقيين إلى سحابة النشر...")
+    thumb_url = upload_media_to_zernio(main_key, thumbnail_jpg, mime_type="image/jpeg")
+    long_url = upload_media_to_zernio(main_key, long_mp4, mime_type="video/mp4")
+    s1_url = upload_media_to_zernio(main_key, short1_mp4, mime_type="video/mp4")
+    s2_url = upload_media_to_zernio(main_key, short2_mp4, mime_type="video/mp4")
+
+    s1_tt_url = upload_media_to_zernio(tt_key, short1_mp4, mime_type="video/mp4") if (tt_acc and tt_key != main_key) else s1_url
+    s2_tt_url = upload_media_to_zernio(tt_key, short2_mp4, mime_type="video/mp4") if (tt_acc and tt_key != main_key) else s2_url
+
+    ep_title = str(episode_meta.get("youtube_title") or episode_meta.get("episode_title") or ch["brand_name"])[:95]
+    seo_hook_2lines = str(episode_meta.get("seo_hook_2lines", "")).strip()
+    seo_synopsis = str(episode_meta.get("seo_synopsis", "")).strip()
+    chapters_txt = build_chapters_block(scene_timings, lang)
+    comment_question = str(episode_meta.get("engagement_question", "")).strip()
+    raw_hashtags = str(episode_meta.get("hashtags", "")).strip()
+
+    if lang == "ar":
+        subscribe_block = (
+            f"اشترك في قناة «{ch['brand_name']}» ({yt_handle}) وفعل الجرس لتصلك أقوى الحلقات الدرامية والقصص الغامضة يومياً!\n"
+            f"{comment_question if comment_question else 'اكتب توقعك في التعليقات قبل أن تصل للمشهد الأخير.. هل كشفت الخيط المخفي من البداية؟'}"
+        )
+        first_comment_long = (
+            comment_question
+            if comment_question
+            else "في أي دقيقة من الحلقة اكتشفت الحقيقة؟ شاركنا تحليلك في الردود!"
+        )
+        hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '_')}" for t in tags_list[:8])
+    else:
+        subscribe_block = (
+            f"Subscribe to {ch['brand_name']} ({yt_handle}) and turn on notifications for daily full-length thrillers & mysteries!\n"
+            f"{comment_question if comment_question else 'Drop your theory in the comments before the final twist — did you catch the hidden clue early?'}"
+        )
+        first_comment_long = (
+            comment_question
+            if comment_question
+            else "At what exact timestamp did you figure out the truth? Tell us your theory below!"
+        )
+        hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '')}" for t in tags_list[:8])
+
+    full_yt_description = "\n\n".join(
+        part for part in [seo_hook_2lines, seo_synopsis, chapters_txt, subscribe_block, hashtags_line] if part
+    )
+
+    results: Dict[str, Any] = {
+        "long_video": None,
+        "short_1": None,
+        "short_2": None,
+        "youtube_watch_url": None,
+        "cdn_urls": {"thumb": thumb_url, "long": long_url, "short_1": s1_url, "short_2": s2_url},
+    }
+
+    # 1) نشر الحلقة الكاملة على يوتيوب + فيسبوك مع الصورة المصغرة والفصول والكلمات المفتاحية وسؤال التفاعل
+    long_platforms = []
     if yt_acc:
         long_platforms.append({
             "platform": "youtube",
             "accountId": yt_acc,
             "platformSpecificData": {
-                "title": episode["youtube_title"][:98],
+                "title": ep_title,
                 "visibility": "public",
                 "madeForKids": False,
-                "categoryId": "24",
                 "containsSyntheticMedia": True,
-                "notifySubscribers": True,
-                "firstComment": debate_comment[:480],
+                "categoryId": "24",
+                "firstComment": first_comment_long,
             },
         })
     if fb_acc:
@@ -216,141 +228,126 @@ def publish_channel_funnel(
             "platform": "facebook",
             "accountId": fb_acc,
             "platformSpecificData": {
-                "title": episode["youtube_title"][:98],
-                "firstComment": debate_comment[:480],
+                "title": ep_title,
+                "firstComment": first_comment_long,
             },
         })
 
-    long_payload: Dict[str, Any] = {
-        "content": full_desc,
-        "mediaItems": [{"type": "video", "url": long_video_url, "thumbnail": thumb_public_url}],
-        "platforms": long_platforms,
-        "publishNow": True,
-    }
-    if yt_tags:
-        long_payload["tags"] = yt_tags
+    if long_platforms:
+        payload_long = {
+            "title": ep_title,
+            "content": full_yt_description,
+            "tags": tags_list,
+            "publishNow": True,
+            "mediaItems": [{
+                "type": "video",
+                "url": long_url,
+                "thumbnailUrl": thumb_url,
+            }],
+            "platforms": long_platforms,
+        }
+        r_long = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(main_key), json=payload_long, timeout=180)
+        r_long.raise_for_status()
+        long_data = r_long.json()
+        results["long_video"] = long_data
+        post_id = long_data.get("post", long_data).get("_id") or long_data.get("post", long_data).get("id")
+        yt_watch = _extract_youtube_url(long_data)
+        if not yt_watch and post_id and yt_acc:
+            yt_watch = wait_for_youtube_url(main_key, post_id, max_wait_sec=140)
+        results["youtube_watch_url"] = yt_watch
 
-    long_resp = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(main_key), json=long_payload, timeout=90)
-    long_resp.raise_for_status()
-    long_data = long_resp.json()
-    long_post_id = long_data.get("post", long_data).get("_id") or long_data.get("id")
-    results["long_post"] = {"post_id": long_post_id, "thumbnail_url": thumb_public_url, "tags_count": len(yt_tags)}
+    yt_link_text = results["youtube_watch_url"] or ch.get("channel_url") or f"https://www.youtube.com/{yt_handle}"
+    if lang == "ar":
+        first_comment_cta = f"شاهد الحلقة الكاملة بكل تفاصيلها ونهايتها الصادمة الآن على قناتنا ({yt_handle}):\n{yt_link_text}"
+        short_desc_suffix = f"\n\nالحلقة الكاملة متاحة الآن على قناتنا {yt_handle} — الرابط المباشر في أول تعليق!\n#شورتس #قصص_واقعية #تشويق #غموض #{ch['brand_name'].replace(' ', '_')}"
+    else:
+        first_comment_cta = f"Watch the full episode & shocking ending right now on our YouTube channel ({yt_handle}):\n{yt_link_text}"
+        short_desc_suffix = f"\n\nFull episode streaming now on {yt_handle} — direct link in the first comment!\n#shorts #thriller #mystery #plotwist #{ch['brand_name'].replace(' ', '')}"
 
-    # 2) استخراج الرابط المباشر للحلقة الكاملة لوضعه في أول تعليق على الشورتين
-    yt_watch_url = _poll_youtube_url(main_key, str(long_post_id), wait_seconds=90) if long_post_id else None
-    funnel_url = yt_watch_url or channel_cfg["channel_url"]
-    results["youtube_full_url"] = funnel_url
+    # 2) نشر مقطعي الشورتس (Short 1 + Short 2) مع تحويل مباشر للحلقة الكاملة
+    for idx_s, (s_title_key, m_url, tt_m_url) in enumerate(
+        [
+            ("short_1_title", s1_url, s1_tt_url),
+            ("short_2_title", s2_url, s2_tt_url),
+        ],
+        start=1,
+    ):
+        raw_st = str(episode_meta.get(s_title_key) or ep_title).strip()
+        s_title = raw_st[:92]
+        yt_s_title = s_title if "#shorts" in s_title.lower() else f"{s_title[:84]} #shorts"
+        s_caption = f"{s_title}{short_desc_suffix}"
 
-    first_comment_cta = (
-        f"🔥 اسمع القصة الكاملة (+16 دقيقة) وكشف السر للنهاية من هنا 👈 {funnel_url}"
-        if is_ar
-        else f"🔥 Watch the FULL 16-minute story & final reveal right here 👉 {funnel_url}"
-    )
-
-    shorts_plan = [
-        {"mp4": short_1_mp4, "title": episode.get("short_1_title") or episode["short_title"], "delay_hours": 0},
-        {"mp4": short_2_mp4, "title": episode.get("short_2_title") or episode["short_title"], "delay_hours": 6},
-    ]
-
-    for idx, sh in enumerate(shorts_plan, start=1):
-        mp4_path = sh["mp4"]
-        sh_title = sh["title"]
-        delay_h = sh["delay_hours"]
-
-        short_caption = (
-            f"{sh_title}\n"
-            f"{'👇 رابط الحلقة الكاملة (+16 دقيقة) مثبت في أول تعليق!' if is_ar else '👇 Full 16-minute episode link pinned in the first comment!'}\n"
-            f"{episode.get('hashtags', '')}"
-        ).strip()
-
-        sched_iso: Optional[str] = None
-        if delay_h > 0:
-            sched_dt = datetime.now(timezone.utc) + timedelta(hours=delay_h)
-            sched_iso = sched_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-        short_main_url = upload_media_to_zernio(main_key, mp4_path, mime_type="video/mp4")
-        short_main_platforms: List[Dict[str, Any]] = []
+        s_platforms = []
         if yt_acc:
-            short_main_platforms.append({
+            s_platforms.append({
                 "platform": "youtube",
                 "accountId": yt_acc,
                 "platformSpecificData": {
-                    "title": sh_title[:98],
+                    "title": yt_s_title[:98],
                     "visibility": "public",
                     "madeForKids": False,
-                    "categoryId": "24",
                     "containsSyntheticMedia": True,
+                    "categoryId": "24",
                     "firstComment": first_comment_cta,
                 },
             })
         if fb_acc:
-            short_main_platforms.append({
+            s_platforms.append({
                 "platform": "facebook",
                 "accountId": fb_acc,
                 "platformSpecificData": {
+                    "contentType": "reel",
                     "firstComment": first_comment_cta,
                 },
             })
 
-        if short_main_platforms:
-            sp_body: Dict[str, Any] = {
-                "content": short_caption[:2000],
-                "mediaItems": [{"type": "video", "url": short_main_url}],
-                "platforms": short_main_platforms,
+        short_res: Dict[str, Any] = {}
+        if s_platforms:
+            payload_s = {
+                "title": s_title,
+                "content": s_caption,
+                "tags": tags_list[:16],
+                "publishNow": True,
+                "mediaItems": [{"type": "video", "url": m_url}],
+                "platforms": s_platforms,
             }
-            if yt_tags:
-                sp_body["tags"] = yt_tags[:12]
-            if sched_iso:
-                sp_body["scheduledFor"] = sched_iso
-                sp_body["timezone"] = "UTC"
-            else:
-                sp_body["publishNow"] = True
-
-            r_sm = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(main_key), json=sp_body, timeout=90)
-            if r_sm.status_code < 300:
-                d_sm = r_sm.json()
-                results["short_posts"].append({
-                    "short_num": idx,
-                    "group": "yt_fb",
-                    "scheduled": sched_iso or "immediate",
-                    "post_id": d_sm.get("post", d_sm).get("_id"),
-                })
+            if idx_s == 2:
+                time.sleep(6)
+            rs = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(main_key), json=payload_s, timeout=180)
+            rs.raise_for_status()
+            short_res["yt_fb"] = rs.json()
 
         if tt_acc and tt_key:
-            short_tt_url = short_main_url if tt_key == main_key else upload_media_to_zernio(tt_key, mp4_path, mime_type="video/mp4")
-            tt_caption = f"{short_caption}\n🔗 {funnel_url}"[:2100]
-            tt_body: Dict[str, Any] = {
-                "content": tt_caption,
-                "mediaItems": [{"type": "video", "url": short_tt_url}],
-                "platforms": [{"platform": "tiktok", "accountId": tt_acc}],
-                "tiktokSettings": {
-                    "privacy_level": "PUBLIC_TO_EVERYONE",
-                    "allow_comment": True,
-                    "allow_duet": True,
-                    "allow_stitch": True,
-                    "commercial_content_type": "none",
-                    "content_preview_confirmed": True,
-                    "express_consent_given": True,
-                    "media_type": "video",
-                    "auto_add_music": False,
-                    "video_made_with_ai": True,
-                },
+            tt_caption = f"{s_title}\n{'شاهد القصة الكاملة على يوتيوب ' + yt_handle if lang == 'ar' else 'Watch the full episode on YouTube ' + yt_handle} ({yt_link_text})"
+            tt_payload: Dict[str, Any] = {
+                "content": tt_caption[:2000],
+                "mediaItems": [{"type": "video", "url": tt_m_url}],
+                "platforms": [{
+                    "platform": "tiktok",
+                    "accountId": tt_acc,
+                    "platformSpecificData": {
+                        "privacyLevel": "PUBLIC_TO_EVERYONE",
+                        "allowComment": True,
+                        "allowDuet": True,
+                        "allowStitch": True,
+                        "contentPreviewConfirmed": True,
+                        "expressConsentGiven": True,
+                        "videoMadeWithAi": True,
+                    },
+                }],
             }
-            if sched_iso:
-                tt_body["scheduledFor"] = sched_iso
-                tt_body["timezone"] = "UTC"
+            if idx_s == 1:
+                tt_payload["publishNow"] = True
             else:
-                tt_body["publishNow"] = True
+                sched_epoch = time.time() + 4 * 3600
+                tt_payload["scheduledFor"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(sched_epoch))
 
-            r_tt = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(tt_key), json=tt_body, timeout=90)
-            if r_tt.status_code < 300:
-                d_tt = r_tt.json()
-                results["short_posts"].append({
-                    "short_num": idx,
-                    "group": "tiktok",
-                    "scheduled": sched_iso or "immediate",
-                    "post_id": d_tt.get("post", d_tt).get("_id"),
-                })
+            rtt = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(tt_key), json=tt_payload, timeout=180)
+            if rtt.status_code < 400:
+                short_res["tiktok"] = rtt.json()
+            else:
+                short_res["tiktok_error"] = rtt.text[:300]
 
-    results["status"] = "published"
+        results[f"short_{idx_s}"] = short_res
+
     return results

@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-العقل النفسي والخوارزمي V10.0 (Hyper-Realistic Psychological Suspense + 8-Second Visual Storyboard + 2026 Algorithm SEO)
-1) قصص واقعية نفسية حديثة تحبس الأنفاس (مثل تجربة «رسالة 3 الفجر»): ممنوع تماماً الخيال الرخيص أو الفصحى المترجمة!
-   كل جملة مكتوبة بإيقاع تنفس بشري طبيعي بالعامية المصرية القاهرية الحقيقية (مع فواصل تنفس قصيرة `..`) ليخرج صوت الراوية البشرية طبيعياً 100%.
-2) حزمة الخوارزميات الكاملة 2026 (YouTube + TikTok + Facebook Algorithm Stack):
-   - عنوان فجوة فضول عالية النقر (High-CTR Curiosity Gap) + عبارة غلاف كاملة من 3–4 كلمات صادمة.
-   - أول سطرين خاطفين قبل زر «عرض المزيد» + ملخص غني بالكلمات البحثية + فصول مشاهد غير حارقة + سؤال تحدي ذكاء يفجّر التعليقات + 18 تاج بحثي.
-3) مولّد اللقطات البصرية المتزامن كل 8 ثوانٍ (`generate_8sec_shot_prompts`):
-   - يقرأ الكلمات المنطوقة فعلياً في كل نافذة 8 ثوانٍ ويولّد لها مشهداً بصرياً فريداً ومختلفاً في زاوية الكاميرا (صفر تكرار لأي صورة!).
+العقل النفسي والخوارزمي V11.0 (Cold-Open Teaser Intro + 2026 Viral Retention Bridges + 8s Shot Prompts + Algorithm SEO)
+1) مقدمة تشويقية إجبارية حابسة للأنفاس في أول 25–30 ثانية (`teaser_intro`) لكل فيديو طويل + مقدمة خاطفة (`short_hook_intro`) لكل شورت:
+   - تبدأ بومضة نارية من أخطر لحظة قبل النهاية (Flash-Forward بدون حرق!) + تطابق 100% مع وعد العنوان والصورة المصغرة (أهم عامل في خوارزمية يوتيوب 2026!) + سؤال مفتوح يجبر المشاهد يكمل لآخر ثانية ليعرف النهاية!
+2) جسور احتفاظ بالمشاهد (Retention Bridges) كل 3 دقائق لكسر الملل ومنع هبوط منحنى المشاهدة (AVD > 55%).
+3) أوصاف بصرية واضحة ومضاءة درامياً لكل نافذة ~8 ثوانٍ لمنع أي لقطة معتمة أو مكررة.
 """
 
 import json
@@ -26,10 +23,10 @@ PREFERRED_MODELS = [
 ]
 
 EG_REALISTIC_THRILLERS = [
-    "إثارة نفسية واقعية جداً داخل شقة أو عمارة سكنية بمصر: رسالة أو صورة على الواتساب الساعة 3 الفجر تكشف إن حد شايف البطل دلوقتي حالاً، وتتوالى المفاجآت الواقعية المرعبة التوتر لحد كشف خطة عاقلة مستحيل توقعها",
-    "إثارة نفسية وخدعة دهاء بشري بارد: اكتشاف كاميرا خفية أو تسجيل صوتي بالصدفة في البيت أو المكتب يكشف إن أقرب الناس بيدبر لعبة نفسية محكمة بالورقة والقلم، وقلب الطاولة عليهم بذكاء يوقف القلب",
-    "غموض نفسي واقعي حول شقة مقفولة أو جيرة مريبة أو عقد/وصية غريبة في القاهرة: تفصيلة صغيرة في فاتورة كهرباء أو كاميرا الأسانسير تفتح خيط سر مدفون يقلب حياة كل الشخصيات",
-    "ليلة توتر نفسي حقيقية لا تُنسى (نوبتجية ليلية، توصيلة متأخرة، أو مكالمة بالغلط من رقم مسجل باسم البطل نفسه): كل دقيقة يظهر دليل مادي ملموس يناقض اللي قبله حتى الصدمة الكبرى في النهاية",
+    "إثارة نفسية واقعية جداً داخل شقة أو عمارة سكنية بمصر: صورة أو رسالة على الواتساب الساعة 3 الفجر تكشف إن حد شايف البطل دلوقتي حالاً، وتتوالى المفاجآت الواقعية المرعبة التوتر لحد كشف خطة عاقلة مستحيل توقعها",
+    "إثارة نفسية وخدعة دهاء بشري بارد: اكتشاف تسجيل صوتي أو كاميرا مراقبة بالصدفة في البيت أو المكتب يكشف إن أقرب الناس بيدبر لعبة نفسية محكمة بالورقة والقلم، وقلب الطاولة عليهم بذكاء يوقف القلب",
+    "غموض نفسي واقعي حول شقة مقفولة أو جيرة مريبة أو عقد غريب في القاهرة: تفصيلة صغيرة في فاتورة كهرباء أو كاميرا الأسانسير تفتح خيط سر مدفون يقلب حياة كل الشخصيات",
+    "ليلة توتر نفسي حقيقية لا تُنسى (نوبتجية ليلية، توصيلة متأخرة، أو مكالمة من رقم مسجل باسم البطل نفسه): كل دقيقة يظهر دليل مادي ملموس يناقض اللي قبله حتى الصدمة الكبرى في النهاية",
 ]
 
 EG_CONAN_CASES = [
@@ -50,12 +47,12 @@ EN_DETECTIVE_CASES = [
 ]
 
 CAMERA_ANGLES = [
-    "Extreme close-up macro shot",
-    "Tight dramatic portrait close-up on eyes and expression",
-    "Over-the-shoulder POV shot",
-    "Medium cinematic two-shot with deep shadows",
-    "Low-angle suspense wide hallway shot",
-    "High-angle surveillance-style dramatic shot",
+    "Crisp close-up shot with dramatic rim lighting on",
+    "Tight expressive portrait close-up on face and eyes of",
+    "Over-the-shoulder POV cinema shot showing",
+    "Medium two-shot with clear warm lamp and cool cyan contrast of",
+    "Low-angle dramatic cinema shot of",
+    "Detailed forensic close-up shot under bright desk lamp of",
 ]
 
 
@@ -136,55 +133,62 @@ def generate_full_episode_and_short(
             style_guide = (
                 "أنتِ حكّاءة ألغاز وتحقيقات مصرية محترفة جداً (بأسلوب سامح سند وبيسوهات والمحقق كونان)، تتكلمين بالعامية المصرية القاهرية الحقيقية الدافئة 100%. "
                 "ممنوع نهائياً الكلمات الفصحى المترجمة مثل (التي، الذي، حيث، فندق مهجور، رمز ميكانيكي، الانقلاب القاتل، الخاتمة النفسية)! "
-                "اكتبي باللهجة اللي بنتكلم بيها في القاهرة بجد وبنفس بشري طبيعي مليان فواصل تشويق قصيرة `..` وتفاصيل واقعية ملموسة تخلي اللي بيسمع مش قادر يغمض عينه."
+                "اكتبي باللهجة اللي بنتكلم بيها في القاهرة بجد وبنفس بشري طبيعي مليان فواصل تشويق قصيرة `..` وتفاصيل واقعية ملموسة."
             )
         else:
             flavor = EG_REALISTIC_THRILLERS[ep_count % len(EG_REALISTIC_THRILLERS)]
             style_guide = (
-                "أنتِ حكّاءة إثارة نفسية مصرية بارعة جداً (نفس روح تجربة «رسالة 3 الفجر» وأقوى حلقات بيسوهات وسامح سند)، تتكلمين بالعامية المصرية القاهرية الحقيقية السلسة 100%. "
-                "ممنوع نهائياً الخيال الرخيص أو الأشباح أو الجمل المترجمة الركيكة مثل (التي توفت، الرمز الميكانيكي، في ليلة عاصفة)! "
-                "القصة لازم تكون واقعية جداً لدرجة إن المستمع يحس إنها ممكن تحصله الليلة في شقته أو موبايله، مكتوبة بجمل قصيرة وإيقاع تنفس بشري طبيعي `..` وحلقات فضول مفتوحة كل دقيقة."
+                "أنتِ حكّاءة إثارة نفسية مصرية بارعة جداً (نفس روح أقوى حلقات سامح سند وبيسوهات)، تتكلمين بالعامية المصرية القاهرية الحقيقية السلسة 100%. "
+                "ممنوع نهائياً الخيال الرخيص أو الأشباح أو الجمل المترجمة الركيكة! "
+                "القصة لازم تكون واقعية جداً لدرجة إن المستمع يحس إنها ممكن تحصله الليلة في شقته أو موبايله، مع مقدمة نارية في أول 25 ثانية تخليه مستحيل يقفل قبل ما يعرف النهاية."
             )
 
         blueprint_prompt = f"""
 الأفكار المستعملة سابقاً (ممنوع تكرارها نهائياً): {used}
 
-صمّمي حلقة إثارة نفسية واقعية / تحقيق ذكي لا يمكن التوقف عن سماعها (16–17 دقيقة، مقسمة لـ 12 مشهداً) من فئة:
+صمّمي حلقة إثارة نفسية واقعية / تحقيق ذكي لا يمكن التوقف عن سماعها (+16 دقيقة، تبدأ بمقدمة تشويقية نارية + 12 مشهداً) من فئة:
 «{flavor}»
 
-قواعد الخوارزميات والجذب النفسي الصارمة:
-1. عنوان اليوتيوب (`youtube_title`): عنوان فضول نفسي واقعي خارق بالعامية المصرية بدون حرق (مثل: «الساعة ٣ الفجر جتلي صورة لباب أوضتي.. من جوه شقتي!» أو «كاميرا الأسانسير سجلت دخوله.. بس عمره ما خرج!»).
-2. نص الغلاف المصغّر (`thumbnail_hook_text`): **جملة مكتملة المعنى وصادمة من 3 أو 4 كلمات فقط** (مثل: «الصورة اتصورت من جوه!» أو «مين واقف ورا الباب؟» أو «غلطة واحدة فضحته!» — ممنوع جمل ناقصة مثل «صوت من بعد»!).
-3. عناوين المشاهد الـ 12 (`scenes_outline`): لازم تكون عناوين مثيرة للفضول وغير حارقة للأحداث (ممنوع كتابة «الخاتمة» أو «الانقلاب»؛ اكتبي مثلاً: «المشهد ١١: تفصيلة الـ ٣ ثواني في التسجيل»).
-4. نهاية **المشهد 2** = ذروة أدرينالين نارية أولى (لقطع الشورت الأول في عز الحماس!). ونهاية **المشهد 7** = ذروة صدمة منتصف القصة (لقطع الشورت الثاني قبل الكشف بثانية!).
+قواعد الخوارزميات والجذب النفسي لعام 2026:
+1. **المقدمة التشويقية الإجبارية (`teaser_intro` — 80 إلى 95 كلمة بالعامية المصرية بدون تشكيل)**:
+   - تبدأ في الثانية صفر بومضة نارية من أخطر لحظة صادمة قرب نهاية القصة (بدون حرق الحل!) وتطابق وعد العنوان والغلاف تماماً.
+   - ثم تطرح اللغز المستحيل وتوعد المستمع بمفاجأة في آخر دقيقتين تقلب كل توقعاته، وتختم بـ: «ركز معايا في كل تفصيلة من أول ثانية.. لأن النهاية مستحيل تخطر على بالك.. يلا نبدأ الحكاية من أولها!».
+2. **مقدمة خطف الشورت الأول (`short_1_hook_intro`) والشورت الثاني (`short_2_hook_intro`)**:
+   - جملة افتتاحية صاعقة (16–22 كلمة) في أول 4 ثوانٍ تمنع السحب للأعلى فوراً!
+3. عنوان اليوتيوب (`youtube_title`) + نص الغلاف المصغّر (`thumbnail_hook_text`: **جملة صادمة مكتملة من 3 أو 4 كلمات فقط**).
+4. نهاية **المشهد 2** = ذروة أدرينالين نارية أولى (لقطع الشورت الأول!). ونهاية **المشهد 7** = ذروة صدمة منتصف القصة (لقطع الشورت الثاني!).
 
 أخرجي JSON صالح بالهيكل التالي:
 {{
   "topic_key": "ملخص فريد 6 كلمات للفكرة الواقعية",
   "youtube_title": "عنوان يوتيوب واقعي ناري يرفع نسبة النقر CTR لأقصى درجة (أقل من 82 حرفاً)",
   "thumbnail_hook_text": "جملة صادمة مكتملة من 3 أو 4 كلمات للغلاف",
-  "thumbnail_prompt": "Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: a terrified Egyptian person positioned on the right third of the frame with wide shocked eyes illuminated by cold blue smartphone light and crimson rim light, mysterious shadowy doorway in the dark apartment hallway behind them, dark clean moody background on the left third of the frame, ultra-detailed skin texture, ARRI Alexa 35mm cinema still, no text, no letters, no watermark",
+  "thumbnail_banner_top": "🔥 مقتطف من ذروة الأحداث — تابع للنهاية!",
+  "thumbnail_prompt": "Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: a terrified Egyptian person positioned on the right third of the frame with wide shocked eyes illuminated by bright cold blue smartphone light and crimson rim light, mysterious shadowy open doorway behind them, dark clean moody background on the left third of the frame, ultra-detailed skin texture, ARRI Alexa 35mm cinema still, no text, no watermark",
+  "teaser_intro": "النص الكامل للمقدمة التشويقية النارية (80–95 كلمة بالعامية المصرية الحية مع فواصل .. بدون حرق الحل، تجبر المشاهد يكمل للنهاية)",
+  "short_1_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الأول (18 كلمة بالعامية المصرية)",
+  "short_2_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الثاني (18 كلمة بالعامية المصرية)",
   "short_1_title": "عنوان ناري للشورت الأول يخطف الانتباه فوراً + #shorts #قصص_واقعية #غموض",
   "short_2_title": "عنوان ناري مختلف للشورت الثاني من ذروة منتصف القصة + #shorts #تشويق #حكايات",
-  "seo_hook_2lines": "سطران ناريان يظهران في أول سطرين بالوصف قبل زر عرض المزيد لجذب المشاهد وخوارزمية البحث فوراً بدون حرق النهاية",
-  "seo_synopsis": "فقرة تشويقية غنية من 4 جمل تصف أجواء القصة وتدمج طبيعياً أقوى كلمات البحث (قصص واقعية مثيرة، غموض نفسي، حكايات مصرية تحبس الأنفاس، ألغاز وتحقيقات) لرفع اقتراحات يوتيوب",
-  "engagement_question": "سؤال تحدي ذكي للمشاهدين يربط بدقيقة/مشهد معين في الحلقة ويدفعهم لكتابة توقعاتهم في التعليقات",
+  "seo_hook_2lines": "سطران ناريان يظهران في أول سطرين بالوصف قبل زر عرض المزيد لجذب المشاهد وخوارزمية البحث فوراً",
+  "seo_synopsis": "فقرة تشويقية غنية من 4 جمل تدمج طبيعياً أقوى كلمات البحث (قصص واقعية مثيرة، غموض نفسي، حكايات مصرية تحبس الأنفاس، ألغاز وتحقيقات)",
+  "engagement_question": "سؤال تحدي ذكي للمشاهدين يربط بتفصيلة في الحلقة ويدفعهم لكتابة توقعاتهم في التعليقات",
   "seo_tags": ["تاج 1", "تاج 2", "تاج 3", "تاج 4", "تاج 5", "تاج 6", "تاج 7", "تاج 8"],
   "hashtags": "#دفتر_راوي #قصص_واقعية #غموض_نفسي #حكايات_مصرية #قصص_مثيرة",
-  "character_visual_anchor": "Consistent realistic English visual description of protagonist (e.g. 29-year-old Egyptian man/woman, exact hairstyle, wearing a dark navy zip hoodie over a grey t-shirt, modern Cairo apartment setting)",
+  "character_visual_anchor": "Consistent realistic English visual description of protagonist (e.g. 29-year-old Egyptian man/woman, exact hairstyle, wearing a dark navy zip hoodie over a grey t-shirt, modern Cairo apartment)",
   "scenes_outline": [
-    {{"scene_num": 1, "scene_title": "عنوان فضولي للمشهد 1", "summary": "دخول فوري في الثانية صفر بواقعة ملموسة مرعبة التوتر"}},
-    {{"scene_num": 2, "scene_title": "عنوان فضولي للمشهد 2", "summary": "تعمق وتصاعد حابس للأنفاس ينتهي عند قمة الذروة النارية الأولى (Peak Climax #1)"}},
+    {{"scene_num": 1, "scene_title": "عنوان فضولي للمشهد 1", "summary": "بداية الحكاية من أول لحظة بتفاصيل واقعية ملموسة"}},
+    {{"scene_num": 2, "scene_title": "عنوان فضولي للمشهد 2", "summary": "تصاعد حابس للأنفاس ينتهي عند قمة الذروة النارية الأولى (Peak Climax #1)"}},
     {{"scene_num": 3, "scene_title": "عنوان فضولي للمشهد 3", "summary": "ما ظهر فور فتح الباب/الرسالة وبداية الخيط الأخطر"}},
-    {{"scene_num": 4, "scene_title": "عنوان فضولي للمشهد 4", "summary": "أول مواجهة مع جار/شخصية قريبة وتناقض غريب في كلامه"}},
+    {{"scene_num": 4, "scene_title": "عنوان فضولي للمشهد 4", "summary": "أول مواجهة وتناقض مريب + جسر تشويق يعيد شد الانتباه"}},
     {{"scene_num": 5, "scene_title": "عنوان فضولي للمشهد 5", "summary": "فحص كاميرا أو إيصال أو تسجيل واكتشاف تفصيلة مستحيلة"}},
     {{"scene_num": 6, "scene_title": "عنوان فضولي للمشهد 6", "summary": "نصب فخ ذكي في نص الليل للتأكد من الشك"}},
     {{"scene_num": 7, "scene_title": "عنوان فضولي للمشهد 7", "summary": "تصاعد رهيب يقف قبل كشف الصدمة الكبرى بثانية واحدة (Peak Climax #2)"}},
     {{"scene_num": 8, "scene_title": "عنوان فضولي للمشهد 8", "summary": "انكشاف مفاجأة المنتصف التي تقلب كل التوقعات رأساً على عقب"}},
     {{"scene_num": 9, "scene_title": "عنوان فضولي للمشهد 9", "summary": "الخيط الخفي اللي بيربط كل التفاصيل ببعض"}},
-    {{"scene_num": 10, "scene_title": "عنوان فضولي للمشهد 10", "summary": "الوصول للدليل المادي القاطع"}},
+    {{"scene_num": 10, "scene_title": "عنوان فضولي للمشهد 10", "summary": "الوصول للدليل المادي القاطع + جسر تشويق قبل المواجهة"}},
     {{"scene_num": 11, "scene_title": "عنوان فضولي للمشهد 11", "summary": "المواجهة الحاسمة وكشف الخطة خطوة بخطوة"}},
-    {{"scene_num": 12, "scene_title": "عنوان فضولي للمشهد 12", "summary": "الحقيقة الكاملة المدهشة وسؤال يترك أثر نفسي عميق"}}
+    {{"scene_num": 12, "scene_title": "عنوان فضولي للمشهد 12", "summary": "الحقيقة الكاملة المدهشة وإجابة السؤال المفتوح من المقدمة"}}
   ]
 }}
 """
@@ -196,21 +200,24 @@ def generate_full_episode_and_short(
         )
         style_guide = (
             "You are an elite psychological suspense & mystery storyteller in the exact style of MrBallen's most viral realistic episodes. "
-            "Zero supernatural clichés, zero stiff prose: write natural, breathy spoken American storytelling using subtle `...` dramatic pauses, "
-            "hyper-specific everyday details, relentless Zeigarnik open loops, and 100% advertiser-safe realism."
+            "Open every episode with an explosive 25-second Cold-Open Climax Teaser that matches the title/thumbnail promise and forces viewers to watch until the final minute."
         )
         blueprint_prompt = f"""
 Avoid all previously used premises: {used}
 
-Design a hyper-realistic, unputdownable 16-minute 12-Scene episode for:
+Design a hyper-realistic, unputdownable 16-minute episode (25-second Cold-Open Teaser Intro + 12 Scenes) for:
 "{flavor}"
 
 Return exact valid JSON:
 {{
   "topic_key": "6-word unique realistic premise",
   "youtube_title": "High-CTR viral realistic YouTube title under 80 chars (zero spoilers)",
-  "thumbnail_hook_text": "Complete 3-to-4 word shocking hook (e.g. IT CAME FROM INSIDE! / CHECK THE REFLECTION! / NOT ALONE AT 3AM!)",
-  "thumbnail_prompt": "Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: terrified protagonist positioned on the right third of the frame with wide eyes lit by blue smartphone glow and red rim light, shadowy open doorway behind them, clean dark atmospheric space on the left third of the frame, ARRI Alexa 35mm cinema film still, no text, no watermark",
+  "thumbnail_hook_text": "Complete 3-to-4 word shocking hook (e.g. IT CAME FROM INSIDE! / CHECK THE REFLECTION!)",
+  "thumbnail_banner_top": "🔥 CLIMAX TEASER — WATCH TILL THE END!",
+  "thumbnail_prompt": "Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: terrified protagonist positioned on the right third of the frame with wide eyes lit by bright blue smartphone glow and red rim light, shadowy open doorway behind them, clean dark atmospheric space on the left third of the frame, ARRI Alexa 35mm cinema film still, no text, no watermark",
+  "teaser_intro": "85-word breathless Cold-Open Flash-Forward Teaser Intro hinting at the most shocking climax moment without spoiling the answer, ending with: Stay with me until the very last minute—let's rewind to how this nightmare started...",
+  "short_1_hook_intro": "18-word explosive 3-second opening hook question/paradox for Short #1",
+  "short_2_hook_intro": "18-word explosive 3-second opening hook question/paradox for Short #2",
   "short_1_title": "Viral hook title #1 + #shorts #storytime #thriller",
   "short_2_title": "Viral mid-story climax title #2 + #shorts #mystery #plotwist",
   "seo_hook_2lines": "Gripping 2-line hook above YouTube Show More fold packed with curiosity and search keywords",
@@ -220,27 +227,42 @@ Return exact valid JSON:
   "hashtags": "#storytime #mystery #thriller #plotwist #truestories",
   "character_visual_anchor": "Consistent realistic protagonist English visual description (age, hair, exact hoodie/jacket color, modern setting)",
   "scenes_outline": [
-    {{"scene_num": 1, "scene_title": "Curiosity Scene 1 Title", "summary": "0.0s realistic paradox hook"}},
+    {{"scene_num": 1, "scene_title": "Curiosity Scene 1 Title", "summary": "How the night began with concrete everyday detail"}},
     {{"scene_num": 2, "scene_title": "Curiosity Scene 2 Title", "summary": "Deep escalation ending on Explosive Peak Climax #1"}},
     {{"scene_num": 3, "scene_title": "Curiosity Scene 3 Title", "summary": "Immediate discovery behind Peak #1"}},
-    {{"scene_num": 4, "scene_title": "Curiosity Scene 4 Title", "summary": "First suspect/neighbor contradiction"}},
+    {{"scene_num": 4, "scene_title": "Curiosity Scene 4 Title", "summary": "First suspect contradiction + retention bridge"}},
     {{"scene_num": 5, "scene_title": "Curiosity Scene 5 Title", "summary": "Timestamp/camera physical anomaly"}},
     {{"scene_num": 6, "scene_title": "Curiosity Scene 6 Title", "summary": "Midnight verification trap"}},
     {{"scene_num": 7, "scene_title": "Curiosity Scene 7 Title", "summary": "Breathless buildup cutting 1s before mid-movie twist (Peak Climax #2)"}},
     {{"scene_num": 8, "scene_title": "Curiosity Scene 8 Title", "summary": "Mid-point twist flips every assumption"}},
     {{"scene_num": 9, "scene_title": "Curiosity Scene 9 Title", "summary": "Hidden motive & timeline connection"}},
-    {{"scene_num": 10, "scene_title": "Curiosity Scene 10 Title", "summary": "Decisive physical clue"}},
+    {{"scene_num": 10, "scene_title": "Curiosity Scene 10 Title", "summary": "Decisive physical clue + final retention bridge"}},
     {{"scene_num": 11, "scene_title": "Curiosity Scene 11 Title", "summary": "High-stakes confrontation"}},
-    {{"scene_num": 12, "scene_title": "Curiosity Scene 12 Title", "summary": "Full mind-blowing payoff"}}
+    {{"scene_num": 12, "scene_title": "Curiosity Scene 12 Title", "summary": "Full mind-blowing payoff answering the teaser"}}
   ]
 }}
 """
 
-    plan = _groq_json(api_key, style_guide, blueprint_prompt, max_tokens=5500)
+    plan = _groq_json(api_key, style_guide, blueprint_prompt, max_tokens=5600)
     char_anchor = str(
         plan.get("character_visual_anchor")
         or "a 29-year-old protagonist wearing a dark navy zip hoodie over a charcoal t-shirt in a realistic modern apartment"
     ).strip()
+
+    teaser_intro = re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("teaser_intro") or "")).strip()
+    if len(teaser_intro.split()) < 25:
+        if lang == "ar":
+            teaser_intro = (
+                f"تخيل إنك تصحى في نص الليل على تفصيلة مستحيل تحصل في الواقع.. {plan.get('youtube_title', '')}.. "
+                "كل دليل يظهر قدامك يكذّب اللي قبله.. وغلطة واحدة صغيرة في آخر دقيقتين هي اللي قلبت الترابيزة وكشفت الحقيقة الصادمة.. "
+                "ركز معايا في كل ثانية لحد النهاية.. ويلا نبدأ الحكاية من أولها!"
+            )
+        else:
+            teaser_intro = (
+                f"Imagine waking up in the dead of night to one detail that shouldn't physically exist—{plan.get('youtube_title', '')}... "
+                "Every clue contradicted the last until one tiny mistake in the final two minutes exposed the shocking truth. "
+                "Stay with me until the very end—let's start right from the beginning."
+            )
 
     outlines = (plan.get("scenes_outline") or [])[:12]
     while len(outlines) < 12:
@@ -248,7 +270,7 @@ Return exact valid JSON:
         outlines.append({"scene_num": idx, "scene_title": f"المشهد {idx}" if lang == "ar" else f"Scene {idx}", "summary": "Escalating realistic suspense"})
 
     scenes_full: List[Dict[str, Any]] = []
-    prev_tail = ""
+    prev_tail = teaser_intro[-160:]
     for batch_idx in range(3):
         batch_slice = outlines[batch_idx * 4 : (batch_idx + 1) * 4]
         s_nums = [int(x["scene_num"]) for x in batch_slice]
@@ -256,16 +278,17 @@ Return exact valid JSON:
         if lang == "ar":
             batch_prompt = f"""
 عنوان الحلقة: {plan.get('youtube_title')}
+المقدمة التشويقية التي سمعها المشاهد للتو: "{teaser_intro}"
 المخطط الكامل: {json.dumps(outlines, ensure_ascii=False)}
-آخر جملة من المشهد السابق (كمّلي بعدها فوراً كأنها حكاية واحدة متصلة بدون إعادة): "{prev_tail}"
+نهاية المقطع السابق (كمّلي بعدها بسلاسة كحكاية متصلة): "{prev_tail}"
 
 اكتبي السرد الصوتي الكامل للمشاهد الأربعة التالية: {json.dumps(batch_slice, ensure_ascii=False)}
 
-قواعد الأداء الصوتي البشري الطبيعي (مهمة جداً عشان الصوت يطلع طبيعي 100% زي الإنسان الحقيقي):
-1. الطول لكل مشهد منفرد: **بين 235 و 270 كلمة كاملة** بالعامية المصرية القاهرية الطبيعية 100% بدون أي تشكيل أو شدّات.
-2. **ممنوع نهائياً** أي كلمة فصحى أو مترجمة (ممنوع: التي، الذي، حيث، بينما، فندق مهجور، رمز ميكانيكي، مؤلم، قاتل)! اكتبي زي ما بنحكي في الحقيقة بالظبط: «بص بقى.. اللي حصل ساعتها خلّى قلبي يدق في وداني.. مسكت الموبايل بإيد بتترعش.. وكبّرت الصورة على الآخر..».
-3. استعملي نقطتين `..` بين الجمل القصيرة لإعطاء الراوية نَفَساً بشرياً طبيعياً وتشويقاً هادئاً غير مسرحي.
-4. لو المشهد رقم **2** موجود هنا: اختميه في أعلى لحظة صدمة وأدرينالين معلقة (قبل كشف اللي ورا الباب/الصورة بثانية!). ولو المشهد رقم **7** موجود هنا: اختميه قبل انكشاف سر منتصف القصة بثانية واحدة!
+قواعد الأداء الصوتي والاحتفاظ بالمشاهد (Retention Engineering):
+1. الطول لكل مشهد منفرد: **بين 225 و 260 كلمة كاملة** بالعامية المصرية القاهرية الطبيعية 100% بدون أي تشكيل أو شدّات.
+2. ممنوع أي كلمة فصحى أو مترجمة (التي، الذي، حيث، فندق مهجور، رمز ميكانيكي)! احكي بالعامية القاهرية الحية السلسة مع فواصل تنفس قصيرة `..`.
+3. في المشهد 4 والمشهد 10 ضعي **جسر تشويق طبيعي** يشد انتباه المشاهد عشان ميكسلش أو يخرج (مثلاً: «بس استنى.. لأن اللي حصل بعد دقيقتين بالظبط هو اللي قلب الموازين كلها..»).
+4. لو المشهد رقم **2** موجود هنا: اختميه في قمة الذروة النارية المعلقة! ولو المشهد رقم **7** موجود هنا: اختميه قبل انكشاف مفاجأة المنتصف بثانية واحدة!
 
 أرجعي JSON فقط:
 {{
@@ -277,14 +300,15 @@ Return exact valid JSON:
         else:
             batch_prompt = f"""
 Episode Title: {plan.get('youtube_title')}
+Cold-Open Teaser just heard: "{teaser_intro}"
 Full Outline: {json.dumps(outlines)}
-Previous scene tail (continue seamlessly): "{prev_tail}"
+Previous tail (continue seamlessly): "{prev_tail}"
 
 Write the full spoken narration for these 4 scenes: {json.dumps(batch_slice)}
 
-Human Voice Prosody Rules:
-1. Length per scene: **240 to 275 words** of hyper-realistic, conversational spoken American storytelling.
-2. Use short punchy clauses and occasional `...` breath pauses so the narrator sounds 100% human, intimate, and suspenseful.
+Retention Rules:
+1. Length per scene: **230 to 265 words** of hyper-realistic, conversational spoken American storytelling with subtle `...` pauses.
+2. Add a natural spoken retention bridge in Scene 4 and Scene 10 ("But hold on—because what showed up two minutes later changed everything...").
 3. End Scene 2 on Peak Climax #1, and end Scene 7 one heartbeat before the mid-story twist!
 
 Return valid JSON only:
@@ -330,10 +354,14 @@ Return valid JSON only:
         "youtube_title": yt_title,
         "thumbnail_hook_text": raw_hook,
         "thumbnail_badge_text": channel_cfg.get("thumb_badge", ""),
+        "teaser_banner_text": str(plan.get("thumbnail_banner_top") or ("مقتطف من ذروة الأحداث — تابع للنهاية!" if lang == "ar" else "CLIMAX PREVIEW — WATCH TILL THE END!")).strip(),
         "thumbnail_prompt": str(
             plan.get("thumbnail_prompt")
-            or f"Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen, RIGHT side intense close-up of terrified {char_anchor} lit by glowing phone and red rim light, LEFT 45% clean dark space for text, no text, no watermark"
+            or f"Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: terrified {char_anchor} on right third lit by bright blue phone light and red rim light, clean dark space on left third, no text, no watermark"
         ),
+        "teaser_intro": teaser_intro,
+        "short_1_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_1_hook_intro") or "")).strip(),
+        "short_2_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_2_hook_intro") or "")).strip(),
         "short_title": str(plan.get("short_1_title") or f"{yt_title[:58]} #shorts").strip(),
         "short_1_title": str(plan.get("short_1_title") or f"{yt_title[:58]} #shorts").strip(),
         "short_2_title": str(plan.get("short_2_title") or f"{yt_title[:54]} - الجزء الأخطر #shorts").strip(),
@@ -358,46 +386,45 @@ def generate_8sec_shot_prompts(
     is_vertical: bool = False,
 ) -> List[str]:
     """
-    يأخذ قائمة النوافذ الزمنية (كل نافذة ~8 ثوانٍ مع النص المنطوق فعلياً داخلها `spoken_text`)
-    ويولّد لكل نافذة 8 ثوانٍ وصف صورة FLUX سينمائي فريد ومطابق 100% للكلام المنطوق في تلك الثواني الثماني بالضبط،
-    مع تنويع زوايا الكاميرا ومنع تكرار أي لقطة مرتين!
+    يولّد لكل نافذة زمنية مشهداً سينمائياً واضحاً ومضاءً درامياً بوضوح عالٍ (ممنوع المشاهد المظلمة المعتمة!)
+    ومطابقاً 100% للكلمات المنطوقة في تلك النافذة بدون أي تكرار.
     """
     frame_prefix = (
-        "Full vertical 9:16 smartphone cinema portrait frame, entire subject centered head-to-waist inside vertical frame, "
+        "Full vertical 9:16 cinema portrait frame, entire subject centered inside frame, well-lit clear foreground details, "
         if is_vertical
-        else "Wide 16:9 Netflix thriller 35mm ARRI Alexa cinema still, "
+        else "Wide 16:9 Netflix thriller 35mm ARRI Alexa cinema shot, well-lit clear foreground subject with dramatic rim light, "
     )
     sys_msg = (
-        "You are an elite Netflix thriller cinematographer. Convert each 8-second spoken narration snippet into ONE hyper-specific, "
-        "realistic English visual prompt matching ONLY what is spoken in that exact 8-second window. Never repeat compositions; vary camera angles "
-        "(close-up on object/phone, expressive face close-up, over-the-shoulder POV, tense corridor shot). Zero text/letters in images."
+        "You are an elite Netflix cinematographer. Convert each spoken narration snippet into ONE crystal-clear, well-lit, photorealistic "
+        "English visual prompt matching ONLY what is spoken in that exact window. Always ensure clear dramatic lighting on faces/objects (never pitch black), "
+        "vary camera angles so consecutive shots look distinct, and include zero text/letters."
     )
 
     prompts_out: List[str] = []
-    batch_sz = 24
+    batch_sz = 27
     for start_i in range(0, len(windows), batch_sz):
         chunk = windows[start_i : start_i + batch_sz]
         items_desc = [
             {
                 "idx": k,
                 "angle_hint": CAMERA_ANGLES[(start_i + k) % len(CAMERA_ANGLES)],
-                "spoken_8sec": w.get("text", "")[:220],
+                "spoken": w.get("text", "")[:210],
             }
             for k, w in enumerate(chunk)
         ]
         usr_msg = f"""
 Story: {story_title}
 Consistent Protagonist Appearance: {character_visual_anchor}
-Framing: {"Vertical 9:16 full portrait (no side crop)" if is_vertical else "Widescreen 16:9"}
+Framing: {"Vertical 9:16 full portrait" if is_vertical else "Widescreen 16:9"}
 
-For each of these {len(chunk)} sequential 8-second narration windows, write a vivid 28-40 word English photorealistic prompt matching `spoken_8sec` using `angle_hint` (incorporate protagonist appearance whenever the protagonist is visible; if `spoken_8sec` focuses on an object/door/phone/street, show a dramatic close-up of that exact object):
+Write {len(chunk)} vivid, clearly lit 26-38 word photorealistic English prompts matching each `spoken` beat using `angle_hint`:
 {json.dumps(items_desc, ensure_ascii=False)}
 
 Return JSON only:
 {{"prompts": ["prompt_0", "prompt_1", ...]}}
 """
         try:
-            res = _groq_json(api_key, sys_msg, usr_msg, max_tokens=4500)
+            res = _groq_json(api_key, sys_msg, usr_msg, max_tokens=4800)
             got = res.get("prompts") or []
         except Exception:
             got = []
@@ -406,8 +433,8 @@ Return JSON only:
             raw_p = str(got[k]).strip() if (k < len(got) and got[k]) else ""
             angle = CAMERA_ANGLES[(start_i + k) % len(CAMERA_ANGLES)]
             if not raw_p:
-                raw_p = f"{angle} of {character_visual_anchor} reacting in tense modern room during beat #{start_i + k + 1}"
-            full_p = f"{frame_prefix}{raw_p}, realistic moody tungsten and teal shadows, sharp focus, 8k photorealistic film grain, no text, no watermark"
+                raw_p = f"{angle} {character_visual_anchor} reacting to a tense clue under warm desk lamp and cool window light"
+            full_p = f"{frame_prefix}{raw_p}, crisp focus, vivid realistic lighting, 8k photorealistic cinema still, no text, no watermark"
             prompts_out.append(full_p)
 
     return prompts_out
