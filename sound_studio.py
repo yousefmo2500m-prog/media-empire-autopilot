@@ -590,12 +590,13 @@ def _build_climax_short_from_master_voice(
     is_ar = language == "ar"
 
     # نسجّل جملة الخطف الافتتاحية + جملة الـ CTA معاً في استدعاء واحد بفاصل صمت واضح لتوفير الحصة وتسريع الأداء!
-    raw_seg_dur = max(28.0, scene_climax_end_sec - scene_start_sec)
+    eff_start_sec = max(0.0, max(scene_start_sec, scene_climax_end_sec - 108.0))
+    raw_seg_dur = max(28.0, scene_climax_end_sec - eff_start_sec)
     story_slice = work_dir / "story_slice.mp3"
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
-            "-ss", f"{max(0.0, scene_start_sec):.3f}",
+            "-ss", f"{eff_start_sec:.3f}",
             "-t", f"{raw_seg_dur:.3f}",
             "-i", str(raw_voice_merged),
             "-ar", "44100", "-ac", "2", "-c:a", "libmp3lame", "-b:a", "192k",

@@ -28,7 +28,7 @@ concurrency:
 jobs:
   produce-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 58
+    timeout-minutes: 120
     permissions:
       contents: write
 

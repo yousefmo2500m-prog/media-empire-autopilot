@@ -429,22 +429,109 @@ def generate_8sec_shots_batch(
                 print(f"    🎨 [{prefix}] اكتمل بالشبكة {done_imgs}/{n_total} صورة FLUX حقيقية...", flush=True)
 
     if missing_indices:
-        print(f"    🎨 [{prefix}] توليد {len(missing_indices)} لقطة متبقية بشكل فردي حاد بالتوازي...", flush=True)
+        missing_indices = sorted(set(missing_indices))
+        quads: List[List[int]] = [missing_indices[i : i + 4] for i in range(0, len(missing_indices), 4)]
+        print(
+            f"    🎨 [{prefix}] توليد {len(missing_indices)} لقطة فوتوغرافية حادة عبر {len(quads)} دفعة رباعية متوازية (20 عامل GPU متزامن)...",
+            flush=True,
+        )
 
-        def _run_one(si: int) -> Tuple[int, Path]:
-            out_p = out_dir / f"{prefix}_{si:03d}.jpg"
-            generate_single_shot_image(prompts[si], out_p, width, height, seed=seed_base + si * 97, shot_idx=si)
-            return si, out_p
+        def _run_quad(q_idxs: List[int]) -> List[Tuple[int, Path]]:
+            if len(q_idxs) == 1:
+                si = q_idxs[0]
+                op = out_dir / f"{prefix}_{si:03d}.jpg"
+                generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97, shot_idx=si)
+                return [(si, op)]
+
+            h_w, h_h = (576, 320) if width >= height else (320, 576)
+            headers = {
+                "apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000",
+                "Client-Agent": "MediaEmpireV11:1.2:auto",
+            }
+            wide_models = [
+                "Realistic Vision", "Analog Madness", "majicMIX realistic",
+                "Deliberate", "Dreamshaper", "AbsoluteReality",
+                "ICBINP - I Can't Believe It's Not Photography",
+            ]
+            lead_p = prompts[q_idxs[0]]
+            valid_imgs: List[Image.Image] = []
+
+            for attempt in range(4):
+                need_n = len(q_idxs) - len(valid_imgs)
+                if need_n <= 0:
+                    break
+                with _HORDE_SEM:
+                    payload = {
+                        "prompt": f"{lead_p}, bright dramatic rim light, clear sharp focus, detailed realistic cinema scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark",
+                        "params": {
+                            "width": h_w,
+                            "height": h_h,
+                            "steps": 18,
+                            "cfg_scale": 6.5,
+                            "sampler_name": "k_euler_a",
+                            "n": need_n,
+                            "seed": str((seed_base + q_idxs[0] * 131 + attempt * 79) % 9999999),
+                        },
+                        "nsfw": False,
+                        "censor_nsfw": False,
+                        "r2": True,
+                        "models": wide_models,
+                    }
+                    try:
+                        r = requests.post("https://aihorde.net/api/v2/generate/async", json=payload, headers=headers, timeout=18)
+                        if r.status_code == 429:
+                            time.sleep(4.5 + attempt * 1.5)
+                            continue
+                        if r.status_code != 202:
+                            time.sleep(2.0)
+                            continue
+                        jid = r.json().get("id")
+                        if not jid:
+                            continue
+
+                        deadline = time.time() + 100.0
+                        while time.time() < deadline:
+                            time.sleep(4.2)
+                            chk_r = requests.get(f"https://aihorde.net/api/v2/generate/check/{jid}", headers=headers, timeout=15)
+                            if chk_r.status_code != 200:
+                                continue
+                            chk = chk_r.json()
+                            if chk.get("faulted"):
+                                break
+                            if chk.get("done"):
+                                st = requests.get(f"https://aihorde.net/api/v2/generate/status/{jid}", headers=headers, timeout=22)
+                                if st.status_code == 200:
+                                    for g_item in (st.json().get("generations") or []):
+                                        raw_img = g_item.get("img")
+                                        if not raw_img:
+                                            continue
+                                        img_bytes = requests.get(raw_img, timeout=25).content if raw_img.startswith("http") else base64.b64decode(raw_img)
+                                        im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                                        if _is_valid_sharp_photo(im):
+                                            valid_imgs.append(_fit_cover_exact(im, width, height, polish=True))
+                                break
+                    except Exception:
+                        time.sleep(2.0)
+                        continue
+
+            out_pairs: List[Tuple[int, Path]] = []
+            for idx_k, si in enumerate(q_idxs):
+                op = out_dir / f"{prefix}_{si:03d}.jpg"
+                if idx_k < len(valid_imgs):
+                    valid_imgs[idx_k].save(str(op), format="JPEG", quality=93, optimize=True)
+                else:
+                    generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97 + 19, shot_idx=si)
+                out_pairs.append((si, op))
+            return out_pairs
 
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
-            futs2 = [ex.submit(_run_one, si) for si in missing_indices]
+            futs2 = [ex.submit(_run_quad, q) for q in quads]
             done_extra = 0
             for f in as_completed(futs2):
-                si, p = f.result()
-                paths[si] = p
-                done_extra += 1
-                if done_extra % 4 == 0 or done_extra == len(missing_indices):
-                    print(f"    🎨 [{prefix}] فردي حاد: {done_extra}/{len(missing_indices)} مكتمل...", flush=True)
+                for si, p in f.result():
+                    paths[si] = p
+                    done_extra += 1
+                print(f"    🎨 [{prefix}] دفعة رباعية حادة: {done_extra}/{len(missing_indices)} مكتمل...", flush=True)
 
     return [p for p in paths if p is not None]
 
