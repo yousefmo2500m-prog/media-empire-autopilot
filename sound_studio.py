@@ -529,8 +529,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh1_hook_end,
         words=sh1_words,
         fallback_text=f"{episode.get('short_1_hook_intro','')} {scenes[0]['narration']} {scenes[1]['narration']}",
-        teaser_interval_sec=3.8,
-        body_interval_sec=5.8,
+        teaser_interval_sec=4.2,
+        body_interval_sec=6.4,
     )
 
     sh2_mp3, sh2_words, sh2_hook_end = _build_climax_short_from_master_voice(
@@ -552,8 +552,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh2_hook_end,
         words=sh2_words,
         fallback_text=f"{episode.get('short_2_hook_intro','')} {scenes[5]['narration']} {scenes[6]['narration']}",
-        teaser_interval_sec=3.8,
-        body_interval_sec=5.8,
+        teaser_interval_sec=4.2,
+        body_interval_sec=6.4,
     )
 
     return {

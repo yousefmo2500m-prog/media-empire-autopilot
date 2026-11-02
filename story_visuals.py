@@ -151,7 +151,10 @@ def _call_flux_zerogpu_raw(
     seed: int,
     slot_idx: int = 0,
 ) -> Optional[Image.Image]:
-    from gradio_client import Client
+    try:
+        from gradio_client import Client
+    except Exception:
+        return None
 
     auth_pool = _get_hf_auth_pool()
     spaces = [
@@ -255,37 +258,48 @@ def _try_cloudflare_flux(prompt: str, width: int, height: int, seed: int) -> Opt
     return None
 
 
+CLEAN_CINEMA_MODELS = [
+    "Deliberate",
+    "Dreamshaper",
+    "ICBINP - I Can't Believe It's Not Photography",
+    "AbsoluteReality",
+]
+
+NEGATIVE_MODEST_CINEMA = (
+    "nudity, naked, nsfw, lingerie, underwear, bikini, swimsuit, cleavage, v-neck, low cut, deep neck, open shirt, open blazer, blouse, "
+    "bare shoulders, bare chest, sleeveless, strap top, camisole, tank top, crop top, mini skirt, shorts, "
+    "tight dress, seductive, glamour portrait, studio portrait, beauty portrait, fashion model, looking at camera, selfie, "
+    "hijab, headscarf, niqab, burqa, cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark"
+)
+
+
 def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) -> Image.Image:
     """
-    محرك فوتوغرافي مضمون 100% محكوم بـ Semaphore(4):
-    يفحص حالة التوليد عبر `/generate/check/{id}` الخفيف كل 4.5 ثانية (لا يخضع لحظر 429)،
-    ولا يستدعي `/generate/status/{id}` إلا مرة واحدة فقط فور اكتمال الصورة الحقيقية!
+    محرك مشاهد سينمائية نظيف ومحتشم 100% (V12.0):
+    - تم حظر نماذج البورتريه والعري (majicMIX / Analog Madness / Realistic Vision) نهائياً للأبد!
+    - يرسم الموقف الدرامي الفعلي المنطوق في القصة بدقة 1:1 مع تفعيل فلتر الأمان censor_nsfw=True وملابس يومية محترمة بدون حجاب!
     """
     h_w, h_h = (576, 320) if width >= height else (320, 576)
-    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV11:1.1:auto"}
-    models_pool = [
-        ["Realistic Vision", "Analog Madness", "majicMIX realistic"],
-        ["Realistic Vision", "Analog Madness", "majicMIX realistic", "Deliberate", "AbsoluteReality"],
-        ["ICBINP - I Can't Believe It's Not Photography", "Realistic Vision", "Dreamshaper", "Analog Madness"],
-    ]
+    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV12:1.2:auto"}
 
     for attempt in range(8):
         with _HORDE_SEM:
             payload = {
-                "prompt": f"{prompt}, modest everyday clothing, jacket or hoodie, bright dramatic rim light, clear sharp focus, detailed realistic scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, nudity, lingerie, underwear, cleavage, text, watermark",
+                "prompt": f"{prompt} ### {NEGATIVE_MODEST_CINEMA}",
                 "params": {
                     "width": h_w,
                     "height": h_h,
                     "steps": 18,
-                    "cfg_scale": 6.5,
+                    "cfg_scale": 7.4,
                     "sampler_name": "k_euler_a",
                     "seed": str((seed + attempt * 71) % 9999999),
                 },
                 "nsfw": False,
-                "censor_nsfw": False,
+                "censor_nsfw": True,
                 "r2": True,
-                "models": models_pool[attempt % len(models_pool)],
+                "models": CLEAN_CINEMA_MODELS,
             }
+            job_id = None
             try:
                 r = requests.post("https://aihorde.net/api/v2/generate/async", json=payload, headers=headers, timeout=18)
                 if r.status_code == 429:
@@ -298,7 +312,8 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
                 if not job_id:
                     continue
 
-                deadline = time.time() + 95.0
+                deadline = time.time() + 150.0
+                finished_clean = False
                 while time.time() < deadline:
                     time.sleep(4.5)
                     chk_r = requests.get(f"https://aihorde.net/api/v2/generate/check/{job_id}", headers=headers, timeout=15)
@@ -306,23 +321,35 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
                         continue
                     chk = chk_r.json()
                     if chk.get("faulted"):
+                        finished_clean = True
                         break
                     if chk.get("done"):
+                        finished_clean = True
                         st = requests.get(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=20)
                         if st.status_code == 200:
                             gens = st.json().get("generations") or []
-                            if gens and gens[0].get("img"):
+                            if gens and not gens[0].get("censored") and gens[0].get("img"):
                                 raw_img = gens[0]["img"]
                                 img_bytes = requests.get(raw_img, timeout=25).content if raw_img.startswith("http") else base64.b64decode(raw_img)
                                 im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
                                 if _is_valid_sharp_photo(im):
                                     return _fit_cover_exact(im, width, height, polish=True)
                         break
+                if not finished_clean and job_id:
+                    try:
+                        requests.delete(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=10)
+                    except Exception:
+                        pass
             except Exception:
+                if job_id:
+                    try:
+                        requests.delete(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=10)
+                    except Exception:
+                        pass
                 time.sleep(2.5)
                 continue
 
-    raise RuntimeError("تعذر استلام صورة فوتوغرافية حادة بعد 8 محاولات (تم منع أي صور غلوشة نهائياً).")
+    raise RuntimeError("تعذر استلام مشهد سينمائي حاد ومطابق للموقف بعد 8 محاولات.")
 
 
 def generate_single_shot_image(
@@ -348,13 +375,12 @@ def generate_single_shot_image(
 
 
 def _clean_short_prompt(p: str) -> str:
-    for prefix in (
-        "Wide 16:9 Netflix thriller 35mm ARRI Alexa cinema shot, well-lit clear foreground subject with dramatic rim light,",
-        "Full vertical 9:16 cinema portrait frame, entire subject centered inside frame, well-lit clear foreground details,",
-        "crisp focus, vivid realistic lighting, 8k photorealistic cinema still, no text, no watermark",
+    for tail in (
+        "centered vertical 9:16 movie still, 35mm cinema lighting, sharp focus",
+        "widescreen 16:9 35mm movie still, dramatic cinema lighting, sharp focus",
     ):
-        p = p.replace(prefix, "")
-    return p.strip(" ,")[:145]
+        p = p.replace(tail, "")
+    return p.strip(" ,")[:150]
 
 
 def generate_8sec_shots_batch(
@@ -364,7 +390,7 @@ def generate_8sec_shots_batch(
     width: int,
     height: int,
     seed_base: int,
-    max_workers: int = 4,
+    max_workers: int = 5,
 ) -> List[Path]:
     """
     يولّد كل 9 مشاهد متتالية في شبكة 3x3 FLUX (1536x864 للأفقي و 864x1536 للطولي) لاقتصاد 50% من حصة GPU
@@ -430,108 +456,25 @@ def generate_8sec_shots_batch(
 
     if missing_indices:
         missing_indices = sorted(set(missing_indices))
-        quads: List[List[int]] = [missing_indices[i : i + 4] for i in range(0, len(missing_indices), 4)]
         print(
-            f"    🎨 [{prefix}] توليد {len(missing_indices)} لقطة فوتوغرافية حادة عبر {len(quads)} دفعة رباعية متوازية (20 عامل GPU متزامن)...",
+            f"    🎨 [{prefix}] توليد {len(missing_indices)} مشهد روائي مطابق 1:1 للكلام المنطوق (صفر صور عشوائية / ملابس محترمة بدون حجاب)...",
             flush=True,
         )
 
-        def _run_quad(q_idxs: List[int]) -> List[Tuple[int, Path]]:
-            if len(q_idxs) == 1:
-                si = q_idxs[0]
-                op = out_dir / f"{prefix}_{si:03d}.jpg"
-                generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97, shot_idx=si)
-                return [(si, op)]
-
-            h_w, h_h = (576, 320) if width >= height else (320, 576)
-            headers = {
-                "apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000",
-                "Client-Agent": "MediaEmpireV11:1.2:auto",
-            }
-            wide_models = [
-                "Realistic Vision", "Analog Madness", "majicMIX realistic",
-                "Deliberate", "Dreamshaper", "AbsoluteReality",
-                "ICBINP - I Can't Believe It's Not Photography",
-            ]
-            lead_p = prompts[q_idxs[0]]
-            valid_imgs: List[Image.Image] = []
-
-            for attempt in range(4):
-                need_n = len(q_idxs) - len(valid_imgs)
-                if need_n <= 0:
-                    break
-                with _HORDE_SEM:
-                    payload = {
-                        "prompt": f"{lead_p}, modest everyday clothing, jacket or hoodie, bright dramatic rim light, clear sharp focus, detailed realistic cinema scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, nudity, lingerie, underwear, cleavage, text, watermark",
-                        "params": {
-                            "width": h_w,
-                            "height": h_h,
-                            "steps": 18,
-                            "cfg_scale": 6.5,
-                            "sampler_name": "k_euler_a",
-                            "n": need_n,
-                            "seed": str((seed_base + q_idxs[0] * 131 + attempt * 79) % 9999999),
-                        },
-                        "nsfw": False,
-                        "censor_nsfw": False,
-                        "r2": True,
-                        "models": wide_models,
-                    }
-                    try:
-                        r = requests.post("https://aihorde.net/api/v2/generate/async", json=payload, headers=headers, timeout=18)
-                        if r.status_code == 429:
-                            time.sleep(4.5 + attempt * 1.5)
-                            continue
-                        if r.status_code != 202:
-                            time.sleep(2.0)
-                            continue
-                        jid = r.json().get("id")
-                        if not jid:
-                            continue
-
-                        deadline = time.time() + 100.0
-                        while time.time() < deadline:
-                            time.sleep(4.2)
-                            chk_r = requests.get(f"https://aihorde.net/api/v2/generate/check/{jid}", headers=headers, timeout=15)
-                            if chk_r.status_code != 200:
-                                continue
-                            chk = chk_r.json()
-                            if chk.get("faulted"):
-                                break
-                            if chk.get("done"):
-                                st = requests.get(f"https://aihorde.net/api/v2/generate/status/{jid}", headers=headers, timeout=22)
-                                if st.status_code == 200:
-                                    for g_item in (st.json().get("generations") or []):
-                                        raw_img = g_item.get("img")
-                                        if not raw_img:
-                                            continue
-                                        img_bytes = requests.get(raw_img, timeout=25).content if raw_img.startswith("http") else base64.b64decode(raw_img)
-                                        im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-                                        if _is_valid_sharp_photo(im):
-                                            valid_imgs.append(_fit_cover_exact(im, width, height, polish=True))
-                                break
-                    except Exception:
-                        time.sleep(2.0)
-                        continue
-
-            out_pairs: List[Tuple[int, Path]] = []
-            for idx_k, si in enumerate(q_idxs):
-                op = out_dir / f"{prefix}_{si:03d}.jpg"
-                if idx_k < len(valid_imgs):
-                    valid_imgs[idx_k].save(str(op), format="JPEG", quality=93, optimize=True)
-                else:
-                    generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97 + 19, shot_idx=si)
-                out_pairs.append((si, op))
-            return out_pairs
+        def _run_dedicated_shot(si: int) -> Tuple[int, Path]:
+            op = out_dir / f"{prefix}_{si:03d}.jpg"
+            generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97 + 19, shot_idx=si)
+            return si, op
 
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
-            futs2 = [ex.submit(_run_quad, q) for q in quads]
+            futs2 = [ex.submit(_run_dedicated_shot, si) for si in missing_indices]
             done_extra = 0
             for f in as_completed(futs2):
-                for si, p in f.result():
-                    paths[si] = p
-                    done_extra += 1
-                print(f"    🎨 [{prefix}] دفعة رباعية حادة: {done_extra}/{len(missing_indices)} مكتمل...", flush=True)
+                si, p = f.result()
+                paths[si] = p
+                done_extra += 1
+                if done_extra % 5 == 0 or done_extra == len(missing_indices):
+                    print(f"    🎨 [{prefix}] مشهد روائي 1:1 مكتمل: {done_extra}/{len(missing_indices)}...", flush=True)
 
     return [p for p in paths if p is not None]
 

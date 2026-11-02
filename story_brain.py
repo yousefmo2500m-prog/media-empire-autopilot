@@ -46,13 +46,13 @@ EN_DETECTIVE_CASES = [
     "an impossible CCTV & clockwork-alibi mystery where one tiny reflection, shadow, or audio delay exposes the mastermind everyone trusted",
 ]
 
-CAMERA_ANGLES = [
-    "Crisp close-up shot with dramatic rim lighting on",
-    "Tight expressive portrait close-up on face and eyes of",
-    "Over-the-shoulder POV cinema shot showing",
-    "Medium two-shot with clear warm lamp and cool cyan contrast of",
-    "Low-angle dramatic cinema shot of",
-    "Detailed forensic close-up shot under bright desk lamp of",
+SCENE_STAGING_MODES = [
+    "Object & clue focus shot (show the exact physical object, phone, door lock, document, or clue mentioned—no face portrait)",
+    "Medium cinema action shot (waist-up character in closed turtleneck sweater or zipped dark jacket actively performing the spoken action in the room)",
+    "Hands-in-action POV shot (close view of hands holding/examining/opening the exact item mentioned in narration)",
+    "Wide atmospheric location shot (establish the room, apartment hallway, office, or street scene described right now)",
+    "Over-the-shoulder discovery shot (camera behind character's clothed shoulder looking directly at what they just noticed)",
+    "Wide dramatic room staging (full scene environment showing the exact event or confrontation unfolding)",
 ]
 
 
@@ -116,6 +116,20 @@ def _groq_json(api_key: str, sys_prompt: str, usr_prompt: str, max_tokens: int =
     raise RuntimeError(f"Groq JSON generation failed: {last_err}")
 
 
+def _sanitize_modest_action_prompt(p: str) -> str:
+    banned_patterns = [
+        r"\bno\s+hijab\b", r"\bwithout\s+hijab\b", r"\bhijab\b", r"\bheadscarf\b", r"\bniqab\b",
+        r"\bsleeveless\b", r"\btank\s*top\b", r"\bstrap\s*top\b", r"\bcamisole\b", r"\bcrop\s*top\b",
+        r"\bcleavage\b", r"\blow[- ]cut\b", r"\bv[- ]neck\b", r"\bopen\s+blazer\b", r"\bblouse\b",
+        r"\blingerie\b", r"\bbikini\b", r"\bunderwear\b",
+        r"\bseductive\b", r"\bglamour\b", r"\bsensual\b", r"\bportrait\s+close[- ]up\b",
+    ]
+    out = p
+    for pat in banned_patterns:
+        out = re.sub(pat, "", out, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", out).strip(" ,.-")
+
+
 def generate_full_episode_and_short(
     channel_cfg: Dict[str, Any],
     api_key: str,
@@ -175,7 +189,7 @@ def generate_full_episode_and_short(
   "engagement_question": "سؤال تحدي ذكي للمشاهدين يربط بتفصيلة في الحلقة ويدفعهم لكتابة توقعاتهم في التعليقات",
   "seo_tags": ["تاج 1", "تاج 2", "تاج 3", "تاج 4", "تاج 5", "تاج 6", "تاج 7", "تاج 8"],
   "hashtags": "#دفتر_راوي #قصص_واقعية #غموض_نفسي #حكايات_مصرية #قصص_مثيرة",
-  "character_visual_anchor": "Consistent realistic English visual description of protagonist (e.g. 29-year-old Egyptian man/woman, exact hairstyle, wearing a dark navy zip hoodie over a grey t-shirt, modern Cairo apartment)",
+  "character_visual_anchor": "Consistent realistic English visual description of protagonist in modest everyday attire (e.g. a 30-year-old Egyptian man wearing a dark zipped jacket over a grey crewneck sweater, OR if female: uncovered shoulder-length dark hair wearing a closed black high-neck turtleneck sweater and dark winter coat—never revealing clothes and never write the word hijab)",
   "scenes_outline": [
     {{"scene_num": 1, "scene_title": "عنوان فضولي للمشهد 1", "summary": "بداية الحكاية من أول لحظة بتفاصيل واقعية ملموسة"}},
     {{"scene_num": 2, "scene_title": "عنوان فضولي للمشهد 2", "summary": "تصاعد حابس للأنفاس ينتهي عند قمة الذروة النارية الأولى (Peak Climax #1)"}},
@@ -225,7 +239,7 @@ Return exact valid JSON:
   "engagement_question": "Specific clue/timestamp debate question compelling viewers to comment their theory",
   "seo_tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"],
   "hashtags": "#storytime #mystery #thriller #plotwist #truestories",
-  "character_visual_anchor": "Consistent realistic protagonist English visual description (age, hair, exact hoodie/jacket color, modern setting)",
+  "character_visual_anchor": "Consistent realistic protagonist English visual description in modest everyday attire (e.g. 30-year-old man in charcoal zipped jacket over crewneck sweater, OR if female: uncovered wavy brown hair wearing a closed navy turtleneck sweater and zipped winter coat—never revealing clothes and never write the word hijab)",
   "scenes_outline": [
     {{"scene_num": 1, "scene_title": "Curiosity Scene 1 Title", "summary": "How the night began with concrete everyday detail"}},
     {{"scene_num": 2, "scene_title": "Curiosity Scene 2 Title", "summary": "Deep escalation ending on Explosive Peak Climax #1"}},
@@ -355,9 +369,11 @@ Return valid JSON only:
         "thumbnail_hook_text": raw_hook,
         "thumbnail_badge_text": channel_cfg.get("thumb_badge", ""),
         "teaser_banner_text": str(plan.get("thumbnail_banner_top") or ("مقتطف من ذروة الأحداث — تابع للنهاية!" if lang == "ar" else "CLIMAX PREVIEW — WATCH TILL THE END!")).strip(),
-        "thumbnail_prompt": str(
-            plan.get("thumbnail_prompt")
-            or f"Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: terrified {char_anchor} on right third lit by bright blue phone light and red rim light, clean dark space on left third, no text, no watermark"
+        "thumbnail_prompt": _sanitize_modest_action_prompt(
+            str(
+                plan.get("thumbnail_prompt")
+                or f"Dramatic 16:9 thriller movie still: shocked {char_anchor} wearing modest buttoned jacket on right third looking at glowing blue smartphone screen, shadowy open apartment door behind, dark clean space on left third, 35mm cinema lighting"
+            )
         ),
         "teaser_intro": teaser_intro,
         "short_1_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_1_hook_intro") or "")).strip(),
@@ -370,7 +386,7 @@ Return valid JSON only:
         "engagement_question": str(plan.get("engagement_question") or "").strip(),
         "seo_tags": combined_tags[:18],
         "hashtags": str(plan.get("hashtags") or "").strip(),
-        "character_visual_anchor": char_anchor,
+        "character_visual_anchor": _sanitize_modest_action_prompt(char_anchor),
         "scenes": scenes_full,
         "cta_spoken_1": channel_cfg["cta_spoken_1"],
         "cta_spoken_2": channel_cfg["cta_spoken_2"],
@@ -386,55 +402,63 @@ def generate_8sec_shot_prompts(
     is_vertical: bool = False,
 ) -> List[str]:
     """
-    يولّد لكل نافذة زمنية مشهداً سينمائياً واضحاً ومضاءً درامياً بوضوح عالٍ (ممنوع المشاهد المظلمة المعتمة!)
-    ومطابقاً 100% للكلمات المنطوقة في تلك النافذة بدون أي تكرار.
+    يولّد لكل نافذة زمنية مشهداً سينمائياً يجسد الحدث/الموقف الفعلي المنطوق في تلك الثانية بالضبط:
+    - الأشياء والأماكن والأفعال الحركية تأتي في أول الجملة (ليلتقطها النموذج البصري بدقة 100%).
+    - ممنوع صور استعراض الوجوه أو صور السيدات العشوائية! كل لقطة تمثل ما يُحكى في الرواية بالضبط.
+    - التزام صارم بملابس يومية محترمة ومحتشمة بدون حجاب (جاكيت/بليزر/قميص بأكمام عادية، صفر عري).
     """
-    frame_prefix = (
-        "Full vertical 9:16 cinema portrait frame, entire subject centered inside frame, well-lit clear foreground details, "
-        if is_vertical
-        else "Wide 16:9 Netflix thriller 35mm ARRI Alexa cinema shot, well-lit clear foreground subject with dramatic rim light, "
-    )
+    clean_anchor = _sanitize_modest_action_prompt(character_visual_anchor)
     sys_msg = (
-        "You are an elite Netflix cinematographer. Convert each spoken narration snippet into ONE crystal-clear, well-lit, photorealistic "
-        "English visual prompt matching ONLY what is spoken in that exact window. Always ensure clear dramatic lighting on faces/objects (never pitch black), "
-        "vary camera angles so consecutive shots look distinct, and include zero text/letters."
+        "You are an elite thriller movie storyboard director. Convert each spoken narration beat (`spoken`) into ONE vivid, "
+        "concrete 28-38 word English cinema scene prompt depicting the EXACT physical event, action, object, or room situation happening in `spoken`.\n"
+        "STRICT RULES:\n"
+        "1. ACTION & SITUATION FIRST: Put the exact action, props, and setting in the VERY FIRST WORDS (e.g. 'Close-up of a hand holding a glowing smartphone showing a message at 3 AM beside a bedroom lamp...', 'Medium movie shot of a man in a navy jacket cautiously opening a wooden apartment door into a dim hallway...').\n"
+        "2. NO RANDOM FEMALE PORTRAITS: Never generate generic face portraits or random women! At least 45% of shots must focus on objects, clues, doors, phones, rooms, hands-in-action, or wide scenes without close-up faces.\n"
+        "3. MODEST NON-HIJAB EVERYDAY WARDROBE: Whenever any woman appears in the story, describe her with 'uncovered natural hair' wearing 'a closed high-neck turtleneck sweater or crewneck long-sleeve sweater and zipped winter coat'. NEVER write blazers, v-necks, sleeveless, straps, cleavage, or shorts, and NEVER write the word 'hijab' or 'headscarf'.\n"
+        "4. Bright dramatic cinema lighting (warm lamp + cool window/screen light, never pitch black), zero text/letters."
     )
 
     prompts_out: List[str] = []
-    batch_sz = 27
+    batch_sz = 25
     for start_i in range(0, len(windows), batch_sz):
         chunk = windows[start_i : start_i + batch_sz]
         items_desc = [
             {
                 "idx": k,
-                "angle_hint": CAMERA_ANGLES[(start_i + k) % len(CAMERA_ANGLES)],
-                "spoken": w.get("text", "")[:210],
+                "staging_mode": SCENE_STAGING_MODES[(start_i + k) % len(SCENE_STAGING_MODES)],
+                "spoken": w.get("text", "")[:220],
             }
             for k, w in enumerate(chunk)
         ]
         usr_msg = f"""
-Story: {story_title}
-Consistent Protagonist Appearance: {character_visual_anchor}
-Framing: {"Vertical 9:16 full portrait" if is_vertical else "Widescreen 16:9"}
+Story Title: {story_title}
+Main Character Reference (use ONLY when the character is actively performing an action in the beat): {clean_anchor}
+Composition: {"Vertical 9:16 centered movie scene" if is_vertical else "Widescreen 16:9 movie scene"}
 
-Write {len(chunk)} vivid, clearly lit 26-38 word photorealistic English prompts matching each `spoken` beat using `angle_hint`:
+Write {len(chunk)} distinct 28-38 word English movie-scene prompts where EACH prompt illustrates the exact event/situation in `spoken` following `staging_mode`:
 {json.dumps(items_desc, ensure_ascii=False)}
 
 Return JSON only:
 {{"prompts": ["prompt_0", "prompt_1", ...]}}
 """
         try:
-            res = _groq_json(api_key, sys_msg, usr_msg, max_tokens=4800)
+            res = _groq_json(api_key, sys_msg, usr_msg, max_tokens=5000)
             got = res.get("prompts") or []
         except Exception:
             got = []
 
         for k, w in enumerate(chunk):
-            raw_p = str(got[k]).strip() if (k < len(got) and got[k]) else ""
-            angle = CAMERA_ANGLES[(start_i + k) % len(CAMERA_ANGLES)]
-            if not raw_p:
-                raw_p = f"{angle} {character_visual_anchor} reacting to a tense clue under warm desk lamp and cool window light"
-            full_p = f"{frame_prefix}{raw_p}, crisp focus, vivid realistic lighting, 8k photorealistic cinema still, no text, no watermark"
+            raw_p = _sanitize_modest_action_prompt(str(got[k]).strip()) if (k < len(got) and got[k]) else ""
+            if not raw_p or len(raw_p.split()) < 8:
+                fallback_actions = [
+                    "Close-up movie shot of a glowing smartphone lying beside keys on a wooden table under a warm desk lamp in a dim apartment",
+                    f"Medium movie shot of {clean_anchor} cautiously checking a locked wooden apartment door in a quiet hallway, dramatic cinema lighting",
+                    "Over-the-shoulder movie shot of hands examining printed documents and a brass key on a desk under a warm lamp",
+                    "Wide atmospheric cinema shot of a dimly lit apartment living room at night with blue window light and shadows across the doorway",
+                ]
+                raw_p = fallback_actions[(start_i + k) % len(fallback_actions)]
+            framing_tail = "centered vertical 9:16 movie still, 35mm cinema lighting, sharp focus" if is_vertical else "widescreen 16:9 35mm movie still, dramatic cinema lighting, sharp focus"
+            full_p = f"{raw_p}, {framing_tail}"
             prompts_out.append(full_p)
 
     return prompts_out

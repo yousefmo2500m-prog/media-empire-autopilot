@@ -25,7 +25,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "ar",
         "niche": "eg_diverse_novels",
         "min_duration_sec": 945,
-        "shot_interval_sec": 8.0,
+        "shot_interval_sec": 9.5,
         "thumb_badge": "قصة حقيقية تحبس الأنفاس",
         "base_tags": [
             "قصص واقعية", "حكايات مصرية", "غموض نفسي", "قصص مثيرة", "دفتر راوي",
@@ -55,7 +55,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "ar",
         "niche": "eg_conan_detective",
         "min_duration_sec": 945,
-        "shot_interval_sec": 8.0,
+        "shot_interval_sec": 9.5,
         "thumb_badge": "لغز مستحيل الحل",
         "base_tags": [
             "الغاز بوليسية", "قضايا غامضة", "الدليل الاخير", "تحقيقات ذكية", "لغز الغرفة المغلقة",
@@ -85,7 +85,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "en",
         "niche": "en_diverse_stories",
         "min_duration_sec": 945,
-        "shot_interval_sec": 8.0,
+        "shot_interval_sec": 9.5,
         "thumb_badge": "TRUE CHILLING TWIST",
         "base_tags": [
             "psychological thriller", "true scary stories", "mystery stories", "plot twist story",
@@ -116,7 +116,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "en",
         "niche": "en_detective_mystery",
         "min_duration_sec": 945,
-        "shot_interval_sec": 8.0,
+        "shot_interval_sec": 9.5,
         "thumb_badge": "IMPOSSIBLE ALIBI",
         "base_tags": [
             "detective mystery", "locked room mystery", "whodunit", "impossible crime",
