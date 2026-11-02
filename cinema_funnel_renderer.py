@@ -124,28 +124,24 @@ def _render_single_long_8s_shot(
     out_seg: Path,
     fps: int = 20,
 ) -> Tuple[int, Path]:
-    n_frames = max(24, int(round(dur * fps)))
     fade_out_st = max(0.2, dur - 0.22)
+    d_safe = max(1.0, dur)
     mode = idx % 4
     if mode == 0:
-        # Push-In درامي ناعم نحو مركز اللقطة
-        zp = f"zoompan=z='min(zoom+0.00075,1.12)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n_frames}:s=1280x720:fps={fps}"
+        mv = f"scale=1408:792,crop=1280:720:'(iw-1280)*(t/{d_safe:.2f})':'(ih-720)/2'"
     elif mode == 1:
-        # Pull-Out يكشف تفاصيل الغرفة تدريجياً
-        zp = f"zoompan=z='if(eq(on,1),1.12,max(1.00,zoom-0.00075))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n_frames}:s=1280x720:fps={fps}"
+        mv = f"scale=1408:792,crop=1280:720:'(iw-1280)*(1-t/{d_safe:.2f})':'(ih-720)/2'"
     elif mode == 2:
-        # Drift أفقي بطيء من اليسار لليمين
-        zp = f"zoompan=z='1.08':x='(iw-iw/zoom)*(on/{n_frames})':y='ih/2-(ih/zoom/2)':d={n_frames}:s=1280x720:fps={fps}"
+        mv = f"scale=1408:792,crop=1280:720:'(iw-1280)/2':'(ih-720)*(t/{d_safe:.2f})'"
     else:
-        # Drift أفقي بطيء من اليمين لليسار
-        zp = f"zoompan=z='1.08':x='(iw-iw/zoom)*(1-on/{n_frames})':y='ih/2-(ih/zoom/2)':d={n_frames}:s=1280x720:fps={fps}"
+        mv = f"scale=1408:792,crop=1280:720:'(iw-1280)/2':'(ih-720)*(1-t/{d_safe:.2f})'"
 
-    vf = f"scale=1440:810,{zp},fade=t=in:st=0:d=0.18,fade=t=out:st={fade_out_st:.2f}:d=0.20,format=yuv420p"
+    vf = f"{mv},fade=t=in:st=0:d=0.18,fade=t=out:st={fade_out_st:.2f}:d=0.20,format=yuv420p"
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
-            "-loop", "1", "-t", f"{dur:.3f}", "-i", str(img_path),
-            "-vf", vf,
+            "-loop", "1", "-framerate", str(fps), "-t", f"{dur:.3f}", "-i", str(img_path),
+            "-vf", vf, "-r", str(fps),
             "-c:v", "libx264", "-preset", "ultrafast", "-crf", "22",
             "-an", "-loglevel", "error", str(out_seg),
         ],
@@ -230,19 +226,19 @@ def _render_single_short_8s_shot(
     out_seg: Path,
     fps: int = 24,
 ) -> Tuple[int, Path]:
-    n_frames = max(24, int(round(dur * fps)))
     fade_out_st = max(0.18, dur - 0.18)
-    # زوم سينمائي طفيف جداً (1.00 -> 1.045) يحافظ على ظهور الكادر الطولي 9:16 الكامل بدون قص الأطراف!
+    d_safe = max(1.0, dur)
+    # حركة سينمائية فائقة النعومة مع الحفاظ على ظهور الكادر الطولي 9:16 الكامل بدون قص الأطراف!
     if idx % 2 == 0:
-        zp = f"zoompan=z='min(zoom+0.00024,1.045)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n_frames}:s=720x1280:fps={fps}"
+        mv = f"scale=752:1336,crop=720:1280:'(iw-720)/2':'(ih-1280)*(t/{d_safe:.2f})'"
     else:
-        zp = f"zoompan=z='if(eq(on,1),1.045,max(1.00,zoom-0.00024))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n_frames}:s=720x1280:fps={fps}"
-    vf = f"scale=756:1344,{zp},fade=t=in:st=0:d=0.15,fade=t=out:st={fade_out_st:.2f}:d=0.16,format=yuv420p"
+        mv = f"scale=752:1336,crop=720:1280:'(iw-720)/2':'(ih-1280)*(1-t/{d_safe:.2f})'"
+    vf = f"{mv},fade=t=in:st=0:d=0.15,fade=t=out:st={fade_out_st:.2f}:d=0.16,format=yuv420p"
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
-            "-loop", "1", "-t", f"{dur:.3f}", "-i", str(img_path),
-            "-vf", vf,
+            "-loop", "1", "-framerate", str(fps), "-t", f"{dur:.3f}", "-i", str(img_path),
+            "-vf", vf, "-r", str(fps),
             "-c:v", "libx264", "-preset", "ultrafast", "-crf", "21",
             "-an", "-loglevel", "error", str(out_seg),
         ],

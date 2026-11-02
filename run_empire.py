@@ -95,34 +95,7 @@ def run_single_channel(channel_id: str, dry_run: bool = False) -> None:
         )
 
         total_unique_imgs = len(long_prompts) + len(sh1_prompts) + len(sh2_prompts) + 1
-        print(f"🎨 [{cfg['brand_name']}] 4/6 رسم {total_unique_imgs} صورة FLUX سينمائية فريدة بدون أي تكرار + غلاف يوتيوب ناري...")
-        long_imgs = generate_8sec_shots_batch(
-            prompts=long_prompts,
-            out_dir=tmp_root / "shots_16x9",
-            prefix="long16x9",
-            width=1280,
-            height=720,
-            seed_base=seed_base,
-            max_workers=4,
-        )
-        sh1_imgs = generate_8sec_shots_batch(
-            prompts=sh1_prompts,
-            out_dir=tmp_root / "shots_sh1_9x16",
-            prefix="sh1_9x16",
-            width=720,
-            height=1280,
-            seed_base=seed_base + 20000,
-            max_workers=4,
-        )
-        sh2_imgs = generate_8sec_shots_batch(
-            prompts=sh2_prompts,
-            out_dir=tmp_root / "shots_sh2_9x16",
-            prefix="sh2_9x16",
-            width=720,
-            height=1280,
-            seed_base=seed_base + 40000,
-            max_workers=4,
-        )
+        print(f"🎨 [{cfg['brand_name']}] 4/6 رسم الغلاف الناري + {total_unique_imgs - 1} صورة FLUX سينمائية فريدة بدون أي تكرار...", flush=True)
         thumb_jpg = build_viral_youtube_thumbnail(
             prompt=episode["thumbnail_prompt"],
             hook_text=episode["thumbnail_hook_text"],
@@ -131,6 +104,33 @@ def run_single_channel(channel_id: str, dry_run: bool = False) -> None:
             language=cfg["language"],
             out_path=tmp_root / f"{channel_id}_thumbnail_1280x720.jpg",
             seed=seed_base + 777,
+        )
+        sh1_imgs = generate_8sec_shots_batch(
+            prompts=sh1_prompts,
+            out_dir=tmp_root / "shots_sh1_9x16",
+            prefix="sh1_9x16",
+            width=720,
+            height=1280,
+            seed_base=seed_base + 20000,
+            max_workers=6,
+        )
+        sh2_imgs = generate_8sec_shots_batch(
+            prompts=sh2_prompts,
+            out_dir=tmp_root / "shots_sh2_9x16",
+            prefix="sh2_9x16",
+            width=720,
+            height=1280,
+            seed_base=seed_base + 40000,
+            max_workers=6,
+        )
+        long_imgs = generate_8sec_shots_batch(
+            prompts=long_prompts,
+            out_dir=tmp_root / "shots_16x9",
+            prefix="long16x9",
+            width=1280,
+            height=720,
+            seed_base=seed_base,
+            max_workers=6,
         )
 
         print(f"🎞️ [{cfg['brand_name']}] 5/6 مونتاج متوازٍ (صورة جديدة كل ~8 ثوانٍ بلا تكرار) للفيلم الطويل والشورتين...")

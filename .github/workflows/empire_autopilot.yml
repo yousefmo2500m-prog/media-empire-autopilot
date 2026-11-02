@@ -1,4 +1,4 @@
-name: 4-Channel Media Empire Autopilot V10.0
+name: 4-Channel Media Empire Autopilot V10.2
 
 on:
   schedule:
@@ -75,16 +75,20 @@ jobs:
           HF_TOKEN_3: ${{ secrets.HF_TOKEN_3 }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          ZERNIO_KEY_CH1: ${{ secrets.ZERNIO_KEY_CH1 }}
-          ZERNIO_KEY_CH1_TIKTOK: ${{ secrets.ZERNIO_KEY_CH1_TIKTOK }}
-          ZERNIO_KEY_CH2: ${{ secrets.ZERNIO_KEY_CH2 }}
-          ZERNIO_KEY_CH2_TIKTOK: ${{ secrets.ZERNIO_KEY_CH2_TIKTOK }}
-          ZERNIO_KEY_CH3: ${{ secrets.ZERNIO_KEY_CH3 }}
-          ZERNIO_KEY_CH3_TIKTOK: ${{ secrets.ZERNIO_KEY_CH3_TIKTOK }}
-          ZERNIO_KEY_CH4: ${{ secrets.ZERNIO_KEY_CH4 }}
-          ZERNIO_KEY_CH4_TIKTOK: ${{ secrets.ZERNIO_KEY_CH4_TIKTOK }}
+          CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}
+          CH1_TIKTOK_ZERNIO_KEY: ${{ secrets.CH1_TIKTOK_ZERNIO_KEY }}
+          CH1_TIKTOK_ACCOUNT_ID: ${{ secrets.CH1_TIKTOK_ACCOUNT_ID }}
+          CH2_ZERNIO_KEY: ${{ secrets.CH2_ZERNIO_KEY }}
+          CH2_TIKTOK_ZERNIO_KEY: ${{ secrets.CH2_TIKTOK_ZERNIO_KEY }}
+          CH2_TIKTOK_ACCOUNT_ID: ${{ secrets.CH2_TIKTOK_ACCOUNT_ID }}
+          CH3_ZERNIO_KEY: ${{ secrets.CH3_ZERNIO_KEY }}
+          CH3_TIKTOK_ZERNIO_KEY: ${{ secrets.CH3_TIKTOK_ZERNIO_KEY }}
+          CH3_TIKTOK_ACCOUNT_ID: ${{ secrets.CH3_TIKTOK_ACCOUNT_ID }}
+          CH4_ZERNIO_KEY: ${{ secrets.CH4_ZERNIO_KEY }}
+          CH4_TIKTOK_ZERNIO_KEY: ${{ secrets.CH4_TIKTOK_ZERNIO_KEY }}
+          CH4_TIKTOK_ACCOUNT_ID: ${{ secrets.CH4_TIKTOK_ACCOUNT_ID }}
         run: |
-          python run_empire.py --channel "${{ steps.target.outputs.channel }}"
+          python -u run_empire.py --channel "${{ steps.target.outputs.channel }}"
 
       - name: Save Non-Repetition Memory Back to Repository
         run: |

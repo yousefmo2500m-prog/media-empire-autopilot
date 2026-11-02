@@ -157,13 +157,24 @@ def publish_channel_funnel(
     short_2_mp4: Path,
 ) -> Dict[str, Any]:
     prefix = channel_cfg["env_prefix"]
-    main_key = os.environ.get(f"ZERNIO_KEY_{prefix}", "").strip()
-    tt_key = os.environ.get(f"ZERNIO_KEY_{prefix}_TIKTOK", "").strip() or main_key
+    main_key = (
+        os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
+        or os.environ.get(f"ZERNIO_KEY_{prefix}", "").strip()
+    )
+    tt_key = (
+        os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip()
+        or os.environ.get(f"ZERNIO_KEY_{prefix}_TIKTOK", "").strip()
+        or main_key
+    )
 
     accounts = channel_cfg.get("accounts") or {}
     yt_acc = accounts.get("youtube") or os.environ.get(f"{prefix}_YT_ACC", "").strip()
     fb_acc = accounts.get("facebook") or os.environ.get(f"{prefix}_FB_ACC", "").strip()
-    tt_acc = accounts.get("tiktok") or os.environ.get(f"{prefix}_TT_ACC", "").strip()
+    tt_acc = (
+        accounts.get("tiktok")
+        or os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip()
+        or os.environ.get(f"{prefix}_TT_ACC", "").strip()
+    )
 
     is_ar = channel_cfg["language"] == "ar"
     results: Dict[str, Any] = {"channel": channel_cfg["brand_name"], "long_post": None, "short_posts": []}
