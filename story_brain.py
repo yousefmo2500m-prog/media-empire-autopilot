@@ -13,13 +13,20 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
+import os
 import requests
 
 GROQ_BASE = "https://api.groq.com/openai/v1"
 PREFERRED_MODELS = [
+    "llama-3.3-70b-versatile",
     "openai/gpt-oss-120b",
     "qwen/qwen3.8-27b",
     "openai/gpt-oss-20b",
+]
+GEMINI_JSON_MODELS = [
+    "gemini-3-flash-preview",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
 ]
 
 EG_REALISTIC_THRILLERS = [
@@ -82,38 +89,80 @@ def _extract_json(raw: str) -> Dict[str, Any]:
     return json.loads(cleaned)
 
 
-def _groq_json(api_key: str, sys_prompt: str, usr_prompt: str, max_tokens: int = 6000) -> Dict[str, Any]:
+def _get_gemini_keys() -> List[str]:
+    keys: List[str] = []
+    for env_k in ("GEMINI_API_KEY", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3", "GEMINI_API_KEY_4", "GEMINI_API_KEY_5"):
+        v = os.environ.get(env_k, "").strip()
+        if v and v not in keys:
+            keys.append(v)
+    return keys
+
+
+def _groq_json(api_key: str, sys_prompt: str, usr_prompt: str, max_tokens: int = 7500) -> Dict[str, Any]:
+    last_err: Any = None
+
+    # الطبقة الأولى السريعة والموثوقة: مفاتيح Gemini الخمسة (JSON أصلي فائق السرعة بدون نفاد توكنات التفكير)
+    gem_keys = _get_gemini_keys()
+    for gi, gkey in enumerate(gem_keys):
+        mdl = GEMINI_JSON_MODELS[gi % len(GEMINI_JSON_MODELS)]
+        try:
+            g_url = f"https://generativelanguage.googleapis.com/v1beta/models/{mdl}:generateContent?key={gkey}"
+            g_payload = {
+                "systemInstruction": {"parts": [{"text": sys_prompt}]},
+                "contents": [{"role": "user", "parts": [{"text": usr_prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.82,
+                    "maxOutputTokens": max(max_tokens, 8192),
+                    "responseMimeType": "application/json",
+                },
+            }
+            gr = requests.post(g_url, json=g_payload, timeout=90)
+            if gr.status_code == 200:
+                cands = gr.json().get("candidates") or []
+                if cands:
+                    parts = cands[0].get("content", {}).get("parts") or []
+                    txt_chunks = [p.get("text", "") for p in parts if not p.get("thought") and p.get("text")]
+                    raw_txt = "\n".join(txt_chunks).strip()
+                    if raw_txt:
+                        return _extract_json(raw_txt)
+        except Exception as exc:
+            last_err = exc
+            time.sleep(1.2)
+
+    # الطبقة الثانية الاحتياطية: نماذج Groq المتعددة
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    last_err = None
-    for attempt in range(9):
+    for attempt in range(8):
         cur_model = PREFERRED_MODELS[attempt % len(PREFERRED_MODELS)]
         try:
-            payload = {
+            payload: Dict[str, Any] = {
                 "model": cur_model,
                 "messages": [
                     {"role": "system", "content": sys_prompt},
                     {"role": "user", "content": usr_prompt},
                 ],
-                "temperature": 0.82,
-                "max_tokens": max_tokens,
+                "temperature": 0.80,
+                "max_tokens": max(max_tokens, 7500),
                 "response_format": {"type": "json_object"},
             }
             resp = requests.post(f"{GROQ_BASE}/chat/completions", headers=headers, json=payload, timeout=115)
             if resp.status_code == 429:
-                time.sleep(min(15.0, float(resp.headers.get("retry-after", 4.5))))
+                time.sleep(min(12.0, float(resp.headers.get("retry-after", 4.0))))
                 continue
             if resp.status_code != 200:
                 payload.pop("response_format", None)
                 resp = requests.post(f"{GROQ_BASE}/chat/completions", headers=headers, json=payload, timeout=115)
                 if resp.status_code == 429:
-                    time.sleep(5.0)
+                    time.sleep(4.5)
                     continue
             resp.raise_for_status()
-            return _extract_json(resp.json()["choices"][0]["message"]["content"])
+            msg_content = (resp.json()["choices"][0]["message"].get("content") or "").strip()
+            if not msg_content:
+                raise ValueError("Empty content from reasoning model")
+            return _extract_json(msg_content)
         except Exception as exc:
             last_err = exc
-            time.sleep(2.5)
-    raise RuntimeError(f"Groq JSON generation failed: {last_err}")
+            time.sleep(2.0)
+    raise RuntimeError(f"LLM JSON generation failed: {last_err}")
 
 
 def _sanitize_modest_action_prompt(p: str) -> str:
