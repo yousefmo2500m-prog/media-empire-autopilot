@@ -26,7 +26,17 @@ FONTS_DIR = Path(__file__).resolve().parent / "fonts"
 FONT_AR = FONTS_DIR / "Cairo-Variable.ttf"
 
 _EXHAUSTED_SLOTS: Set[str] = set()
-_HORDE_SEM = threading.Semaphore(3)
+_TOKEN_LOCKS_GUARD = threading.Lock()
+_TOKEN_LOCKS: Dict[str, threading.Lock] = {}
+_CLIENT_CACHE: Dict[str, Any] = {}
+_HORDE_SEM = threading.Semaphore(5)
+
+
+def _get_token_lock(tok_tag: str) -> threading.Lock:
+    with _TOKEN_LOCKS_GUARD:
+        if tok_tag not in _TOKEN_LOCKS:
+            _TOKEN_LOCKS[tok_tag] = threading.Lock()
+        return _TOKEN_LOCKS[tok_tag]
 
 
 def _load_bold_font(size: int) -> ImageFont.FreeTypeFont:
@@ -151,8 +161,6 @@ def _call_flux_zerogpu_raw(
     ]
 
     for sp in spaces:
-        if sp == "Tongyi-MAI/Z-Image-Turbo" and (width > 1300 or height > 1300):
-            continue
         for ai in range(len(auth_pool)):
             tok = auth_pool[(slot_idx + ai) % len(auth_pool)]
             tok_tag = "ANON_IP" if tok is None else tok[:12]
@@ -160,57 +168,67 @@ def _call_flux_zerogpu_raw(
             if cb_key in _EXHAUSTED_SLOTS or f"ALL::{tok_tag}" in _EXHAUSTED_SLOTS:
                 continue
 
-            try:
-                client = Client(sp, token=tok or None)
-                img_p = None
-                if sp == "Tongyi-MAI/Z-Image-Turbo":
-                    res_str = "720x1280 ( 9:16 )" if height > width else "1280x720 ( 16:9 )"
-                    res = client.predict(
-                        prompt=prompt,
-                        resolution=res_str,
-                        seed=seed % 999999,
-                        steps=8,
-                        shift=3.0,
-                        random_seed=False,
-                        gallery_images=[],
-                        api_name="/generate",
-                    )
-                    gal = res[0] if isinstance(res, (list, tuple)) else res
-                    item = gal[0] if isinstance(gal, list) and gal else gal
-                    img_p = item.get("image") if isinstance(item, dict) else item
-                    if isinstance(img_p, dict):
-                        img_p = img_p.get("path")
-                else:
-                    res = client.predict(
-                        prompt=prompt,
-                        seed=seed % 999999,
-                        randomize_seed=False,
-                        width=width,
-                        height=height,
-                        num_inference_steps=4,
-                        api_name="/infer",
-                    )
-                    img_p = res[0] if isinstance(res, (list, tuple)) else res
-                    if isinstance(img_p, dict):
-                        img_p = img_p.get("path")
+            t_lock = _get_token_lock(tok_tag)
+            with t_lock:
+                if cb_key in _EXHAUSTED_SLOTS or f"ALL::{tok_tag}" in _EXHAUSTED_SLOTS:
+                    continue
+                try:
+                    client = _CLIENT_CACHE.get(cb_key)
+                    if client is None:
+                        client = Client(sp, token=tok or None, verbose=False)
+                        _CLIENT_CACHE[cb_key] = client
 
-                if img_p and Path(str(img_p)).exists():
-                    p_obj = Path(str(img_p))
-                    im = Image.open(p_obj).convert("RGB")
-                    im.load()
-                    try:
-                        p_obj.unlink(missing_ok=True)
-                    except Exception:
-                        pass
-                    if im.width >= 256:
-                        return im
-            except Exception as exc:
-                msg = str(exc).lower()
-                if "zerogpu" in msg or "exceeded" in msg or "quota" in msg or "limit" in msg:
-                    _EXHAUSTED_SLOTS.add(f"ALL::{tok_tag}")
-                else:
-                    _EXHAUSTED_SLOTS.add(cb_key)
-                continue
+                    img_p = None
+                    if sp == "Tongyi-MAI/Z-Image-Turbo":
+                        res_str = "720x1280 ( 9:16 )" if height > width else "1280x720 ( 16:9 )"
+                        res = client.predict(
+                            prompt=prompt,
+                            resolution=res_str,
+                            seed=seed % 999999,
+                            steps=8,
+                            shift=3.0,
+                            random_seed=False,
+                            gallery_images=[],
+                            api_name="/generate",
+                        )
+                        gal = res[0] if isinstance(res, (list, tuple)) else res
+                        item = gal[0] if isinstance(gal, list) and gal else gal
+                        img_p = item.get("image") if isinstance(item, dict) else item
+                        if isinstance(img_p, dict):
+                            img_p = img_p.get("path")
+                    else:
+                        res = client.predict(
+                            prompt=prompt,
+                            seed=seed % 999999,
+                            randomize_seed=False,
+                            width=width,
+                            height=height,
+                            num_inference_steps=4,
+                            api_name="/infer",
+                        )
+                        img_p = res[0] if isinstance(res, (list, tuple)) else res
+                        if isinstance(img_p, dict):
+                            img_p = img_p.get("path")
+
+                    if img_p and Path(str(img_p)).exists():
+                        p_obj = Path(str(img_p))
+                        im = Image.open(p_obj).convert("RGB")
+                        im.load()
+                        try:
+                            p_obj.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+                        if im.width >= 256:
+                            return im
+                except Exception as exc:
+                    msg = str(exc).lower()
+                    if "zerogpu" in msg or "exceeded your gpu quota" in msg or "gpu quota" in msg:
+                        _EXHAUSTED_SLOTS.add(f"ALL::{tok_tag}")
+                    elif "not found" in msg or "paused" in msg or "runtime error" in msg:
+                        _EXHAUSTED_SLOTS.add(cb_key)
+                    else:
+                        _CLIENT_CACHE.pop(cb_key, None)
+                    continue
     return None
 
 
@@ -239,24 +257,26 @@ def _try_cloudflare_flux(prompt: str, width: int, height: int, seed: int) -> Opt
 
 def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) -> Image.Image:
     """
-    محرك فوتوغرافي مضمون 100% محكوم بـ Semaphore(3) حتى لا نصطدم أبداً بحد التزامن (429)،
-    مع إعادة المحاولة حتى نستلم صورة فوتوغرافية حقيقية واضحة وحادة التفاصيل (صفر غلوشة للأبد!).
+    محرك فوتوغرافي مضمون 100% محكوم بـ Semaphore(4):
+    يفحص حالة التوليد عبر `/generate/check/{id}` الخفيف كل 4.5 ثانية (لا يخضع لحظر 429)،
+    ولا يستدعي `/generate/status/{id}` إلا مرة واحدة فقط فور اكتمال الصورة الحقيقية!
     """
     h_w, h_h = (576, 320) if width >= height else (320, 576)
-    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV11:1.0:auto"}
+    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV11:1.1:auto"}
     models_pool = [
-        ["ICBINP - I Can't Believe It's Not Photography", "Deliberate", "AbsoluteReality"],
-        ["Deliberate", "Realistic Vision", "Dreamshaper"],
+        ["Realistic Vision", "Analog Madness", "majicMIX realistic"],
+        ["Realistic Vision", "Analog Madness", "majicMIX realistic", "Deliberate", "AbsoluteReality"],
+        ["ICBINP - I Can't Believe It's Not Photography", "Realistic Vision", "Dreamshaper", "Analog Madness"],
     ]
 
-    for attempt in range(10):
+    for attempt in range(8):
         with _HORDE_SEM:
             payload = {
                 "prompt": f"{prompt}, bright dramatic rim light, clear sharp focus, detailed realistic scene ### cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark",
                 "params": {
                     "width": h_w,
                     "height": h_h,
-                    "steps": 22,
+                    "steps": 18,
                     "cfg_scale": 6.5,
                     "sampler_name": "k_euler_a",
                     "seed": str((seed + attempt * 71) % 9999999),
@@ -269,7 +289,7 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
             try:
                 r = requests.post("https://aihorde.net/api/v2/generate/async", json=payload, headers=headers, timeout=18)
                 if r.status_code == 429:
-                    time.sleep(4.5 + attempt * 1.5)
+                    time.sleep(5.0 + attempt * 1.5)
                     continue
                 if r.status_code != 202:
                     time.sleep(2.5)
@@ -278,29 +298,31 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
                 if not job_id:
                     continue
 
-                deadline = time.time() + 85.0
+                deadline = time.time() + 95.0
                 while time.time() < deadline:
-                    time.sleep(3.0)
-                    st = requests.get(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=15)
-                    if st.status_code != 200:
+                    time.sleep(4.5)
+                    chk_r = requests.get(f"https://aihorde.net/api/v2/generate/check/{job_id}", headers=headers, timeout=15)
+                    if chk_r.status_code != 200:
                         continue
-                    js = st.json()
-                    if js.get("done"):
-                        gens = js.get("generations") or []
-                        if gens and gens[0].get("img"):
-                            raw_img = gens[0]["img"]
-                            img_bytes = requests.get(raw_img, timeout=25).content if raw_img.startswith("http") else base64.b64decode(raw_img)
-                            im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-                            if _is_valid_sharp_photo(im):
-                                return _fit_cover_exact(im, width, height, polish=True)
+                    chk = chk_r.json()
+                    if chk.get("faulted"):
                         break
-                    if js.get("faulted"):
+                    if chk.get("done"):
+                        st = requests.get(f"https://aihorde.net/api/v2/generate/status/{job_id}", headers=headers, timeout=20)
+                        if st.status_code == 200:
+                            gens = st.json().get("generations") or []
+                            if gens and gens[0].get("img"):
+                                raw_img = gens[0]["img"]
+                                img_bytes = requests.get(raw_img, timeout=25).content if raw_img.startswith("http") else base64.b64decode(raw_img)
+                                im = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                                if _is_valid_sharp_photo(im):
+                                    return _fit_cover_exact(im, width, height, polish=True)
                         break
             except Exception:
                 time.sleep(2.5)
                 continue
 
-    raise RuntimeError("تعذر استلام صورة فوتوغرافية حادة بعد 10 محاولات (تم منع أي صور غلوشة نهائياً).")
+    raise RuntimeError("تعذر استلام صورة فوتوغرافية حادة بعد 8 محاولات (تم منع أي صور غلوشة نهائياً).")
 
 
 def generate_single_shot_image(
@@ -345,63 +367,84 @@ def generate_8sec_shots_batch(
     max_workers: int = 4,
 ) -> List[Path]:
     """
-    يولّد كل 9 مشاهد متتالية في شبكة 3x3 Full-HD FLUX (1920x1088 أو 1088x1920) بحيث نحصل على ~165 صورة FLUX حقيقية
-    في 19 استدعاء فقط (~دقيقتين ونصف!)، ثم يفحص حدة وإضاءة كل خلية على حدة (_is_valid_sharp_photo) ويعيد توليد أي خلية معتمة فوراً!
+    يولّد كل 9 مشاهد متتالية في شبكة 3x3 FLUX (1536x864 للأفقي و 864x1536 للطولي) لاقتصاد 50% من حصة GPU
+    بحيث تنتج المفاتيح الأربعة جميع لقطات الحلقة والشورتس (~165 صورة FLUX حقيقية) في ~دقيقتين فقط!
+    ثم يفحص حدة وإضاءة كل خلية (_is_valid_sharp_photo) ويعيد رسم أي لقطة ناقصة بالتوازي الكامل!
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     n_total = len(prompts)
     paths: List[Optional[Path]] = [None] * n_total
+    missing_indices: List[int] = []
 
     groups9: List[Tuple[int, List[int]]] = []
     for g_start in range(0, n_total, 9):
         idxs = list(range(g_start, min(n_total, g_start + 9)))
-        groups9.append((len(groups9), idxs))
-
-    def _run_group9(g_num: int, idxs: List[int]) -> List[Tuple[int, Path]]:
-        results_local: List[Tuple[int, Path]] = []
         if len(idxs) == 9:
-            sub_ps = [_clean_short_prompt(prompts[i]) for i in idxs]
-            orient = "vertical 9:16 portrait cells" if height > width else "widescreen 16:9 cinema cells"
-            labels = [
-                "Panel 1 (top-left)", "Panel 2 (top-center)", "Panel 3 (top-right)",
-                "Panel 4 (middle-left)", "Panel 5 (middle-center)", "Panel 6 (middle-right)",
-                "Panel 7 (bottom-left)", "Panel 8 (bottom-center)", "Panel 9 (bottom-right)",
-            ]
-            grid_prompt = (
-                f"Clean 3x3 nine-panel cinema contact sheet ({orient}, 3 columns by 3 rows, zero text, zero letters), "
-                f"9 distinct, brightly lit, sharp photorealistic ARRI Alexa thriller movie scenes: "
-                + "; ".join(f"{labels[k]}: {sub_ps[k]}" for k in range(9))
-            )
-            gw, gh = (1088, 1920) if height > width else (1920, 1088)
-            grid_im = _call_flux_zerogpu_raw(grid_prompt, gw, gh, seed=seed_base + g_num * 409, slot_idx=g_num)
-            if grid_im is not None:
-                cells = _extract_3x3_cells(grid_im)
-                for local_k, shot_i in enumerate(idxs):
-                    c_im = cells[local_k]
-                    out_p = out_dir / f"{prefix}_{shot_i:03d}.jpg"
-                    if _is_valid_sharp_photo(c_im):
-                        final_panel = _fit_cover_exact(c_im, width, height, polish=True)
-                        final_panel.save(str(out_p), format="JPEG", quality=93, optimize=True)
-                    else:
-                        # إذا كانت أي خلية معتمة، نعيد رسمها فردياً فوراً كصورة واضحة وحادة!
-                        generate_single_shot_image(prompts[shot_i], out_p, width, height, seed=seed_base + shot_i * 97, shot_idx=shot_i)
-                    results_local.append((shot_i, out_p))
-                return results_local
+            groups9.append((len(groups9), idxs))
+        else:
+            missing_indices.extend(idxs)
 
-        for shot_i in idxs:
-            out_p = out_dir / f"{prefix}_{shot_i:03d}.jpg"
-            generate_single_shot_image(prompts[shot_i], out_p, width, height, seed=seed_base + shot_i * 97, shot_idx=shot_i)
-            results_local.append((shot_i, out_p))
-        return results_local
+    def _run_grid9(g_num: int, idxs: List[int]) -> Tuple[List[Tuple[int, Path]], List[int]]:
+        done_local: List[Tuple[int, Path]] = []
+        retry_local: List[int] = []
+        sub_ps = [_clean_short_prompt(prompts[i]) for i in idxs]
+        orient = "vertical 9:16 portrait cells" if height > width else "widescreen 16:9 cinema cells"
+        labels = [
+            "Panel 1 (top-left)", "Panel 2 (top-center)", "Panel 3 (top-right)",
+            "Panel 4 (middle-left)", "Panel 5 (middle-center)", "Panel 6 (middle-right)",
+            "Panel 7 (bottom-left)", "Panel 8 (bottom-center)", "Panel 9 (bottom-right)",
+        ]
+        grid_prompt = (
+            f"Clean 3x3 nine-panel cinema contact sheet ({orient}, 3 columns by 3 rows, zero text, zero letters), "
+            f"9 distinct, brightly lit, sharp photorealistic ARRI Alexa thriller movie scenes: "
+            + "; ".join(f"{labels[k]}: {sub_ps[k]}" for k in range(9))
+        )
+        gw, gh = (864, 1536) if height > width else (1536, 864)
+        grid_im = _call_flux_zerogpu_raw(grid_prompt, gw, gh, seed=seed_base + g_num * 409, slot_idx=g_num)
+        if grid_im is None:
+            return [], list(idxs)
 
-    with ThreadPoolExecutor(max_workers=max_workers) as ex:
-        futs = [ex.submit(_run_group9, gn, idxs) for gn, idxs in groups9]
-        done_imgs = 0
-        for f in as_completed(futs):
-            for shot_i, p in f.result():
-                paths[shot_i] = p
-                done_imgs += 1
-            print(f"    🎨 [{prefix}] تم إنجاز وفحص حدة {done_imgs}/{n_total} صورة سينمائية حقيقية (صفر غلوشة!)...", flush=True)
+        cells = _extract_3x3_cells(grid_im)
+        for local_k, shot_i in enumerate(idxs):
+            c_im = cells[local_k]
+            if _is_valid_sharp_photo(c_im):
+                out_p = out_dir / f"{prefix}_{shot_i:03d}.jpg"
+                final_panel = _fit_cover_exact(c_im, width, height, polish=True)
+                final_panel.save(str(out_p), format="JPEG", quality=93, optimize=True)
+                done_local.append((shot_i, out_p))
+            else:
+                retry_local.append(shot_i)
+        return done_local, retry_local
+
+    if groups9:
+        with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            futs = [ex.submit(_run_grid9, gn, idxs) for gn, idxs in groups9]
+            done_imgs = 0
+            for f in as_completed(futs):
+                ok_list, miss_list = f.result()
+                for shot_i, p in ok_list:
+                    paths[shot_i] = p
+                    done_imgs += 1
+                missing_indices.extend(miss_list)
+                print(f"    🎨 [{prefix}] اكتمل بالشبكة {done_imgs}/{n_total} صورة FLUX حقيقية...", flush=True)
+
+    if missing_indices:
+        print(f"    🎨 [{prefix}] توليد {len(missing_indices)} لقطة متبقية بشكل فردي حاد بالتوازي...", flush=True)
+
+        def _run_one(si: int) -> Tuple[int, Path]:
+            out_p = out_dir / f"{prefix}_{si:03d}.jpg"
+            generate_single_shot_image(prompts[si], out_p, width, height, seed=seed_base + si * 97, shot_idx=si)
+            return si, out_p
+
+        with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            futs2 = [ex.submit(_run_one, si) for si in missing_indices]
+            done_extra = 0
+            for f in as_completed(futs2):
+                si, p = f.result()
+                paths[si] = p
+                done_extra += 1
+                if done_extra % 4 == 0 or done_extra == len(missing_indices):
+                    print(f"    🎨 [{prefix}] فردي حاد: {done_extra}/{len(missing_indices)} مكتمل...", flush=True)
 
     return [p for p in paths if p is not None]
 

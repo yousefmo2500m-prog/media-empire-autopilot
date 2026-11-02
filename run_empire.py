@@ -144,7 +144,7 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         width=1280,
         height=720,
         seed_base=seed_base + 200,
-        max_workers=4,
+        max_workers=5,
     )
 
     print(f"[{ch_id}] توليد {n_s1_shots + n_s2_shots} صورة طولية حادة 9:16 للشورتس (بدون قص أو غلوشة)...", flush=True)
@@ -155,7 +155,7 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         width=720,
         height=1280,
         seed_base=seed_base + 3200,
-        max_workers=4,
+        max_workers=5,
     )
     s2_imgs = generate_8sec_shots_batch(
         prompts=s2_prompts,
@@ -164,7 +164,7 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         width=720,
         height=1280,
         seed_base=seed_base + 6200,
-        max_workers=4,
+        max_workers=5,
     )
 
     long_mp4 = out_dir / f"{ch_id}_full_episode.mp4"
