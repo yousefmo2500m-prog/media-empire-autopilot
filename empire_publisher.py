@@ -152,6 +152,10 @@ def publish_channel_funnel(
     short2_mp4: Path,
     short3_mp4: Optional[Path] = None,
     short4_mp4: Optional[Path] = None,
+    short1_cover: Optional[Path] = None,
+    short2_cover: Optional[Path] = None,
+    short3_cover: Optional[Path] = None,
+    short4_cover: Optional[Path] = None,
 ) -> Dict[str, Any]:
     prefix = ch["env_prefix"]  # CH1 / CH2 / CH3 / CH4
     main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
@@ -174,20 +178,20 @@ def publish_channel_funnel(
         ch.get("base_tags", []),
     )
 
-    print(f"[{ch['id']}] رفع الصورة المصغرة والحلقة الكاملة والـ 4 مقاطع شورتس إلى سحابة النشر...", flush=True)
+    print(f"[{ch['id']}] رفع الأغلفة المخصصة والحلقة الكاملة والـ 4 مقاطع شورتس إلى سحابة النشر...", flush=True)
     thumb_url = upload_media_to_zernio(main_key, thumbnail_jpg, mime_type="image/jpeg")
     long_url = upload_media_to_zernio(main_key, long_mp4, mime_type="video/mp4")
 
     shorts_files = [
-        ("short_3", "short_3_title", "cta_spoken_3", short3_mp4, 0.0),   # الموجة 1 فوراً: الشورت الخاطف 38ث لكسر حاجز الـ 200 ورف يوتيوب السريع!
-        ("short_1", "short_1_title", "cta_spoken_1", short1_mp4, 3.0),   # الموجة 2 (+3 ساعات): الشورت الدرامي العميق الأول
-        ("short_4", "short_4_title", "cta_spoken_4", short4_mp4, 6.0),   # الموجة 3 (+6 ساعات): الشورت الخاطف الثاني 50ث
-        ("short_2", "short_2_title", "cta_spoken_2", short2_mp4, 9.0),   # الموجة 4 (+9 ساعات): الشورت الدرامي العميق الثاني
+        ("short_3", "short_3_title", "cta_spoken_3", short3_mp4, short3_cover, 0.0),   # الموجة 1 فوراً: الشورت الخاطف 38ث
+        ("short_1", "short_1_title", "cta_spoken_1", short1_mp4, short1_cover, 3.0),   # الموجة 2 (+3 ساعات): الشورت الدرامي العميق الأول
+        ("short_4", "short_4_title", "cta_spoken_4", short4_mp4, short4_cover, 6.0),   # الموجة 3 (+6 ساعات): الشورت الخاطف الثاني 50ث
+        ("short_2", "short_2_title", "cta_spoken_2", short2_mp4, short2_cover, 9.0),   # الموجة 4 (+9 ساعات): الشورت الدرامي العميق الثاني
     ]
 
     cdn_urls: Dict[str, str] = {"thumb": thumb_url, "long": long_url}
     uploaded_shorts: List[Dict[str, Any]] = []
-    for s_id, s_title_key, s_cta_key, s_path, delay_h in shorts_files:
+    for s_id, s_title_key, s_cta_key, s_path, s_cov_path, delay_h in shorts_files:
         if s_path is None or not s_path.exists():
             continue
         m_url = upload_media_to_zernio(main_key, s_path, mime_type="video/mp4")
@@ -196,6 +200,16 @@ def publish_channel_funnel(
             if (tt_acc and tt_key != main_key)
             else m_url
         )
+        cov_url = None
+        tt_cov_url = None
+        if s_cov_path is not None and s_cov_path.exists():
+            cov_url = upload_media_to_zernio(main_key, s_cov_path, mime_type="image/jpeg")
+            tt_cov_url = (
+                upload_media_to_zernio(tt_key, s_cov_path, mime_type="image/jpeg")
+                if (tt_acc and tt_key != main_key)
+                else cov_url
+            )
+            cdn_urls[f"{s_id}_cover"] = cov_url
         cdn_urls[s_id] = m_url
         uploaded_shorts.append({
             "id": s_id,
@@ -203,6 +217,8 @@ def publish_channel_funnel(
             "cta_key": s_cta_key,
             "main_url": m_url,
             "tt_url": tt_m_url,
+            "cover_url": cov_url,
+            "tt_cover_url": tt_cov_url,
             "delay_hours": delay_h,
         })
 
@@ -363,6 +379,9 @@ def publish_channel_funnel(
 
         yt_s_title = f"{clean_title_no_tags[:82]} #shorts"
         short_res: Dict[str, Any] = {"delay_hours": delay_h}
+        s_media_item: Dict[str, Any] = {"type": "video", "url": item["main_url"]}
+        if item.get("cover_url"):
+            s_media_item["thumbnail"] = item["cover_url"]
 
         if yt_acc:
             yt_s_payload = _apply_timing(
@@ -370,7 +389,7 @@ def publish_channel_funnel(
                     "title": yt_s_title[:98],
                     "content": fb_reel_caption,
                     "tags": tags_list[:15],
-                    "mediaItems": [{"type": "video", "url": item["main_url"]}],
+                    "mediaItems": [dict(s_media_item)],
                     "platforms": [{
                         "platform": "youtube",
                         "accountId": yt_acc,
@@ -398,7 +417,7 @@ def publish_channel_funnel(
                 {
                     "title": clean_title_no_tags[:90],
                     "content": fb_reel_caption,
-                    "mediaItems": [{"type": "video", "url": item["main_url"]}],
+                    "mediaItems": [dict(s_media_item)],
                     "platforms": [{
                         "platform": "facebook",
                         "accountId": fb_acc,
@@ -419,6 +438,20 @@ def publish_channel_funnel(
                 short_res["facebook_error"] = rf.text[:260]
 
         if tt_acc and tt_key:
+            tt_spec_data: Dict[str, Any] = {
+                "privacyLevel": "PUBLIC_TO_EVERYONE",
+                "allowComment": True,
+                "allowDuet": True,
+                "allowStitch": True,
+                "contentPreviewConfirmed": True,
+                "expressConsentGiven": True,
+                "videoMadeWithAi": True,
+            }
+            if item.get("tt_cover_url"):
+                tt_spec_data["videoCoverImageUrl"] = item["tt_cover_url"]
+            else:
+                tt_spec_data["videoCoverTimestampMs"] = 0
+
             tt_payload = _apply_timing(
                 {
                     "content": tt_caption[:2000],
@@ -426,16 +459,7 @@ def publish_channel_funnel(
                     "platforms": [{
                         "platform": "tiktok",
                         "accountId": tt_acc,
-                        "platformSpecificData": {
-                            "privacyLevel": "PUBLIC_TO_EVERYONE",
-                            "allowComment": True,
-                            "allowDuet": True,
-                            "allowStitch": True,
-                            "videoCoverTimestampMs": 600,
-                            "contentPreviewConfirmed": True,
-                            "expressConsentGiven": True,
-                            "videoMadeWithAi": True,
-                        },
+                        "platformSpecificData": tt_spec_data,
                     }],
                 },
                 delay_h,

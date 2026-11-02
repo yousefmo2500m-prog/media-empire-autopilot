@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-محرك المونتاج السينمائي الاحترافي V13.0 (LTX Moving Hook + Instant Coral Top Banner + 3-Word Fast Karaoke + Debate CTA)
-- يدعم دمج لقطة فيديو ذكاء اصطناعي متحركة حقيقية 100% (LTX-Video) في الافتتاحية (الثانية 0.0) لكسر التمرير السريع فوراً!
-- شريط عنوان علوي أحمر مرجاني عالي التباين (HookTop) يظهر من الإطار الأول (0.00ث) لإيقاف المتصفح الصامت على فيسبوك وتيك توك!
+محرك المونتاج السينمائي الاحترافي V13.3 (Universal Studio Cover Frame-0 Lock + LTX Moving Hook + Instant Coral Banner + 3-Word Karaoke)
+- يقضي نهائياً 100% على مشكلة الشاشة البنية أو المظلمة في أغلفة فيسبوك وتيك توك ويوتيوب عبر:
+  1) إلغاء التعتيم الافتتاحي (fade-in) نهائياً من اللقطة الأولى (Frame 0 ساطع 100%).
+  2) دمج البوستر المصمم عالي الجاذبية (`cover_jpg`) كإطار غلاف مدمج في أول 0.15 ثانية من كل فيديو وشورت، بالإضافة لرفعه كغلاف رسمي عبر الـ API!
+- شريط عنوان علوي أحمر مرجاني عالي التباين (HookTop) لإيقاف المتصفح الصامت على فيسبوك وتيك توك!
 - كابشن كاريوكي خاطف (3 كلمات في اللقطة بخط عريض واضح) + شريط التحدي الجدلي (١ أو ٢) في الخاتمة لتفجير التعليقات!
-- يعرض بطاقات عناوين الفصول التفاعلية (Netflix-Style Chapter Cards) عند بداية كل مشهد في الفيلم الطويل لمنع الملل!
 """
 
 import re
@@ -63,14 +64,14 @@ Style: Sub,Cairo,40,&H00FFFFFF,&H0000D7FF,&H00080810,&H96000000,-1,0,0,0,100,100
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 1,0:00:00.00,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
+Dialogue: 1,0:00:00.16,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
 """
     lines = [header]
 
     tb_clean = _esc_ass(teaser_banner)
     if tb_clean and teaser_end_sec > 3.0:
         lines.append(
-            f"Dialogue: 3,0:00:00.00,{_ass_ts(max(3.5, teaser_end_sec - 0.4))},TeaserBadge,,0,0,0,,{{\\fad(0,300)}}{tb_clean}"
+            f"Dialogue: 3,0:00:00.16,{_ass_ts(max(3.5, teaser_end_sec - 0.4))},TeaserBadge,,0,0,0,,{{\\fad(0,300)}}{tb_clean}"
         )
 
     for st in scene_timings:
@@ -86,7 +87,7 @@ Dialogue: 1,0:00:00.00,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
     for sub in subtitles:
         txt = _esc_ass(sub["text"])
         if txt:
-            lines.append(f"Dialogue: 2,{_ass_ts(sub['start'])},{_ass_ts(sub['end'])},Sub,,0,0,0,,{{\\fad(75,75)}}{txt}")
+            lines.append(f"Dialogue: 2,{_ass_ts(max(0.16, float(sub['start'])))},{_ass_ts(sub['end'])},Sub,,0,0,0,,{{\\fad(75,75)}}{txt}")
     ass_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return ass_path
 
@@ -118,15 +119,14 @@ Style: CTA,Cairo,35,&H0028DFFF,&H00FFFFFF,&H000E1224,&HE8080C1C,-1,0,0,0,100,100
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 1,0:00:00.00,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
+Dialogue: 1,0:00:00.16,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
 Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(160,80)}}{_esc_ass(cta_banner)}
 """
     lines = [header]
     hb_clean = _esc_ass(hook_banner)
     if hb_clean and hook_vis_end > 1.2:
-        # يبدأ في الثانية 0.00 بدون تأخير ليظهر في الغلاف وللمشاهد الصامت منذ اللحظة الأولى
         lines.append(
-            f"Dialogue: 3,0:00:00.00,{_ass_ts(hook_vis_end)},HookTop,,0,0,0,,{{\\fad(0,240)}}{hb_clean}"
+            f"Dialogue: 3,0:00:00.16,{_ass_ts(hook_vis_end)},HookTop,,0,0,0,,{{\\fad(0,240)}}{hb_clean}"
         )
 
     chunk = 3
@@ -134,10 +134,10 @@ Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(160,80
         grp = words[i : i + chunk]
         if not grp:
             continue
-        s_t = grp[0]["start"]
-        e_t = grp[-1]["end"]
+        s_t = max(0.16, float(grp[0]["start"]))
+        e_t = float(grp[-1]["end"])
         if i + chunk < len(words):
-            e_t = min(words[i + chunk]["start"], e_t + 0.32)
+            e_t = min(float(words[i + chunk]["start"]), e_t + 0.32)
         e_t = max(s_t + 0.18, e_t)
         parts = []
         for idx_w, w in enumerate(grp):
@@ -160,7 +160,7 @@ def _render_motion_clip_segment(
     fps: int,
     crf: int = 21,
 ) -> bool:
-    """يحوّل لقطة الفيديو المتحركة الافتتاحية لنفس أبعاد ومعدل إطارات المونتاج بدقة تامة."""
+    """يحوّل لقطة الفيديو المتحركة الافتتاحية بدون أي تعتيم في البداية (صفر fade-in!)."""
     try:
         if not motion_mp4 or not motion_mp4.exists() or motion_mp4.stat().st_size < 20000:
             return False
@@ -172,7 +172,7 @@ def _render_motion_clip_segment(
             f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase:flags=lanczos,"
             f"crop={target_w}:{target_h},"
             f"unsharp=5:5:0.75:5:5:0.0,"
-            f"fade=t=in:st=0:d=0.12,fade=t=out:st={fade_out_st:.2f}:d=0.15,format=yuv420p"
+            f"fade=t=out:st={fade_out_st:.2f}:d=0.15,format=yuv420p"
         )
         subprocess.run(
             [
@@ -218,7 +218,9 @@ def _render_single_long_8s_shot(
     else:
         mv = f"scale=1424:801,crop=1280:720:'(iw-1280)*(1-t/{d_safe:.2f})':'(ih-720)*(t/{d_safe:.2f})'"
 
-    vf = f"{mv},fade=t=in:st=0:d=0.16,fade=t=out:st={fade_out_st:.2f}:d=0.18,format=yuv420p"
+    # ممنوع fade=in على اللقطة الأولى (idx == 0) حتى لا يكون الإطار الأول مظلماً أو بنياً!
+    fade_in_part = "" if idx == 0 else "fade=t=in:st=0:d=0.14,"
+    vf = f"{mv},{fade_in_part}fade=t=out:st={fade_out_st:.2f}:d=0.18,format=yuv420p"
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
@@ -244,6 +246,7 @@ def render_long_episode_mp4(
     out_mp4: Path,
     work_dir: Path,
     opening_motion_mp4: Optional[Path] = None,
+    cover_jpg: Optional[Path] = None,
 ) -> Path:
     work_dir.mkdir(parents=True, exist_ok=True)
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
@@ -289,8 +292,27 @@ def render_long_episode_mp4(
     ass_esc = str(ass_file.resolve()).replace("\\", "/").replace(":", "\\:")
     fonts_esc = str(ASSETS_DIR.resolve()).replace("\\", "/").replace(":", "\\:")
 
-    subprocess.run(
-        [
+    if cover_jpg and cover_jpg.exists():
+        fc = (
+            f"[0:v]subtitles='{ass_esc}':fontsdir='{fonts_esc}'[vsub];"
+            f"[2:v]scale=1280:720[cov];"
+            f"[vsub][cov]overlay=0:0:enable='lt(t,0.15)'[vout]"
+        )
+        cmd = [
+            FFMPEG_BIN, "-y",
+            "-i", str(joined_v),
+            "-i", str(audio_mp3),
+            "-loop", "1", "-t", "0.25", "-i", str(cover_jpg),
+            "-filter_complex", fc,
+            "-map", "[vout]", "-map", "1:a:0",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+            "-pix_fmt", "yuv420p", "-r", str(fps),
+            "-c:a", "aac", "-b:a", "192k",
+            "-shortest", "-movflags", "+faststart",
+            "-loglevel", "error", str(out_mp4),
+        ]
+    else:
+        cmd = [
             FFMPEG_BIN, "-y",
             "-i", str(joined_v),
             "-i", str(audio_mp3),
@@ -301,9 +323,8 @@ def render_long_episode_mp4(
             "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
             "-loglevel", "error", str(out_mp4),
-        ],
-        check=True,
-    )
+        ]
+    subprocess.run(cmd, check=True)
 
     for sp in seg_paths:
         sp.unlink(missing_ok=True)
@@ -335,7 +356,9 @@ def _render_single_short_8s_shot(
     else:
         mv = f"scale=764:1358,crop=720:1280:'(iw-720)*(1-t/{d_safe:.2f})':'(ih-1280)/2'"
 
-    vf = f"{mv},fade=t=in:st=0:d=0.12,fade=t=out:st={fade_out_st:.2f}:d=0.14,format=yuv420p"
+    # ممنوع fade=in على اللقطة الأولى (idx == 0) نهائياً لضمان إطار أول مشرق 100%!
+    fade_in_part = "" if idx == 0 else "fade=t=in:st=0:d=0.11,"
+    vf = f"{mv},{fade_in_part}fade=t=out:st={fade_out_st:.2f}:d=0.14,format=yuv420p"
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
@@ -361,6 +384,7 @@ def render_vertical_short_mp4(
     out_mp4: Path,
     work_dir: Path,
     opening_motion_mp4: Optional[Path] = None,
+    cover_jpg: Optional[Path] = None,
 ) -> Path:
     work_dir.mkdir(parents=True, exist_ok=True)
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
@@ -406,8 +430,27 @@ def render_vertical_short_mp4(
     ass_esc = str(ass_file.resolve()).replace("\\", "/").replace(":", "\\:")
     fonts_esc = str(ASSETS_DIR.resolve()).replace("\\", "/").replace(":", "\\:")
 
-    subprocess.run(
-        [
+    if cover_jpg and cover_jpg.exists():
+        fc = (
+            f"[0:v]subtitles='{ass_esc}':fontsdir='{fonts_esc}'[vsub];"
+            f"[2:v]scale=720:1280[cov];"
+            f"[vsub][cov]overlay=0:0:enable='lt(t,0.15)'[vout]"
+        )
+        cmd = [
+            FFMPEG_BIN, "-y",
+            "-i", str(joined_v),
+            "-i", str(short_mp3),
+            "-loop", "1", "-t", "0.25", "-i", str(cover_jpg),
+            "-filter_complex", fc,
+            "-map", "[vout]", "-map", "1:a:0",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "21",
+            "-pix_fmt", "yuv420p", "-r", str(fps),
+            "-c:a", "aac", "-b:a", "192k",
+            "-shortest", "-movflags", "+faststart",
+            "-loglevel", "error", str(out_mp4),
+        ]
+    else:
+        cmd = [
             FFMPEG_BIN, "-y",
             "-i", str(joined_v),
             "-i", str(short_mp3),
@@ -418,9 +461,8 @@ def render_vertical_short_mp4(
             "-c:a", "aac", "-b:a", "192k",
             "-shortest", "-movflags", "+faststart",
             "-loglevel", "error", str(out_mp4),
-        ],
-        check=True,
-    )
+        ]
+    subprocess.run(cmd, check=True)
 
     for sp in seg_paths:
         sp.unlink(missing_ok=True)

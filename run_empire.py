@@ -29,6 +29,7 @@ from story_brain import (
     save_memory,
 )
 from story_visuals import (
+    build_viral_short_cover,
     build_viral_youtube_thumbnail,
     generate_8sec_shots_batch,
     generate_opening_motion_clip,
@@ -232,7 +233,7 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
     s3_mp4 = out_dir / f"{ch_id}_short_3.mp4"
     s4_mp4 = out_dir / f"{ch_id}_short_4.mp4"
 
-    # 6) المونتاج السينمائي للحلقة الكاملة HD (1280x720)
+    # 6) المونتاج السينمائي للحلقة الكاملة HD (1280x720) مع دمج الغلاف السينمائي المشرق في الإطار الأول
     print(f"[{ch_id}] مونتاج الحلقة الكاملة HD (1280x720)...", flush=True)
     render_long_episode_mp4(
         shot_images=long_imgs,
@@ -246,9 +247,11 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         out_mp4=long_mp4,
         work_dir=work_root / "render_long",
         opening_motion_mp4=long_motion,
+        cover_jpg=thumb_jpg,
     )
 
-    # 7) المونتاج السينمائي للـ 4 مقاطع شورتس 9:16 (شريط خطف علوي مرجاني 0.00ث + فيديو افتتاحي متحرك + قفلة جدلية ١ أو ٢)
+    # 7) تصميم الأغلفة الطولية المخصصة (720x1280) + مونتاج الـ 4 شورتس 9:16 بدون أي شاشة داكنة أو بنية
+    short_covers = {}
     short_specs = [
         (1, s1_imgs, "short_1_windows", "short_1_mp3", "short_1_words", "short_1_hook_end", "short_1_banner_top", "short_1_title", s1_mp4, s1_motion),
         (2, s2_imgs, "short_2_windows", "short_2_mp3", "short_2_words", "short_2_hook_end", "short_2_banner_top", "short_2_title", s2_mp4, s2_motion),
@@ -257,7 +260,18 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
     ]
     for s_num, s_im, w_key, m_key, wd_key, hk_key, bn_key, tl_key, out_p, mot_p in short_specs:
         hb_txt = _clean_hook_banner(str(ep.get(bn_key) or ep.get(tl_key) or ep["youtube_title"]))
-        print(f"[{ch_id}] مونتاج الشورت رقم {s_num} (720x1280 | متحرك افتتاحي={'نعم' if mot_p else 'تلقائي'})...", flush=True)
+        s_cov = out_dir / f"{ch_id}_short_{s_num}_cover.jpg"
+        if s_im:
+            build_viral_short_cover(
+                hero_img_path=s_im[0],
+                hook_text=hb_txt,
+                badge_text=ep["thumbnail_badge_text"],
+                brand_name=ch["brand_name"],
+                language=ch["language"],
+                out_path=s_cov,
+            )
+            short_covers[s_num] = s_cov
+        print(f"[{ch_id}] مونتاج الشورت رقم {s_num} (720x1280 + غلاف مخصص 9:16 | متحرك افتتاحي={'نعم' if mot_p else 'تلقائي'})...", flush=True)
         render_vertical_short_mp4(
             vertical_images=s_im,
             short_windows=audio_pack[w_key],
@@ -270,12 +284,13 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
             out_mp4=out_p,
             work_dir=work_root / f"render_s{s_num}",
             opening_motion_mp4=mot_p,
+            cover_jpg=short_covers.get(s_num),
         )
 
     # 8) النشر والجدولة التلقائية الموزعة على مدار اليوم (إن لم يكن dry-run)
     if dry_run:
         print(
-            f"[{ch_id}] DRY-RUN V13.0 مكتمل بنجاح:\n"
+            f"[{ch_id}] DRY-RUN V13.3 مكتمل بنجاح:\n"
             f" - Thumbnail: {thumb_jpg} ({thumb_jpg.stat().st_size / 1024:.1f} KB)\n"
             f" - Long MP4 : {long_mp4} ({long_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
             f" - Short 1  : {s1_mp4} ({s1_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
@@ -295,6 +310,10 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
             short2_mp4=s2_mp4,
             short3_mp4=s3_mp4,
             short4_mp4=s4_mp4,
+            short1_cover=short_covers.get(1),
+            short2_cover=short_covers.get(2),
+            short3_cover=short_covers.get(3),
+            short4_cover=short_covers.get(4),
         )
         print(f"CDN_AUDIT_URLS: {json.dumps(pub_res.get('cdn_urls', {}), ensure_ascii=False)}", flush=True)
         print(f"[{ch_id}] تم نشر الفيلم وجدولة الـ 4 شورتس بنجاح! رابط يوتيوب: {pub_res.get('youtube_watch_url')}", flush=True)

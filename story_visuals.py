@@ -488,37 +488,44 @@ def build_viral_youtube_thumbnail(
     out_path: Path,
     seed: int = 7777,
 ) -> Path:
+    """
+    يصمّم بوستر سينمائي مزدوج التوافق (1280x720):
+    - يظهر كغلاف 16:9 فائق الجاذبية على يوتيوب.
+    - وفي نفس الوقت تتمركز كل النصوص والبطل داخل المنطقة الوسطى الآمنة (عرض 395 بكسل في المنتصف)
+      بحيث يظهر العنوان والبطل كاملين 100% داخل تبويب مقاطع ريلز فيسبوك (9:16) بدون أي شاشة فارغة أو قص!
+    """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     raw_bg = out_path.parent / "_thumb_raw_flux.jpg"
     generate_single_shot_image(prompt, raw_bg, 1280, 720, seed=seed, shot_idx=0)
 
-    base = Image.open(str(raw_bg)).convert("RGB")
+    base = _fit_cover_exact(Image.open(str(raw_bg)), 1280, 720, polish=True)
     raw_bg.unlink(missing_ok=True)
 
+    g_mean = float(np.asarray(base.convert("L"), dtype=np.float32).mean())
+    if g_mean < 60.0:
+        base = ImageEnhance.Brightness(base).enhance(min(1.55, 64.0 / max(18.0, g_mean)))
     base = ImageEnhance.Contrast(base).enhance(1.24)
     base = ImageEnhance.Color(base).enhance(1.22)
     base = ImageEnhance.Sharpness(base).enhance(1.32)
     canvas = base.convert("RGBA")
 
-    grad_x = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
-    gx_draw = ImageDraw.Draw(grad_x)
-    for x in range(720):
-        t = 1.0 - (x / 720.0)
-        alpha = int(235 * (t ** 1.45))
-        gx_draw.line([(x, 0), (x, 720)], fill=(5, 8, 16, alpha))
-
+    # تدرج سينمائي كحلي داكن في الثلث السفلي والعلوي لإبراز النص المتمركز بوضوح فائق (صفر لون بني باهت!)
     grad_y = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
     gy_draw = ImageDraw.Draw(grad_y)
-    for y in range(540, 720):
-        alpha = int(175 * (((y - 540) / 180.0) ** 1.3))
-        gy_draw.line([(0, y), (1280, y)], fill=(5, 7, 14, alpha))
+    for y in range(130):
+        alpha = int(145 * ((1.0 - y / 130.0) ** 1.4))
+        gy_draw.line([(0, y), (1280, y)], fill=(6, 10, 24, alpha))
+    for y in range(340, 720):
+        t = (y - 340) / 380.0
+        alpha = int(238 * (t ** 1.15))
+        gy_draw.line([(0, y), (1280, y)], fill=(6, 10, 24, alpha))
 
     glow_layer = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
     gl_draw = ImageDraw.Draw(glow_layer)
-    gl_draw.ellipse((980, -130, 1430, 290), fill=(225, 22, 42, 68))
-    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=18))
+    gl_draw.ellipse((390, -90, 890, 220), fill=(220, 24, 48, 62))
+    gl_draw.ellipse((340, 410, 940, 700), fill=(12, 55, 165, 70))
+    glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=22))
 
-    canvas = Image.alpha_composite(canvas, grad_x)
     canvas = Image.alpha_composite(canvas, grad_y)
     canvas = Image.alpha_composite(canvas, glow_layer)
     draw = ImageDraw.Draw(canvas)
@@ -526,19 +533,27 @@ def build_viral_youtube_thumbnail(
     is_ar = language == "ar"
     dir_kw: Dict[str, Any] = {"direction": "rtl", "language": "ar"} if is_ar else {}
 
-    badge_clean = (badge_text or ("قصة حقيقية تحبس الأنفاس" if is_ar else "TRUE CHILLING TWIST")).strip()
-    f_badge = _load_bold_font(34)
-    try:
-        bb = draw.textbbox((0, 0), badge_clean, font=f_badge, **dir_kw)
-    except Exception:
-        dir_kw = {}
-        bb = draw.textbbox((0, 0), badge_clean, font=f_badge)
-    bw = (bb[2] - bb[0]) + 54
-    bh = (bb[3] - bb[1]) + 24
-    bx, by = 52, 48
-    draw.rounded_rectangle((bx, by, bx + bw, by + bh), radius=16, fill=(215, 18, 38, 248), outline=(255, 225, 90, 255), width=3)
+    badge_clean = (badge_text or ("قصة واقعية تحبس الأنفاس" if is_ar else "TRUE CHILLING TWIST")).strip()
+    badge_sz = 26
+    while badge_sz > 18:
+        f_btest = _load_bold_font(badge_sz)
+        try:
+            bb = draw.textbbox((0, 0), badge_clean, font=f_btest, **dir_kw)
+        except Exception:
+            dir_kw = {}
+            bb = draw.textbbox((0, 0), badge_clean, font=f_btest)
+        if (bb[2] - bb[0]) <= 340:
+            break
+        badge_sz -= 2
+    f_badge = _load_bold_font(badge_sz)
+    bb = draw.textbbox((0, 0), badge_clean, font=f_badge, **dir_kw)
+    bw = min(388, (bb[2] - bb[0]) + 42)
+    bh = (bb[3] - bb[1]) + 20
+    bx = 640 - bw // 2
+    by = 34
+    draw.rounded_rectangle((bx, by, bx + bw, by + bh), radius=15, fill=(215, 18, 38, 248), outline=(255, 225, 90, 255), width=3)
     draw.text(
-        (bx + bw // 2, by + bh // 2),
+        (640, by + bh // 2),
         badge_clean,
         font=f_badge,
         fill=(255, 255, 255, 255),
@@ -557,47 +572,148 @@ def build_viral_youtube_thumbnail(
         mid = math.ceil(len(words) / 2)
         lines = [" ".join(words[:mid]), " ".join(words[mid:])]
 
-    max_text_w = 650
-    font_sz = 112
-    while font_sz > 64:
+    # عرض آمن 386 بكسل في المنتصف ليظهر كاملاً داخل بطاقات فيسبوك 9:16 ويوتيوب 16:9 معاً!
+    max_text_w = 386
+    font_sz = 92
+    while font_sz > 44:
         f_test = _load_bold_font(font_sz)
-        widest = max(draw.textbbox((0, 0), ln, font=f_test, stroke_width=10, **dir_kw)[2] for ln in lines)
+        widest = max((draw.textbbox((0, 0), ln, font=f_test, stroke_width=8, **dir_kw)[2] - draw.textbbox((0, 0), ln, font=f_test, stroke_width=8, **dir_kw)[0]) for ln in lines)
         if widest <= max_text_w:
             break
-        font_sz -= 6
+        font_sz -= 4
 
     f_hook = _load_bold_font(font_sz)
     line_step = int(font_sz * 1.24)
-    start_y = 265 if len(lines) == 2 else 330
+    start_y = 486 if len(lines) == 2 else 532
 
     txt_glow = Image.new("RGBA", (1280, 720), (0, 0, 0, 0))
     tg_draw = ImageDraw.Draw(txt_glow)
     for li, ln in enumerate(lines):
         ly = start_y + li * line_step
-        tg_draw.text((56, ly), ln, font=f_hook, fill=(255, 40, 40, 130) if li == 1 else (0, 0, 0, 210), anchor="lm", stroke_width=18, stroke_fill=(0, 0, 0, 220), **dir_kw)
-    txt_glow = txt_glow.filter(ImageFilter.GaussianBlur(radius=10))
+        tg_draw.text((640, ly), ln, font=f_hook, fill=(255, 45, 45, 135) if li == 1 else (0, 0, 0, 220), anchor="mm", stroke_width=16, stroke_fill=(0, 0, 0, 225), **dir_kw)
+    txt_glow = txt_glow.filter(ImageFilter.GaussianBlur(radius=9))
     canvas = Image.alpha_composite(canvas, txt_glow)
     draw = ImageDraw.Draw(canvas)
 
     for li, ln in enumerate(lines):
         ly = start_y + li * line_step
         fill_col = (255, 255, 255, 255) if li == 0 else (255, 218, 36, 255)
-        for off in range(10, 0, -2):
-            draw.text((56 + off, ly + off), ln, font=f_hook, fill=(0, 0, 0, 235), anchor="lm", **dir_kw)
+        for off in range(8, 0, -2):
+            draw.text((640 + off, ly + off), ln, font=f_hook, fill=(0, 0, 0, 235), anchor="mm", **dir_kw)
         draw.text(
-            (56, ly),
+            (640, ly),
             ln,
             font=f_hook,
             fill=fill_col,
-            anchor="lm",
-            stroke_width=9,
+            anchor="mm",
+            stroke_width=8,
             stroke_fill=(8, 10, 18, 255),
             **dir_kw,
         )
 
+    f_brand = _load_bold_font(27)
+    bb_br = draw.textbbox((0, 0), brand_name, font=f_brand, **dir_kw)
+    br_w = max(210, min(340, (bb_br[2] - bb_br[0]) + 48))
+    draw.rounded_rectangle((640 - br_w // 2, 642, 640 + br_w // 2, 692), radius=14, fill=(12, 18, 34, 235), outline=(255, 215, 45, 215), width=2)
+    draw.text((640, 667), brand_name, font=f_brand, fill=(255, 222, 65, 255), anchor="mm", **dir_kw)
+
+    final_rgb = canvas.convert("RGB")
+    final_rgb.save(str(out_path), format="JPEG", quality=94, optimize=True)
+    return out_path
+
+
+def build_viral_short_cover(
+    hero_img_path: Path,
+    hook_text: str,
+    badge_text: str,
+    brand_name: str,
+    language: str,
+    out_path: Path,
+) -> Path:
+    """
+    يصمّم غلافاً طولياً مخصصاً فائق الجاذبية (720x1280 - 9:16) لكل مقطع شورتس/ريلز/تيك توك:
+    - يستخدم اللقطة الافتتاحية الحادة ويحولها لبوستر سينمائي مضيء عالي التباين (مستحيل يظهر كشاشة بنية أو سوداء!).
+    - يضع العنوان الضخم في منتصف الكادر الآمن لشبكة بروفايل فيسبوك ريلز وتيك توك ويوتيوب شورتس.
+    """
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    base = _fit_cover_exact(Image.open(str(hero_img_path)), 720, 1280, polish=True)
+    g_mean = float(np.asarray(base.convert("L"), dtype=np.float32).mean())
+    if g_mean < 60.0:
+        base = ImageEnhance.Brightness(base).enhance(min(1.55, 64.0 / max(18.0, g_mean)))
+    base = ImageEnhance.Contrast(base).enhance(1.22)
+    base = ImageEnhance.Color(base).enhance(1.20)
+    base = ImageEnhance.Sharpness(base).enhance(1.30)
+    canvas = base.convert("RGBA")
+
+    grad = Image.new("RGBA", (720, 1280), (0, 0, 0, 0))
+    g_draw = ImageDraw.Draw(grad)
+    for y in range(280):
+        alpha = int(150 * ((1.0 - y / 280.0) ** 1.3))
+        g_draw.line([(0, y), (720, y)], fill=(6, 10, 24, alpha))
+    for y in range(540, 1280):
+        t = (y - 540) / 740.0
+        alpha = int(238 * (t ** 1.1))
+        g_draw.line([(0, y), (720, y)], fill=(6, 10, 24, alpha))
+
+    glow = Image.new("RGBA", (720, 1280), (0, 0, 0, 0))
+    gl_d = ImageDraw.Draw(glow)
+    gl_d.ellipse((110, 620, 610, 980), fill=(215, 22, 45, 65))
+    glow = glow.filter(ImageFilter.GaussianBlur(radius=24))
+
+    canvas = Image.alpha_composite(canvas, grad)
+    canvas = Image.alpha_composite(canvas, glow)
+    draw = ImageDraw.Draw(canvas)
+
+    is_ar = language == "ar"
+    dir_kw: Dict[str, Any] = {"direction": "rtl", "language": "ar"} if is_ar else {}
+
+    badge_clean = (badge_text or ("قصة واقعية" if is_ar else "TRUE TWIST")).strip()
+    f_badge = _load_bold_font(31)
+    try:
+        bb = draw.textbbox((0, 0), badge_clean, font=f_badge, **dir_kw)
+    except Exception:
+        dir_kw = {}
+        bb = draw.textbbox((0, 0), badge_clean, font=f_badge)
+    bw = min(620, (bb[2] - bb[0]) + 48)
+    bh = (bb[3] - bb[1]) + 22
+    draw.rounded_rectangle((360 - bw // 2, 210, 360 + bw // 2, 210 + bh), radius=16, fill=(215, 18, 38, 248), outline=(255, 225, 90, 255), width=3)
+    draw.text((360, 210 + bh // 2), badge_clean, font=f_badge, fill=(255, 255, 255, 255), anchor="mm", stroke_width=2, stroke_fill=(60, 0, 0, 255), **dir_kw)
+
+    clean_hook = " ".join([w for w in hook_text.replace("#shorts", "").strip().split() if not w.startswith("#")][:6])
+    words = clean_hook.split() or (["السر", "اللي", "قلب", "الحكاية!"] if is_ar else ["NOBODY", "SAW", "THIS", "COMING!"])
+    if len(words) <= 2:
+        lines = [" ".join(words)]
+    elif len(words) <= 4:
+        mid = math.ceil(len(words) / 2)
+        lines = [" ".join(words[:mid]), " ".join(words[mid:])]
+    else:
+        lines = [" ".join(words[:2]), " ".join(words[2:4]), " ".join(words[4:])]
+
+    max_w = 620
+    font_sz = 88
+    while font_sz > 48:
+        f_test = _load_bold_font(font_sz)
+        widest = max((draw.textbbox((0, 0), ln, font=f_test, stroke_width=8, **dir_kw)[2] - draw.textbbox((0, 0), ln, font=f_test, stroke_width=8, **dir_kw)[0]) for ln in lines)
+        if widest <= max_w:
+            break
+        font_sz -= 4
+
+    f_hook = _load_bold_font(font_sz)
+    line_step = int(font_sz * 1.25)
+    start_y = 690 if len(lines) == 3 else (730 if len(lines) == 2 else 775)
+
+    for li, ln in enumerate(lines):
+        ly = start_y + li * line_step
+        fill_col = (255, 218, 36, 255) if li == len(lines) - 1 else (255, 255, 255, 255)
+        for off in range(8, 0, -2):
+            draw.text((360 + off, ly + off), ln, font=f_hook, fill=(0, 0, 0, 235), anchor="mm", **dir_kw)
+        draw.text((360, ly), ln, font=f_hook, fill=fill_col, anchor="mm", stroke_width=8, stroke_fill=(8, 10, 18, 255), **dir_kw)
+
     f_brand = _load_bold_font(30)
-    draw.rounded_rectangle((52, 628, 280, 682), radius=14, fill=(14, 18, 30, 225), outline=(255, 215, 45, 195), width=2)
-    draw.text((166, 655), brand_name, font=f_brand, fill=(255, 222, 65, 255), anchor="mm", **dir_kw)
+    bb_br = draw.textbbox((0, 0), brand_name, font=f_brand, **dir_kw)
+    br_w = max(230, min(520, (bb_br[2] - bb_br[0]) + 54))
+    draw.rounded_rectangle((360 - br_w // 2, 1015, 360 + br_w // 2, 1072), radius=16, fill=(12, 18, 34, 235), outline=(255, 215, 45, 215), width=2)
+    draw.text((360, 1043), brand_name, font=f_brand, fill=(255, 222, 65, 255), anchor="mm", **dir_kw)
 
     final_rgb = canvas.convert("RGB")
     final_rgb.save(str(out_path), format="JPEG", quality=94, optimize=True)
