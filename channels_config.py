@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-إعدادات القنوات الأربع V10.0 (Algorithm & 8-Second FLUX Cinema Masterpiece Edition):
-- تثبيت الصوت البشري المتفق عليه بنسبة 100% (صوت الراوية المصرية الدافئة Kore للعربي، وتخصيص أصوات مميزة للإنجليزي) مع حظر الأصوات الآلية (edge_tts) نهائياً للأبد!
-- تغيير المشهد البصري كل ~8 ثوانٍ بصورة FLUX سينمائية جديدة كلياً مطابقة للجملة المنطوقة في تلك اللحظة بدون تكرار أي صورة مرتين!
-- تفعيل حزمة الخوارزميات الكاملة (SEO Hook + 18 Tags + فصول يوتيوب غير حارقة + سؤال جدلي للتعليقات + غلاف يوتيوب فائق الجاذبية).
+إعدادات القنوات الأربع V13.0 (Viral Breakout Engine: 1 Full Movie + 4 Shorts/Day + 1-vs-2 Debate + Native TikTok FYP):
+- تثبيت الصوت البشري المتفق عليه بنسبة 100% (Kore للعربي، و Aoede / Charon للإنجليزي) مع حظر الأصوات الآلية (edge_tts) نهائياً.
+- دعم 4 مقاطع شورتس يومياً لكل قناة: 2 شورتس درامية عميقة (~90–100 ثانية) + 2 شورتس خاطفة سريعة (<55 ثانية) لكسر حاجز الـ 200 مشاهدة ورف YouTube Shorts السريع.
+- قفلات جدلية باختيارين (١ أو ٢) لتفجير التعليقات، وهاشتاجات تيك توك أصلية بدون روابط خارجية تكتم الوصول.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 CHANNELS: Dict[str, Dict[str, Any]] = {
     "ch1_eg_thriller": {
@@ -25,19 +25,22 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "ar",
         "niche": "eg_diverse_novels",
         "min_duration_sec": 945,
-        "shot_interval_sec": 9.5,
-        "thumb_badge": "قصة حقيقية تحبس الأنفاس",
+        "shot_interval_sec": 9.0,
+        "thumb_badge": "قصة واقعية تحبس الأنفاس",
         "base_tags": [
-            "قصص واقعية", "حكايات مصرية", "غموض نفسي", "قصص مثيرة", "دفتر راوي",
-            "قصة حقيقية", "اسرار غامضة", "تشويق واثارة", "قصص قبل النوم", "روايات مسموعة",
+            "قصص واقعية", "قصة حقيقية كاملة", "حكايات مصرية", "غموض نفسي", "قصص مثيرة",
+            "دفتر راوي", "اسرار غامضة", "تشويق واثارة", "قصص قبل النوم", "روايات مسموعة",
         ],
+        "tiktok_hashtags": "#قصص_واقعية #حكايات #غموض #قصص_حقيقية #تشويق #مصر",
         "voice": {
             "gemini_voice": "Kore",
             "mood": "thriller",
         },
-        "cta_spoken_1": "ثانية واحدة بس! إنت متخيل اللي شافه أول ما فتح الباب في اللحظة دي؟ الصدمة اللي حصلت بعدها قلبت كل حاجة! ادخل حالاً اسمع القصة كاملة من الرابط المثبت في أول تعليق!",
-        "cta_spoken_2": "اقف هنا! لأن التفصيلة اللي ظهرت بعد الجملة دي بالظبط نسفت كل اللي فات! كمل الحكاية كاملة دلوقتي من الرابط الموجود في أول تعليق!",
-        "cta_banner": "القصة الكاملة (+16 دقيقة) في أول تعليق!",
+        "cta_spoken_1": "اقف عند اللحظة دي! لو انت مكانه دلوقتي: واحد تواجهه فوراً باللي شفته؟ ولا اتنين تسكت وتراقبه في السر لحد الفجر؟ اكتب واحد أو اتنين في التعليقات واسمع القصة كاملة على قناتنا!",
+        "cta_spoken_2": "ثانية واحدة! التفصيلة دي قلبت كل حاجة! تفتكر واحد كانت صدفة مستحيلة؟ ولا اتنين فخ متخطط بدم بارد؟ اكتب واحد أو اتنين في التعليقات وكمل الحكاية كاملة دلوقتي!",
+        "cta_spoken_3": "لو انت مكانه في الثانية دي: واحد تفتح الباب وتواجهه؟ ولا اتنين تهرب وتقفل على نفسك؟ اكتب رقمك في التعليقات!",
+        "cta_spoken_4": "تفتكر مين اللي كدب فيهم: واحد أقرب صاحب ليه؟ ولا اتنين الشخص اللي محدش شك فيه؟ اكتب واحد أو اتنين في التعليقات!",
+        "cta_banner": "اكتب ١ أو ٢ في التعليقات! القصة الكاملة على القناة",
     },
     "ch2_eg_mystery": {
         "id": "ch2_eg_mystery",
@@ -55,19 +58,22 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "ar",
         "niche": "eg_conan_detective",
         "min_duration_sec": 945,
-        "shot_interval_sec": 9.5,
-        "thumb_badge": "لغز مستحيل الحل",
+        "shot_interval_sec": 9.0,
+        "thumb_badge": "لغز جريمة مستحيل الحل",
         "base_tags": [
-            "الغاز بوليسية", "قضايا غامضة", "الدليل الاخير", "تحقيقات ذكية", "لغز الغرفة المغلقة",
-            "المحقق كونان", "قصص غموض", "الغاز للاذكياء", "كشف الجاني", "قصص تحقيقات",
+            "لغز جريمة", "الغاز بوليسية", "قضايا غامضة", "الدليل الاخير", "تحقيقات ذكية",
+            "لغز الغرفة المغلقة", "المحقق كونان", "قصص غموض", "الغاز للاذكياء", "كشف الجاني",
         ],
+        "tiktok_hashtags": "#الغاز #غموض #تحقيقات #قصص_واقعية #ذكاء #مصر",
         "voice": {
             "gemini_voice": "Kore",
             "mood": "mystery",
         },
-        "cta_spoken_1": "استنى عند التفصيلة دي! تفتكر إزاي ده حصل والباب مقفول بالمفتاح من جوه؟ عشان تشوف التحقيق كامل وكشف الخدعة خطوة بخطوة، ادخل حالاً على رابط الفيديو الكامل في أول تعليق!",
-        "cta_spoken_2": "لحظة واحدة! الغلطة الصغيرة دي هي اللي وقعت الجاني اللي محدش شك فيه! شوف الحل الكامل للقضية دلوقتي من الرابط في أول تعليق!",
-        "cta_banner": "حل القضية الكامل (+16 دقيقة) في أول تعليق!",
+        "cta_spoken_1": "وقف الفيديو وفكر كمحقق! تفتكر الجاني دخل إزاي: واحد بمفتاح منسوخ من جوه البيت؟ ولا اتنين كان مستخبي قبل ما الباب يتقفل؟ اكتب واحد أو اتنين في التعليقات وشوف الحل الكامل على قناتنا!",
+        "cta_spoken_2": "ركز في الغلطة الصغيرة دي! تفتكر مين صاحب الدليل المزيف: واحد الشاهد الأول؟ ولا اتنين صاحب البلاغ نفسه؟ اكتب واحد أو اتنين في التعليقات وكمل التحقيق كامل!",
+        "cta_spoken_3": "شغّل عقلك في ثانية: واحد التسجيل ده متفبرك؟ ولا اتنين الساعة هي اللي متقدمة؟ اكتب واحد أو اتنين في التعليقات!",
+        "cta_spoken_4": "قبل ما يتكشف الحل: واحد الجريمة متخططة من شهور؟ ولا اتنين حصلت في لحظة غضب؟ اكتب رقمك في التعليقات!",
+        "cta_banner": "اكتب ١ أو ٢ في التعليقات! حل اللغز الكامل على القناة",
     },
     "ch3_en_thriller": {
         "id": "ch3_en_thriller",
@@ -85,20 +91,23 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "en",
         "niche": "en_diverse_stories",
         "min_duration_sec": 945,
-        "shot_interval_sec": 9.5,
+        "shot_interval_sec": 9.0,
         "thumb_badge": "TRUE CHILLING TWIST",
         "base_tags": [
-            "psychological thriller", "true scary stories", "mystery stories", "plot twist story",
-            "storytime", "chilling stories", "velvet tales", "suspense audio story", "late night stories",
+            "true mystery story", "psychological thriller story", "true scary stories", "plot twist story",
+            "storytime", "chilling true stories", "velvet tales", "suspense audio story", "full storytime",
         ],
+        "tiktok_hashtags": "#storytime #truestory #mystery #plotwist #thriller #creepy",
         "voice": {
             "gemini_voice": "Aoede",
             "orpheus_voice": "tara",
             "mood": "thriller",
         },
-        "cta_spoken_1": "Stop right there—because what was waiting on the other side of that door shattered everything they believed! Watch the full sixteen minute story unfold right now from the link pinned in the first comment!",
-        "cta_spoken_2": "Hold on—because the next ten seconds flipped the entire truth upside down! Hear the full sixteen minute story right now via the link in the first comment!",
-        "cta_banner": "WATCH THE FULL 16-MIN STORY IN FIRST COMMENT!",
+        "cta_spoken_1": "Freeze right there! Put yourself in their shoes: type 1 in the comments if you open that door and confront them, or type 2 if you lock yourself in and call for help! Then catch the full sixteen minute story on our channel!",
+        "cta_spoken_2": "Hold everything! Was that message a warning or a trap? Type 1 for warning or type 2 for trap in the comments, and watch the full twist unfold on our channel!",
+        "cta_spoken_3": "Quick—what would you do in that second? Type 1 if you check the camera, or 2 if you run out the door!",
+        "cta_spoken_4": "Who was lying the whole time? Type 1 for the neighbor, or type 2 for the person inside the house! Drop your pick below!",
+        "cta_banner": "COMMENT 1 OR 2 BELOW! FULL 16-MIN STORY ON CHANNEL",
     },
     "ch4_en_mystery": {
         "id": "ch4_en_mystery",
@@ -116,19 +125,22 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "language": "en",
         "niche": "en_detective_mystery",
         "min_duration_sec": 945,
-        "shot_interval_sec": 9.5,
+        "shot_interval_sec": 9.0,
         "thumb_badge": "IMPOSSIBLE ALIBI",
         "base_tags": [
-            "detective mystery", "locked room mystery", "whodunit", "impossible crime",
-            "mindlock cases", "murder mystery puzzle", "true detective story", "alibi riddle",
+            "detective mystery story", "locked room mystery", "whodunit riddle", "impossible crime story",
+            "mindlock cases", "murder mystery puzzle", "true detective story", "alibi mystery",
         ],
+        "tiktok_hashtags": "#mystery #detective #riddle #whodunit #plotwist #truecrime",
         "voice": {
             "gemini_voice": "Charon",
             "orpheus_voice": "daniel",
             "mood": "mystery",
         },
-        "cta_spoken_1": "Freeze right at that clue—did you catch the one impossible contradiction inside that room? Watch the full sixteen minute investigation from the link pinned in the first comment!",
-        "cta_spoken_2": "Wait right there—because that tiny detail just exposed the one suspect with an ironclad alibi! Solve the full case right now from the link in the first comment!",
-        "cta_banner": "SOLVE THE FULL 16-MIN CASE IN FIRST COMMENT!",
+        "cta_spoken_1": "Pause and play detective! How was the room locked from inside? Type 1 if the alibi clock was rigged, or type 2 if someone never left the room! Comment 1 or 2 and solve the full case on our channel!",
+        "cta_spoken_2": "Wait right at that clue! Which detail exposed the culprit? Type 1 for the timestamp, or type 2 for the missing key! Drop your answer below and watch the full investigation!",
+        "cta_spoken_3": "Solve it in five seconds: type 1 if the witness lied, or type 2 if the recording was staged!",
+        "cta_spoken_4": "Final detective test: type 1 for an inside job, or type 2 for a framed suspect! Comment 1 or 2 now!",
+        "cta_banner": "TYPE 1 OR 2 IN COMMENTS! SOLVE FULL CASE ON CHANNEL",
     },
 }

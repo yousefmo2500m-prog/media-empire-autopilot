@@ -1,4 +1,4 @@
-name: 4-Channel Media Empire Autopilot V11.0
+name: 4-Channel Media Empire Autopilot V13.0
 
 on:
   schedule:
@@ -62,7 +62,7 @@ jobs:
             esac
           fi
 
-      - name: Produce 16-min 8s-Shot FLUX Movie + High-CTR Thumbnail + 2 Shorts & Publish
+      - name: Produce 16-min Movie + High-CTR Thumbnail + 4 Shorts (2 Deep + 2 Blitz) & Publish
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

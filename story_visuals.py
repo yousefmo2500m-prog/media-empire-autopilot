@@ -602,3 +602,107 @@ def build_viral_youtube_thumbnail(
     final_rgb = canvas.convert("RGB")
     final_rgb.save(str(out_path), format="JPEG", quality=94, optimize=True)
     return out_path
+
+
+def generate_opening_motion_clip(
+    prompt: str,
+    first_frame_path: Optional[Path],
+    out_mp4: Path,
+    is_vertical: bool = True,
+    duration_sec: float = 5.0,
+    seed: int = 42,
+    call_idx: int = 0,
+) -> Optional[Path]:
+    """
+    يولّد مقطع فيديو سينمائي متحرك 100% (LTX-Video Distilled عبر ZeroGPU مجاناً) لأول 5-6 ثوانٍ (Hook)
+    لكسر حاجز التمرير السريع في الثانية صفر، مع مهلة أمان صارمة (75 ثانية) وسقوط آمن فوري لو الخادم مزدحم.
+    """
+    try:
+        from gradio_client import Client, handle_file
+    except Exception:
+        return None
+
+    out_mp4.parent.mkdir(parents=True, exist_ok=True)
+    w_ui, h_ui = (448, 768) if is_vertical else (768, 448)
+    dur_clamped = max(3.5, min(6.2, float(duration_sec)))
+    motion_prompt = (
+        f"Smooth cinematic 35mm thriller camera push-in, subtle realistic human breathing and natural motion: {prompt[:260]}"
+    )
+    neg_prompt = "worst quality, inconsistent motion, blurry, jittery, distorted, watermark, text, revealing clothes"
+
+    auth_pool = [t for t in _get_hf_auth_pool() if t is not None] + [None]
+    ordered_pool = [auth_pool[(call_idx + i) % len(auth_pool)] for i in range(len(auth_pool))]
+
+    for tok in ordered_pool[:2]:
+        slot_key = f"ltx::{tok or 'anon'}"
+        if slot_key in _EXHAUSTED_SLOTS:
+            continue
+
+        def _worker(hf_tok: Optional[str]) -> Optional[str]:
+            client = Client("Lightricks/ltx-video-distilled", hf_token=hf_tok, verbose=False)
+            res = None
+            if first_frame_path and first_frame_path.exists():
+                try:
+                    res = client.predict(
+                        prompt=motion_prompt,
+                        negative_prompt=neg_prompt,
+                        input_image_filepath=handle_file(str(first_frame_path)),
+                        input_video_filepath="",
+                        height_ui=h_ui,
+                        width_ui=w_ui,
+                        mode="image-to-video",
+                        duration_ui=dur_clamped,
+                        ui_frames_to_use=9,
+                        seed_ui=int(seed % 999999),
+                        randomize_seed=False,
+                        ui_guidance_scale=1.0,
+                        improve_texture_flag=True,
+                        api_name="/image_to_video",
+                    )
+                except Exception:
+                    res = None
+            if res is None:
+                res = client.predict(
+                    prompt=motion_prompt,
+                    negative_prompt=neg_prompt,
+                    input_image_filepath="",
+                    input_video_filepath="",
+                    height_ui=h_ui,
+                    width_ui=w_ui,
+                    mode="text-to-video",
+                    duration_ui=dur_clamped,
+                    ui_frames_to_use=9,
+                    seed_ui=int(seed % 999999),
+                    randomize_seed=False,
+                    ui_guidance_scale=1.0,
+                    improve_texture_flag=True,
+                    api_name="/text_to_video",
+                )
+            if isinstance(res, tuple):
+                res = res[0]
+            if isinstance(res, dict):
+                return res.get("video") or res.get("path")
+            return str(res) if res else None
+
+        ex = ThreadPoolExecutor(max_workers=1)
+        fut = ex.submit(_worker, tok)
+        try:
+            vid_tmp = fut.result(timeout=75.0)
+            ex.shutdown(wait=False)
+            if vid_tmp and Path(vid_tmp).exists() and Path(vid_tmp).stat().st_size > 25000:
+                import shutil as _sh
+                _sh.copy2(vid_tmp, out_mp4)
+                try:
+                    Path(vid_tmp).unlink(missing_ok=True)
+                except Exception:
+                    pass
+                return out_mp4
+        except Exception as exc:
+            ex.shutdown(wait=False, cancel_futures=True)
+            msg = str(exc).lower()
+            if "quota" in msg or "zerogpu" in msg or "exceeded" in msg:
+                _EXHAUSTED_SLOTS.add(slot_key)
+            continue
+
+    return None
+

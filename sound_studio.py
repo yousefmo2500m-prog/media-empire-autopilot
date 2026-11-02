@@ -503,12 +503,13 @@ def synthesize_episode_and_climax_shorts(
         body_interval_sec=shot_interval_sec,
     )
 
-    # الشورت الأول (مقدمة خطف + ذروة المشهد 2!) والشورت الثاني (مقدمة خطف + ذروة المشهد 7!)
-    # نجد توقيت المشهد 1 والمشهد 2 (بعد المقدمة التي تحمل index 0)
+    # الشورت الأول والثاني (شورتس درامية عميقة ~90-100ث) + الشورت الثالث والرابع (شورتس خاطفة سريعة 36-54ث لكسر حاجز الـ 200 مشاهدة ورف YouTube Shorts السريع)
     sc1_t = next(x for x in raw_scene_timings if x["scene_num"] == 1)
     sc2_t = next(x for x in raw_scene_timings if x["scene_num"] == 2)
+    sc5_t = next((x for x in raw_scene_timings if x["scene_num"] == 5), sc2_t)
     sc6_t = next(x for x in raw_scene_timings if x["scene_num"] == 6)
     sc7_t = next(x for x in raw_scene_timings if x["scene_num"] == 7)
+    sc10_t = next((x for x in raw_scene_timings if x["scene_num"] == 10), sc7_t)
 
     sh1_mp3, sh1_words, sh1_hook_end = _build_climax_short_from_master_voice(
         raw_voice_merged=raw_voice_merged,
@@ -521,7 +522,10 @@ def synthesize_episode_and_climax_shorts(
         language=language,
         tension_wav=tension_wav,
         work_dir=work_dir / "short_1",
-        call_index=4,
+        call_index=1,
+        max_slice_sec=104.0,
+        min_slice_sec=28.0,
+        target_body_max_sec=94.0,
     )
     sh1_dur = get_audio_duration(sh1_mp3)
     sh1_windows = build_dynamic_pacing_windows(
@@ -529,8 +533,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh1_hook_end,
         words=sh1_words,
         fallback_text=f"{episode.get('short_1_hook_intro','')} {scenes[0]['narration']} {scenes[1]['narration']}",
-        teaser_interval_sec=4.2,
-        body_interval_sec=6.4,
+        teaser_interval_sec=4.0,
+        body_interval_sec=6.2,
     )
 
     sh2_mp3, sh2_words, sh2_hook_end = _build_climax_short_from_master_voice(
@@ -544,7 +548,10 @@ def synthesize_episode_and_climax_shorts(
         language=language,
         tension_wav=tension_wav,
         work_dir=work_dir / "short_2",
-        call_index=0,
+        call_index=2,
+        max_slice_sec=104.0,
+        min_slice_sec=28.0,
+        target_body_max_sec=94.0,
     )
     sh2_dur = get_audio_duration(sh2_mp3)
     sh2_windows = build_dynamic_pacing_windows(
@@ -552,8 +559,62 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh2_hook_end,
         words=sh2_words,
         fallback_text=f"{episode.get('short_2_hook_intro','')} {scenes[5]['narration']} {scenes[6]['narration']}",
-        teaser_interval_sec=4.2,
-        body_interval_sec=6.4,
+        teaser_interval_sec=4.0,
+        body_interval_sec=6.2,
+    )
+
+    sh3_mp3, sh3_words, sh3_hook_end = _build_climax_short_from_master_voice(
+        raw_voice_merged=raw_voice_merged,
+        hook_intro_text=episode.get("short_3_hook_intro", ""),
+        scene_start_sec=max(sc5_t["raw_start"], sc5_t["raw_end"] - 26.5),
+        scene_climax_end_sec=sc5_t["raw_end"],
+        cta_spoken_text=episode["cta_spoken_3"],
+        voice_cfg=voice_cfg,
+        groq_key=groq_key,
+        language=language,
+        tension_wav=tension_wav,
+        work_dir=work_dir / "short_3",
+        call_index=3,
+        max_slice_sec=26.5,
+        min_slice_sec=19.0,
+        target_body_max_sec=24.0,
+        hard_max_total_sec=44.0,
+    )
+    sh3_dur = get_audio_duration(sh3_mp3)
+    sh3_windows = build_dynamic_pacing_windows(
+        total_dur=sh3_dur + 0.25,
+        teaser_end_sec=sh3_hook_end,
+        words=sh3_words,
+        fallback_text=f"{episode.get('short_3_hook_intro','')} {scenes[min(4, len(scenes)-1)]['narration']}",
+        teaser_interval_sec=2.7,
+        body_interval_sec=3.2,
+    )
+
+    sh4_mp3, sh4_words, sh4_hook_end = _build_climax_short_from_master_voice(
+        raw_voice_merged=raw_voice_merged,
+        hook_intro_text=episode.get("short_4_hook_intro", ""),
+        scene_start_sec=max(sc10_t["raw_start"], sc10_t["raw_end"] - 35.0),
+        scene_climax_end_sec=sc10_t["raw_end"],
+        cta_spoken_text=episode["cta_spoken_4"],
+        voice_cfg=voice_cfg,
+        groq_key=groq_key,
+        language=language,
+        tension_wav=tension_wav,
+        work_dir=work_dir / "short_4",
+        call_index=4,
+        max_slice_sec=35.0,
+        min_slice_sec=24.0,
+        target_body_max_sec=31.5,
+        hard_max_total_sec=55.0,
+    )
+    sh4_dur = get_audio_duration(sh4_mp3)
+    sh4_windows = build_dynamic_pacing_windows(
+        total_dur=sh4_dur + 0.25,
+        teaser_end_sec=sh4_hook_end,
+        words=sh4_words,
+        fallback_text=f"{episode.get('short_4_hook_intro','')} {scenes[min(9, len(scenes)-1)]['narration']}",
+        teaser_interval_sec=2.8,
+        body_interval_sec=3.4,
     )
 
     return {
@@ -570,6 +631,14 @@ def synthesize_episode_and_climax_shorts(
         "short_2_words": sh2_words,
         "short_2_windows": sh2_windows,
         "short_2_hook_end": sh2_hook_end,
+        "short_3_mp3": sh3_mp3,
+        "short_3_words": sh3_words,
+        "short_3_windows": sh3_windows,
+        "short_3_hook_end": sh3_hook_end,
+        "short_4_mp3": sh4_mp3,
+        "short_4_words": sh4_words,
+        "short_4_windows": sh4_windows,
+        "short_4_hook_end": sh4_hook_end,
     }
 
 
@@ -585,13 +654,16 @@ def _build_climax_short_from_master_voice(
     tension_wav: Path,
     work_dir: Path,
     call_index: int,
+    max_slice_sec: float = 104.0,
+    min_slice_sec: float = 28.0,
+    target_body_max_sec: float = 94.0,
+    hard_max_total_sec: float = 0.0,
 ) -> Tuple[Path, List[Dict[str, Any]], float]:
     work_dir.mkdir(parents=True, exist_ok=True)
     is_ar = language == "ar"
 
-    # نسجّل جملة الخطف الافتتاحية + جملة الـ CTA معاً في استدعاء واحد بفاصل صمت واضح لتوفير الحصة وتسريع الأداء!
-    eff_start_sec = max(0.0, max(scene_start_sec, scene_climax_end_sec - 108.0))
-    raw_seg_dur = max(28.0, scene_climax_end_sec - eff_start_sec)
+    eff_start_sec = max(0.0, max(scene_start_sec, scene_climax_end_sec - max_slice_sec))
+    raw_seg_dur = max(min_slice_sec, scene_climax_end_sec - eff_start_sec)
     story_slice = work_dir / "story_slice.mp3"
     subprocess.run(
         [
@@ -607,14 +679,14 @@ def _build_climax_short_from_master_voice(
 
     slice_dur = get_audio_duration(story_slice)
     short_tempo = 1.07
-    if slice_dur / short_tempo > 102.0:
-        short_tempo = min(1.22, slice_dur / 98.0)
+    if slice_dur / short_tempo > target_body_max_sec:
+        short_tempo = min(1.22, slice_dur / max(15.0, target_body_max_sec - 2.0))
 
     story_paced = work_dir / "story_paced.mp3"
     subprocess.run(
         [
             FFMPEG_BIN, "-y", "-i", str(story_slice),
-            "-af", f"silenceremove=stop_periods=-1:stop_duration=0.25:stop_threshold=-40dB,atempo={short_tempo:.4f}",
+            "-af", f"silenceremove=stop_periods=-1:stop_duration=0.24:stop_threshold=-40dB,atempo={short_tempo:.4f}",
             "-ar", "44100", "-ac", "2", "-c:a", "libmp3lame", "-b:a", "192k",
             "-loglevel", "error", str(story_paced),
         ],
@@ -630,13 +702,13 @@ def _build_climax_short_from_master_voice(
 
     parts_for_concat: List[str] = []
     hook_dur = 0.0
-    if hook_intro_text and len(hook_intro_text.split()) >= 5:
+    if hook_intro_text and len(hook_intro_text.split()) >= 4:
         hook_raw = _synth_human_block(hook_intro_text, voice_cfg, is_ar, work_dir / "hook_raw.mp3", call_index=call_index)
         hook_paced = work_dir / "hook_paced.mp3"
         subprocess.run(
             [
                 FFMPEG_BIN, "-y", "-i", str(hook_raw),
-                "-af", "silenceremove=stop_periods=-1:stop_duration=0.20:stop_threshold=-38dB,atempo=1.06",
+                "-af", "silenceremove=stop_periods=-1:stop_duration=0.18:stop_threshold=-38dB,atempo=1.08",
                 "-ar", "44100", "-ac", "2", "-c:a", "libmp3lame", "-b:a", "192k",
                 "-loglevel", "error", str(hook_paced),
             ],
@@ -651,12 +723,29 @@ def _build_climax_short_from_master_voice(
     subprocess.run(
         [
             FFMPEG_BIN, "-y", "-i", str(cta_raw),
-            "-af", "silenceremove=stop_periods=-1:stop_duration=0.22:stop_threshold=-38dB,atempo=1.06",
+            "-af", "silenceremove=stop_periods=-1:stop_duration=0.20:stop_threshold=-38dB,atempo=1.08",
             "-ar", "44100", "-ac", "2", "-c:a", "libmp3lame", "-b:a", "192k",
             "-loglevel", "error", str(cta_paced),
         ],
         check=True,
     )
+
+    if hard_max_total_sec > 20.0:
+        fixed_overhead = hook_dur + get_audio_duration(drop_mp3) + get_audio_duration(cta_paced) + 0.5
+        allowed_story = max(14.0, hard_max_total_sec - fixed_overhead)
+        cur_story_dur = get_audio_duration(story_paced)
+        if cur_story_dur > allowed_story:
+            trim_start = max(0.0, cur_story_dur - allowed_story)
+            story_trimmed = work_dir / "story_trimmed.mp3"
+            subprocess.run(
+                [
+                    FFMPEG_BIN, "-y", "-ss", f"{trim_start:.3f}", "-i", str(story_paced),
+                    "-ar", "44100", "-ac", "2", "-c:a", "libmp3lame", "-b:a", "192k",
+                    "-loglevel", "error", str(story_trimmed),
+                ],
+                check=True,
+            )
+            story_paced = story_trimmed
 
     parts_for_concat.extend([
         f"file '{story_paced.resolve()}'",

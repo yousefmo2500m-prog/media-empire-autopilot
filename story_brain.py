@@ -167,23 +167,38 @@ def generate_full_episode_and_short(
 1. **المقدمة التشويقية الإجبارية (`teaser_intro` — 80 إلى 95 كلمة بالعامية المصرية بدون تشكيل)**:
    - تبدأ في الثانية صفر بومضة نارية من أخطر لحظة صادمة قرب نهاية القصة (بدون حرق الحل!) وتطابق وعد العنوان والغلاف تماماً.
    - ثم تطرح اللغز المستحيل وتوعد المستمع بمفاجأة في آخر دقيقتين تقلب كل توقعاته، وتختم بـ: «ركز معايا في كل تفصيلة من أول ثانية.. لأن النهاية مستحيل تخطر على بالك.. يلا نبدأ الحكاية من أولها!».
-2. **مقدمة خطف الشورت الأول (`short_1_hook_intro`) والشورت الثاني (`short_2_hook_intro`)**:
-   - جملة افتتاحية صاعقة (16–22 كلمة) في أول 4 ثوانٍ تمنع السحب للأعلى فوراً!
-3. عنوان اليوتيوب (`youtube_title`) + نص الغلاف المصغّر (`thumbnail_hook_text`: **جملة صادمة مكتملة من 3 أو 4 كلمات فقط**).
-4. نهاية **المشهد 2** = ذروة أدرينالين نارية أولى (لقطع الشورت الأول!). ونهاية **المشهد 7** = ذروة صدمة منتصف القصة (لقطع الشورت الثاني!).
+2. **مقدمات خطف الـ 4 شورتس اليومية**:
+   - `short_1_hook_intro` و `short_2_hook_intro`: جملة خطف نارية في أول 4 ثوانٍ (15–20 كلمة بالعامية المصرية) للشورتين العميقين.
+   - `short_3_hook_intro` و `short_4_hook_intro`: جملة صدمة خاطفة سريعة جداً في أول 3 ثوانٍ (10–13 كلمة بالعامية المصرية) للشورتين الخاطفين (<55 ثانية).
+   - `short_1_banner_top` إلى `short_4_banner_top`: شريط عنوان علوي من **5 إلى 7 كلمات فقط** يوقف المشاهد الكاتم للصوت في الثانية صفر!
+   - `short_1_debate_cta` إلى `short_4_debate_cta`: جملة قفلة صوتية جدلية باختيارين (`واحد ... ولا اتنين ...؟ اكتب رقمك في التعليقات!`) مرتبطة بأحداث القصة فعلياً لتفجير التعليقات!
+3. عنوان اليوتيوب (`youtube_title`): **عنوان يجمع الإثارة العالية + كلمات البحث الأكثر طلباً على يوتيوب** (ينتهي بـ `| قصة واقعية كاملة` أو `| لغز جريمة محير` — أقل من 85 حرفاً بدون حرق الحل) + نص الغلاف المصغّر (`thumbnail_hook_text`: **جملة صادمة مكتملة من 3 أو 4 كلمات فقط**).
+4. نهاية **المشهد 2** = ذروة أدرينالين أولى (الشورت 1). نهاية **المشهد 5** = صدمة الدليل الغريب (الشورت الخاطف 3). نهاية **المشهد 7** = ذروة منتصف القصة (الشورت 2). نهاية **المشهد 10** = لحظة المواجهة قبل كشف الحل (الشورت الخاطف 4).
 
 أخرجي JSON صالح بالهيكل التالي:
 {{
   "topic_key": "ملخص فريد 6 كلمات للفكرة الواقعية",
-  "youtube_title": "عنوان يوتيوب واقعي ناري يرفع نسبة النقر CTR لأقصى درجة (أقل من 82 حرفاً)",
+  "youtube_title": "عنوان يوتيوب ناري يدمج كلمة بحث قوية مثل: قصة واقعية كاملة / لغز جريمة غامض (أقل من 85 حرفاً)",
   "thumbnail_hook_text": "جملة صادمة مكتملة من 3 أو 4 كلمات للغلاف",
-  "thumbnail_banner_top": "🔥 مقتطف من ذروة الأحداث — تابع للنهاية!",
+  "thumbnail_banner_top": "مقتطف من ذروة الأحداث — تابع للنهاية!",
   "thumbnail_prompt": "Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: a terrified Egyptian person positioned on the right third of the frame with wide shocked eyes illuminated by bright cold blue smartphone light and crimson rim light, mysterious shadowy open doorway behind them, dark clean moody background on the left third of the frame, ultra-detailed skin texture, ARRI Alexa 35mm cinema still, no text, no watermark",
   "teaser_intro": "النص الكامل للمقدمة التشويقية النارية (80–95 كلمة بالعامية المصرية الحية مع فواصل .. بدون حرق الحل، تجبر المشاهد يكمل للنهاية)",
-  "short_1_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الأول (18 كلمة بالعامية المصرية)",
-  "short_2_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الثاني (18 كلمة بالعامية المصرية)",
+  "short_1_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الأول (16 كلمة بالعامية المصرية)",
+  "short_2_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الثاني (16 كلمة بالعامية المصرية)",
+  "short_3_hook_intro": "جملة صدمة خاطفة في أول 3 ثوانٍ للشورت الثالث السريع (11 كلمة بالعامية المصرية)",
+  "short_4_hook_intro": "جملة صدمة خاطفة في أول 3 ثوانٍ للشورت الرابع السريع (11 كلمة بالعامية المصرية)",
+  "short_1_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الأول",
+  "short_2_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الثاني",
+  "short_3_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الثالث",
+  "short_4_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الرابع",
+  "short_1_debate_cta": "لو انت مكانه في اللحظة دي: واحد ... ولا اتنين ...؟ اكتب واحد أو اتنين في التعليقات واسمع القصة كاملة على قناتنا!",
+  "short_2_debate_cta": "تفتكر إيه السر هنا: واحد ... ولا اتنين ...؟ اكتب واحد أو اتنين في التعليقات وكمل الحكاية كاملة على قناتنا!",
+  "short_3_debate_cta": "بسرعة لو مكانه: واحد ... ولا اتنين ...؟ اكتب رقمك في التعليقات!",
+  "short_4_debate_cta": "تفتكر مين الجاني الحقيقي: واحد ... ولا اتنين ...؟ اكتب واحد أو اتنين في التعليقات!",
   "short_1_title": "عنوان ناري للشورت الأول يخطف الانتباه فوراً + #shorts #قصص_واقعية #غموض",
   "short_2_title": "عنوان ناري مختلف للشورت الثاني من ذروة منتصف القصة + #shorts #تشويق #حكايات",
+  "short_3_title": "عنوان صاعق قصير للشورت الثالث السريع + #shorts #قصة_حقيقية #مفاجأة",
+  "short_4_title": "عنوان لغز محير للشورت الرابع السريع + #shorts #الغاز #تشويق",
   "seo_hook_2lines": "سطران ناريان يظهران في أول سطرين بالوصف قبل زر عرض المزيد لجذب المشاهد وخوارزمية البحث فوراً",
   "seo_synopsis": "فقرة تشويقية غنية من 4 جمل تدمج طبيعياً أقوى كلمات البحث (قصص واقعية مثيرة، غموض نفسي، حكايات مصرية تحبس الأنفاس، ألغاز وتحقيقات)",
   "engagement_question": "سؤال تحدي ذكي للمشاهدين يربط بتفصيلة في الحلقة ويدفعهم لكتابة توقعاتهم في التعليقات",
@@ -225,15 +240,27 @@ Design a hyper-realistic, unputdownable 16-minute episode (25-second Cold-Open T
 Return exact valid JSON:
 {{
   "topic_key": "6-word unique realistic premise",
-  "youtube_title": "High-CTR viral realistic YouTube title under 80 chars (zero spoilers)",
+  "youtube_title": "High-CTR + High-Search YouTube title ending with '| True Mystery Story' or '| Locked-Room Detective Mystery' (under 85 chars, zero spoilers)",
   "thumbnail_hook_text": "Complete 3-to-4 word shocking hook (e.g. IT CAME FROM INSIDE! / CHECK THE REFLECTION!)",
-  "thumbnail_banner_top": "🔥 CLIMAX TEASER — WATCH TILL THE END!",
+  "thumbnail_banner_top": "CLIMAX TEASER — WATCH TILL THE END!",
   "thumbnail_prompt": "Hyper-realistic 8k Netflix thriller YouTube thumbnail, 16:9 widescreen single continuous cinema camera frame: terrified protagonist positioned on the right third of the frame with wide eyes lit by bright blue smartphone glow and red rim light, shadowy open doorway behind them, clean dark atmospheric space on the left third of the frame, ARRI Alexa 35mm cinema film still, no text, no watermark",
   "teaser_intro": "85-word breathless Cold-Open Flash-Forward Teaser Intro hinting at the most shocking climax moment without spoiling the answer, ending with: Stay with me until the very last minute—let's rewind to how this nightmare started...",
-  "short_1_hook_intro": "18-word explosive 3-second opening hook question/paradox for Short #1",
-  "short_2_hook_intro": "18-word explosive 3-second opening hook question/paradox for Short #2",
+  "short_1_hook_intro": "16-word explosive 3-second opening hook question/paradox for Deep Short #1",
+  "short_2_hook_intro": "16-word explosive 3-second opening hook question/paradox for Deep Short #2",
+  "short_3_hook_intro": "11-word punchy instant shock hook for Fast Viral Short #3",
+  "short_4_hook_intro": "11-word punchy instant shock hook for Fast Viral Short #4",
+  "short_1_banner_top": "6-word shocking uppercase top hook banner #1",
+  "short_2_banner_top": "6-word shocking uppercase top hook banner #2",
+  "short_3_banner_top": "6-word shocking uppercase top hook banner #3",
+  "short_4_banner_top": "6-word shocking uppercase top hook banner #4",
+  "short_1_debate_cta": "Freeze right there! Type 1 in the comments if you would ..., or type 2 if you would ...! Watch the full story on our channel!",
+  "short_2_debate_cta": "Hold on! Type 1 if you think ..., or type 2 if you think ...! Drop 1 or 2 below and catch the full twist on our channel!",
+  "short_3_debate_cta": "Quick—type 1 if you ..., or type 2 if you ...! Drop your pick in the comments!",
+  "short_4_debate_cta": "Who was behind it: type 1 for ..., or type 2 for ...! Comment 1 or 2 now!",
   "short_1_title": "Viral hook title #1 + #shorts #storytime #thriller",
   "short_2_title": "Viral mid-story climax title #2 + #shorts #mystery #plotwist",
+  "short_3_title": "Fast viral cliffhanger title #3 + #shorts #truestory #creepy",
+  "short_4_title": "Detective clue cliffhanger title #4 + #shorts #whodunit #mystery",
   "seo_hook_2lines": "Gripping 2-line hook above YouTube Show More fold packed with curiosity and search keywords",
   "seo_synopsis": "4-sentence SEO-rich story teaser weaving high-retention mystery/storytime keywords naturally",
   "engagement_question": "Specific clue/timestamp debate question compelling viewers to comment their theory",
@@ -378,9 +405,17 @@ Return valid JSON only:
         "teaser_intro": teaser_intro,
         "short_1_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_1_hook_intro") or "")).strip(),
         "short_2_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_2_hook_intro") or "")).strip(),
+        "short_3_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_3_hook_intro") or "")).strip(),
+        "short_4_hook_intro": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_4_hook_intro") or "")).strip(),
+        "short_1_banner_top": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_1_banner_top") or "")).strip(),
+        "short_2_banner_top": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_2_banner_top") or "")).strip(),
+        "short_3_banner_top": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_3_banner_top") or "")).strip(),
+        "short_4_banner_top": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_4_banner_top") or "")).strip(),
         "short_title": str(plan.get("short_1_title") or f"{yt_title[:58]} #shorts").strip(),
         "short_1_title": str(plan.get("short_1_title") or f"{yt_title[:58]} #shorts").strip(),
-        "short_2_title": str(plan.get("short_2_title") or f"{yt_title[:54]} - الجزء الأخطر #shorts").strip(),
+        "short_2_title": str(plan.get("short_2_title") or f"{yt_title[:52]} - الجزء الأخطر #shorts").strip(),
+        "short_3_title": str(plan.get("short_3_title") or f"{yt_title[:52]} - صدمة غير متوقعة #shorts").strip(),
+        "short_4_title": str(plan.get("short_4_title") or f"{yt_title[:52]} - الدليل المخفي #shorts").strip(),
         "seo_hook_2lines": str(plan.get("seo_hook_2lines") or yt_title).strip(),
         "seo_synopsis": str(plan.get("seo_synopsis") or "").strip(),
         "engagement_question": str(plan.get("engagement_question") or "").strip(),
@@ -388,8 +423,10 @@ Return valid JSON only:
         "hashtags": str(plan.get("hashtags") or "").strip(),
         "character_visual_anchor": _sanitize_modest_action_prompt(char_anchor),
         "scenes": scenes_full,
-        "cta_spoken_1": channel_cfg["cta_spoken_1"],
-        "cta_spoken_2": channel_cfg["cta_spoken_2"],
+        "cta_spoken_1": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_1_debate_cta") or channel_cfg["cta_spoken_1"])).strip(),
+        "cta_spoken_2": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_2_debate_cta") or channel_cfg["cta_spoken_2"])).strip(),
+        "cta_spoken_3": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_3_debate_cta") or channel_cfg.get("cta_spoken_3") or channel_cfg["cta_spoken_1"])).strip(),
+        "cta_spoken_4": re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("short_4_debate_cta") or channel_cfg.get("cta_spoken_4") or channel_cfg["cta_spoken_2"])).strip(),
         "cta_banner": channel_cfg["cta_banner"],
     }
 

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-محرك المونتاج السينمائي الاحترافي V11.0 (Cold-Open Teaser Banner + Animated Chapter Cards + Fast Dynamic Camera Cuts)
-- يعرض شريط المقدمة التشويقية الناري أعلى الشاشة خلال أول ~28 ثانية مع تقطيع سريع (كل 4.5 ثانية) لخطف المشاهد فوراً!
-- يعرض بطاقات عناوين الفصول التفاعلية (Netflix-Style Chapter Cards) عند بداية كل مشهد من المشاهد الـ 12 لمنع الملل في منتصف الفيديو!
-- 6 حركات كاميرا سينمائية متنوعة بدون أي صورة مكررة أو غلوشة!
-- في الشورتات (9:16): لافتة خطف افتتاحية في أول 5 ثوانٍ + تقطيع بصري سريع (كل ~5.5 ثانية) + كادر طولي كامل بدون قص + كابشن كاريوكي ولافتة CTA!
+محرك المونتاج السينمائي الاحترافي V13.0 (LTX Moving Hook + Instant Coral Top Banner + 3-Word Fast Karaoke + Debate CTA)
+- يدعم دمج لقطة فيديو ذكاء اصطناعي متحركة حقيقية 100% (LTX-Video) في الافتتاحية (الثانية 0.0) لكسر التمرير السريع فوراً!
+- شريط عنوان علوي أحمر مرجاني عالي التباين (HookTop) يظهر من الإطار الأول (0.00ث) لإيقاف المتصفح الصامت على فيسبوك وتيك توك!
+- كابشن كاريوكي خاطف (3 كلمات في اللقطة بخط عريض واضح) + شريط التحدي الجدلي (١ أو ٢) في الخاتمة لتفجير التعليقات!
+- يعرض بطاقات عناوين الفصول التفاعلية (Netflix-Style Chapter Cards) عند بداية كل مشهد في الفيلم الطويل لمنع الملل!
 """
 
 import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import imageio_ffmpeg
 
@@ -67,14 +67,12 @@ Dialogue: 1,0:00:00.00,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
 """
     lines = [header]
 
-    # شريط المقدمة التشويقية (أول ~28 ثانية)
     tb_clean = _esc_ass(teaser_banner)
     if tb_clean and teaser_end_sec > 3.0:
         lines.append(
-            f"Dialogue: 3,0:00:00.20,{_ass_ts(max(3.5, teaser_end_sec - 0.4))},TeaserBadge,,0,0,0,,{{\\fad(220,300)}}{tb_clean}"
+            f"Dialogue: 3,0:00:00.00,{_ass_ts(max(3.5, teaser_end_sec - 0.4))},TeaserBadge,,0,0,0,,{{\\fad(0,300)}}{tb_clean}"
         )
 
-    # بطاقات عناوين الفصول السينمائية عند بداية كل مشهد من 1 إلى 12
     for st in scene_timings:
         if int(st.get("scene_num", 0)) >= 1:
             c_start = float(st["start"]) + 0.25
@@ -102,7 +100,8 @@ def _write_short_ass(
     total_dur: float,
     ass_path: Path,
 ) -> Path:
-    cta_start = max(hook_end_sec + 2.0, total_dur - 10.5)
+    cta_start = max(hook_end_sec + 1.8, total_dur - 8.5)
+    hook_vis_end = min(max(4.6, hook_end_sec + 0.4), min(6.2, cta_start - 0.4))
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 720
@@ -112,24 +111,25 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Brand,Cairo,28,&H3000D7FF,&H000000FF,&H85000000,&H00000000,-1,0,0,0,100,100,0,0,1,2.2,1,8,30,30,48,1
-Style: HookTop,Cairo,35,&H0028DFFF,&H00FFFFFF,&H000C1022,&HD80A0C18,-1,0,0,0,100,100,0,0,3,14,0,8,34,34,118,1
-Style: Cap,Cairo,50,&H00FFFFFF,&H0000D7FF,&H0006060E,&HA5000000,-1,0,0,0,100,100,0,0,1,4.4,2.4,2,46,46,245,1
-Style: CTA,Cairo,36,&H00FFFFFF,&H000000FF,&H000018B8,&HD8001095,-1,0,0,0,100,100,0,0,3,15,0,8,35,35,120,1
+Style: Brand,Cairo,27,&H3800D7FF,&H000000FF,&H85000000,&H00000000,-1,0,0,0,100,100,0,0,1,2.2,1,8,30,30,46,1
+Style: HookTop,Cairo,37,&H00FFFFFF,&H0028DFFF,&H001814C8,&HE8120EA8,-1,0,0,0,100,100,0,0,3,16,0,8,30,30,124,1
+Style: Cap,Cairo,53,&H00FFFFFF,&H0000D7FF,&H0006060E,&HA8000000,-1,0,0,0,100,100,0,0,1,4.6,2.5,2,42,42,262,1
+Style: CTA,Cairo,35,&H0028DFFF,&H00FFFFFF,&H000E1224,&HE8080C1C,-1,0,0,0,100,100,0,0,3,15,0,8,30,30,124,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 1,0:00:00.00,{_ass_ts(total_dur)},Brand,,0,0,0,,{_esc_ass(brand_name)}
-Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(180,100)}}{_esc_ass(cta_banner)}
+Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(160,80)}}{_esc_ass(cta_banner)}
 """
     lines = [header]
     hb_clean = _esc_ass(hook_banner)
-    if hb_clean and hook_end_sec > 1.5:
+    if hb_clean and hook_vis_end > 1.2:
+        # يبدأ في الثانية 0.00 بدون تأخير ليظهر في الغلاف وللمشاهد الصامت منذ اللحظة الأولى
         lines.append(
-            f"Dialogue: 3,0:00:00.10,{_ass_ts(min(hook_end_sec, 6.0))},HookTop,,0,0,0,,{{\\fad(150,250)}}{hb_clean}"
+            f"Dialogue: 3,0:00:00.00,{_ass_ts(hook_vis_end)},HookTop,,0,0,0,,{{\\fad(0,240)}}{hb_clean}"
         )
 
-    chunk = 4
+    chunk = 3
     for i in range(0, len(words), chunk):
         grp = words[i : i + chunk]
         if not grp:
@@ -137,8 +137,8 @@ Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(180,10
         s_t = grp[0]["start"]
         e_t = grp[-1]["end"]
         if i + chunk < len(words):
-            e_t = min(words[i + chunk]["start"], e_t + 0.35)
-        e_t = max(s_t + 0.20, e_t)
+            e_t = min(words[i + chunk]["start"], e_t + 0.32)
+        e_t = max(s_t + 0.18, e_t)
         parts = []
         for idx_w, w in enumerate(grp):
             clean = _esc_ass(w["word"])
@@ -151,13 +151,57 @@ Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(180,10
     return ass_path
 
 
+def _render_motion_clip_segment(
+    motion_mp4: Path,
+    dur: float,
+    out_seg: Path,
+    target_w: int,
+    target_h: int,
+    fps: int,
+    crf: int = 21,
+) -> bool:
+    """يحوّل لقطة الفيديو المتحركة الافتتاحية لنفس أبعاد ومعدل إطارات المونتاج بدقة تامة."""
+    try:
+        if not motion_mp4 or not motion_mp4.exists() or motion_mp4.stat().st_size < 20000:
+            return False
+        clip_dur = max(0.8, get_audio_duration(motion_mp4))
+        pts_factor = max(0.65, min(2.25, dur / clip_dur))
+        fade_out_st = max(0.14, dur - 0.16)
+        vf = (
+            f"setpts={pts_factor:.4f}*PTS,"
+            f"scale={target_w}:{target_h}:force_original_aspect_ratio=increase:flags=lanczos,"
+            f"crop={target_w}:{target_h},"
+            f"unsharp=5:5:0.75:5:5:0.0,"
+            f"fade=t=in:st=0:d=0.12,fade=t=out:st={fade_out_st:.2f}:d=0.15,format=yuv420p"
+        )
+        subprocess.run(
+            [
+                FFMPEG_BIN, "-y",
+                "-i", str(motion_mp4),
+                "-t", f"{dur:.3f}",
+                "-vf", vf, "-r", str(fps),
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", str(crf),
+                "-an", "-loglevel", "error", str(out_seg),
+            ],
+            check=True,
+        )
+        return out_seg.exists() and out_seg.stat().st_size > 10000
+    except Exception:
+        return False
+
+
 def _render_single_long_8s_shot(
     idx: int,
     img_path: Path,
     dur: float,
     out_seg: Path,
     fps: int = 20,
+    opening_motion_mp4: Optional[Path] = None,
 ) -> Tuple[int, Path]:
+    if idx == 0 and opening_motion_mp4 is not None:
+        if _render_motion_clip_segment(opening_motion_mp4, dur, out_seg, 1280, 720, fps, crf=22):
+            return idx, out_seg
+
     fade_out_st = max(0.16, dur - 0.20)
     d_safe = max(1.0, dur)
     mode = idx % 6
@@ -199,6 +243,7 @@ def render_long_episode_mp4(
     brand_name: str,
     out_mp4: Path,
     work_dir: Path,
+    opening_motion_mp4: Optional[Path] = None,
 ) -> Path:
     work_dir.mkdir(parents=True, exist_ok=True)
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
@@ -214,9 +259,10 @@ def render_long_episode_mp4(
                 _render_single_long_8s_shot,
                 i,
                 shot_images[i],
-                max(2.2, float(shot_windows[i]["dur"])),
+                max(2.0, float(shot_windows[i]["dur"])),
                 seg_paths[i],
                 fps,
+                opening_motion_mp4 if i == 0 else None,
             )
             for i in range(n_shots)
         ]
@@ -271,20 +317,25 @@ def _render_single_short_8s_shot(
     dur: float,
     out_seg: Path,
     fps: int = 24,
+    opening_motion_mp4: Optional[Path] = None,
 ) -> Tuple[int, Path]:
-    fade_out_st = max(0.14, dur - 0.16)
-    d_safe = max(1.0, dur)
+    if idx == 0 and opening_motion_mp4 is not None:
+        if _render_motion_clip_segment(opening_motion_mp4, dur, out_seg, 720, 1280, fps, crf=21):
+            return idx, out_seg
+
+    fade_out_st = max(0.12, dur - 0.14)
+    d_safe = max(0.9, dur)
     mode = idx % 4
     if mode == 0:
-        mv = f"scale=756:1344,crop=720:1280:'(iw-720)/2':'(ih-1280)*(t/{d_safe:.2f})'"
+        mv = f"scale=764:1358,crop=720:1280:'(iw-720)/2':'(ih-1280)*(t/{d_safe:.2f})'"
     elif mode == 1:
-        mv = f"scale=756:1344,crop=720:1280:'(iw-720)/2':'(ih-1280)*(1-t/{d_safe:.2f})'"
+        mv = f"scale=764:1358,crop=720:1280:'(iw-720)/2':'(ih-1280)*(1-t/{d_safe:.2f})'"
     elif mode == 2:
-        mv = f"scale=756:1344,crop=720:1280:'(iw-720)*(t/{d_safe:.2f})':'(ih-1280)/2'"
+        mv = f"scale=764:1358,crop=720:1280:'(iw-720)*(t/{d_safe:.2f})':'(ih-1280)/2'"
     else:
-        mv = f"scale=756:1344,crop=720:1280:'(iw-720)*(1-t/{d_safe:.2f})':'(ih-1280)/2'"
+        mv = f"scale=764:1358,crop=720:1280:'(iw-720)*(1-t/{d_safe:.2f})':'(ih-1280)/2'"
 
-    vf = f"{mv},fade=t=in:st=0:d=0.14,fade=t=out:st={fade_out_st:.2f}:d=0.15,format=yuv420p"
+    vf = f"{mv},fade=t=in:st=0:d=0.12,fade=t=out:st={fade_out_st:.2f}:d=0.14,format=yuv420p"
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
@@ -309,6 +360,7 @@ def render_vertical_short_mp4(
     cta_banner: str,
     out_mp4: Path,
     work_dir: Path,
+    opening_motion_mp4: Optional[Path] = None,
 ) -> Path:
     work_dir.mkdir(parents=True, exist_ok=True)
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
@@ -324,9 +376,10 @@ def render_vertical_short_mp4(
                 _render_single_short_8s_shot,
                 i,
                 vertical_images[i],
-                max(2.0, float(short_windows[i]["dur"])),
+                max(1.6, float(short_windows[i]["dur"])),
                 seg_paths[i],
                 fps,
+                opening_motion_mp4 if i == 0 else None,
             )
             for i in range(n_shots)
         ]

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-المايسترو الرئيسي V11.0 — محرك القنوات الأربع المستقل 100% (مقدمة تشويقية إجبارية + 0% غلوشة + خوارزميات 2026)
+المايسترو الرئيسي V13.0 — محرك القنوات الأربع المستقل 100% (1 فيلم كامل + 4 شورتس يومياً + افتتاحية فيديو AI متحرك + كسر حاجز الـ 200 مشاهدة)
 لكل قناة يومياً:
-  1) كتابة سيناريو درامي عميق (>15 دقيقة) يبدأ بمقدمة تشويقية نارية (Cold-Open Teaser) + هوك افتتاحي لكل شورت + SEO دلالي وفصول
-  2) إنتاج صوت استوديو بشري نقي 100% (Kore / Aoede / Charon — صفر صوت آلي) مع مؤثرات انتقال درامية
-  3) توليد صورة مصغرة سينمائية (1280x720) + مشاهد فوتوغرافية حادة 100% بدون أي غلوشة (تقطيع 4.5ث في المقدمة و8ث في الحلقة، و5.8ث طولي 9:16 للشورتس)
-  4) مونتاج احترافي بشريط المقدمة التشويقية وبطاقات عناوين المشاهد التفاعلية (Chapter Cards) وكابشن كاريوكي
-  5) النشر التلقائي المتكامل على يوتيوب + فيسبوك + تيك توك مع ربط الشورتات بالحلقة الكاملة وسؤال التفاعل في أول تعليق
+  1) كتابة سيناريو درامي عميق (>15 دقيقة) بعنوان بحثي عالي الطلب على يوتيوب + مقدمة تشويقية نارية + 4 شورتس (2 عميقين + 2 خاطفين <55ث)
+  2) إنتاج صوت استوديو بشري نقي 100% (Kore / Aoede / Charon — صفر صوت آلي) مع قفلات جدلية باختيارين (١ أو ٢) لتفجير التعليقات
+  3) توليد صورة مصغرة سينمائية (1280x720) + مشاهد فوتوغرافية حادة 100% + تحريك الافتتاحية بفيديو ذكاء اصطناعي حقيقي (LTX-Video)
+  4) مونتاج احترافي بشريط خطف علوي مرجاني منذ الثانية 0.00 وكابشن كاريوكي سريع وبطاقات فصول للفيلم الطويل
+  5) النشر والجدولة التلقائية الموزعة على مدار اليوم (كل 3 ساعات) على يوتيوب + فيسبوك + تيك توك بدون روابط خارجية تكتم وصول تيك توك
 """
 
 import argparse
@@ -28,7 +28,11 @@ from story_brain import (
     load_memory,
     save_memory,
 )
-from story_visuals import build_viral_youtube_thumbnail, generate_8sec_shots_batch
+from story_visuals import (
+    build_viral_youtube_thumbnail,
+    generate_8sec_shots_batch,
+    generate_opening_motion_clip,
+)
 
 MEMORY_FILE = Path(__file__).resolve().parent / "state" / "empire_memory.json"
 
@@ -36,7 +40,7 @@ MEMORY_FILE = Path(__file__).resolve().parent / "state" / "empire_memory.json"
 def _clean_hook_banner(raw_title: str) -> str:
     no_tags = re.sub(r"#\S+", "", raw_title).strip(" -—|")
     words = no_tags.split()
-    return " ".join(words[:7])[:48]
+    return " ".join(words[:7])[:52]
 
 
 def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str = "") -> None:
@@ -57,10 +61,10 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 76, flush=True)
-    print(f"بدء الإنتاج السينمائي الاحترافي V11.0 لقناة: {ch['brand_name']} ({ch_id})", flush=True)
+    print(f"بدء الإنتاج السينمائي الاحترافي V13.0 لقناة: {ch['brand_name']} ({ch_id})", flush=True)
     print("=" * 76, flush=True)
 
-    # 1) توليد القصة الكاملة + المقدمة التشويقية النارية + حزمة الخوارزميات وحفظ الذاكرة
+    # 1) توليد القصة الكاملة + المقدمة التشويقية + بيانات الـ 4 شورتس وحفظ الذاكرة
     memory = load_memory(MEMORY_FILE)
     ep = generate_full_episode_and_short(channel_cfg=ch, api_key=groq_key, memory=memory)
     save_memory(MEMORY_FILE, memory)
@@ -73,7 +77,7 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         flush=True,
     )
 
-    # 2) إنتاج الصوت البشري النقي 100% + نوافذ التقطيع البصري الديناميكي
+    # 2) إنتاج الصوت البشري النقي 100% للفيلم الطويل والـ 4 شورتس (2 عميقين + 2 خاطفين <55ث)
     audio_pack = synthesize_episode_and_climax_shorts(
         episode=ep,
         voice_cfg=ch["voice"],
@@ -81,24 +85,28 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         language=ch["language"],
         work_dir=work_root / "audio",
         min_duration_sec=float(ch.get("min_duration_sec", 945.0)),
-        shot_interval_sec=float(ch.get("shot_interval_sec", 8.0)),
+        shot_interval_sec=float(ch.get("shot_interval_sec", 9.0)),
     )
     total_dur = get_audio_duration(audio_pack["master_mp3"])
     s1_dur = get_audio_duration(audio_pack["short_1_mp3"])
     s2_dur = get_audio_duration(audio_pack["short_2_mp3"])
+    s3_dur = get_audio_duration(audio_pack["short_3_mp3"])
+    s4_dur = get_audio_duration(audio_pack["short_4_mp3"])
     n_long_shots = len(audio_pack["long_8s_windows"])
-    n_s1_shots = len(audio_pack["short_1_windows"])
-    n_s2_shots = len(audio_pack["short_2_windows"])
+    n_s1 = len(audio_pack["short_1_windows"])
+    n_s2 = len(audio_pack["short_2_windows"])
+    n_s3 = len(audio_pack["short_3_windows"])
+    n_s4 = len(audio_pack["short_4_windows"])
     print(
-        f"[{ch_id}] مدة الحلقة الكاملة: {total_dur/60:.2f} دقيقة "
-        f"(المقدمة التشويقية حتى {audio_pack['teaser_end_sec']:.1f}ث | {n_long_shots} لقطة حادة فريدة) | "
-        f"الشورت 1: {s1_dur:.1f}ث ({n_s1_shots} لقطة 9:16) | "
-        f"الشورت 2: {s2_dur:.1f}ث ({n_s2_shots} لقطة 9:16)",
+        f"[{ch_id}] الفيلم الطويل: {total_dur/60:.2f}د ({n_long_shots} لقطة) | "
+        f"شورت 1 (عميق): {s1_dur:.1f}ث ({n_s1} لقطة) | شورت 2 (عميق): {s2_dur:.1f}ث ({n_s2} لقطة) | "
+        f"شورت 3 (خاطف): {s3_dur:.1f}ث ({n_s3} لقطة) | شورت 4 (خاطف): {s4_dur:.1f}ث ({n_s4} لقطة)",
         flush=True,
     )
 
     # 3) صياغة الأوصاف البصرية الفوتوغرافية الدقيقة لكل نافذة (صفر تكرار وصفر غلوشة)
-    print(f"[{ch_id}] صياغة الأوصاف البصرية الفوتوغرافية الدقيقة ({n_long_shots + n_s1_shots + n_s2_shots} لقطة)...", flush=True)
+    total_v_shots = n_s1 + n_s2 + n_s3 + n_s4
+    print(f"[{ch_id}] صياغة الأوصاف البصرية الفوتوغرافية ({n_long_shots} أفقي + {total_v_shots} طولي)...", flush=True)
     long_prompts = generate_8sec_shot_prompts(
         windows=audio_pack["long_8s_windows"],
         character_visual_anchor=ep["character_visual_anchor"],
@@ -106,15 +114,14 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         api_key=groq_key,
         is_vertical=False,
     )
-    s1_prompts = generate_8sec_shot_prompts(
-        windows=audio_pack["short_1_windows"],
-        character_visual_anchor=ep["character_visual_anchor"],
-        story_title=ep["youtube_title"],
-        api_key=groq_key,
-        is_vertical=True,
+    all_short_windows = (
+        audio_pack["short_1_windows"]
+        + audio_pack["short_2_windows"]
+        + audio_pack["short_3_windows"]
+        + audio_pack["short_4_windows"]
     )
-    s2_prompts = generate_8sec_shot_prompts(
-        windows=audio_pack["short_2_windows"],
+    all_short_prompts = generate_8sec_shot_prompts(
+        windows=all_short_windows,
         character_visual_anchor=ep["character_visual_anchor"],
         story_title=ep["youtube_title"],
         api_key=groq_key,
@@ -135,8 +142,8 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         seed=seed_base + 77,
     )
 
-    # 5) توليد اللقطات الحادة 100% للحلقة الكاملة والمقطعين الطوليين (صفر غلوشة!)
-    print(f"[{ch_id}] توليد {n_long_shots} صورة فوتوغرافية حادة 16:9 للحلقة الكاملة (بدون أي غلوشة)...", flush=True)
+    # 5) توليد اللقطات الحادة 100% للحلقة الكاملة والـ 4 شورتس في دفعة موحدة سريعة
+    print(f"[{ch_id}] توليد {n_long_shots} صورة فوتوغرافية حادة 16:9 للفيلم الطويل...", flush=True)
     long_imgs = generate_8sec_shots_batch(
         prompts=long_prompts,
         out_dir=work_root / "img_long",
@@ -147,32 +154,86 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         max_workers=5,
     )
 
-    print(f"[{ch_id}] توليد {n_s1_shots + n_s2_shots} صورة طولية حادة 9:16 للشورتس (بدون قص أو غلوشة)...", flush=True)
-    s1_imgs = generate_8sec_shots_batch(
-        prompts=s1_prompts,
-        out_dir=work_root / "img_s1",
-        prefix="s1shot",
+    print(f"[{ch_id}] توليد {total_v_shots} صورة طولية حادة 9:16 للـ 4 شورتس...", flush=True)
+    all_v_imgs = generate_8sec_shots_batch(
+        prompts=all_short_prompts,
+        out_dir=work_root / "img_shorts",
+        prefix="vshot",
         width=720,
         height=1280,
         seed_base=seed_base + 3200,
         max_workers=5,
     )
-    s2_imgs = generate_8sec_shots_batch(
-        prompts=s2_prompts,
-        out_dir=work_root / "img_s2",
-        prefix="s2shot",
-        width=720,
-        height=1280,
-        seed_base=seed_base + 6200,
-        max_workers=5,
+    idx_1 = n_s1
+    idx_2 = idx_1 + n_s2
+    idx_3 = idx_2 + n_s3
+    s1_imgs = all_v_imgs[:idx_1]
+    s2_imgs = all_v_imgs[idx_1:idx_2]
+    s3_imgs = all_v_imgs[idx_2:idx_3]
+    s4_imgs = all_v_imgs[idx_3 : idx_3 + n_s4]
+
+    s1_prompts = all_short_prompts[:idx_1]
+    s2_prompts = all_short_prompts[idx_1:idx_2]
+    s3_prompts = all_short_prompts[idx_2:idx_3]
+    s4_prompts = all_short_prompts[idx_3 : idx_3 + n_s4]
+
+    # 5.5) توليد افتتاحيات فيديو سينمائية متحركة حقيقية 100% (LTX-Video عبر ZeroGPU) لأول ثواني الخطف
+    print(f"[{ch_id}] توليد لقطات افتتاحية متحركة حقيقية (LTX-Video AI Motion Hooks)...", flush=True)
+    motion_dir = work_root / "motion_hooks"
+    s3_motion = generate_opening_motion_clip(
+        prompt=s3_prompts[0] if s3_prompts else ep["thumbnail_prompt"],
+        first_frame_path=s3_imgs[0] if s3_imgs else None,
+        out_mp4=motion_dir / "s3_hook.mp4",
+        is_vertical=True,
+        duration_sec=4.2,
+        seed=seed_base + 11,
+        call_idx=0,
+    )
+    s4_motion = generate_opening_motion_clip(
+        prompt=s4_prompts[0] if s4_prompts else ep["thumbnail_prompt"],
+        first_frame_path=s4_imgs[0] if s4_imgs else None,
+        out_mp4=motion_dir / "s4_hook.mp4",
+        is_vertical=True,
+        duration_sec=4.2,
+        seed=seed_base + 22,
+        call_idx=1,
+    )
+    s1_motion = generate_opening_motion_clip(
+        prompt=s1_prompts[0] if s1_prompts else ep["thumbnail_prompt"],
+        first_frame_path=s1_imgs[0] if s1_imgs else None,
+        out_mp4=motion_dir / "s1_hook.mp4",
+        is_vertical=True,
+        duration_sec=4.8,
+        seed=seed_base + 33,
+        call_idx=2,
+    )
+    s2_motion = generate_opening_motion_clip(
+        prompt=s2_prompts[0] if s2_prompts else ep["thumbnail_prompt"],
+        first_frame_path=s2_imgs[0] if s2_imgs else None,
+        out_mp4=motion_dir / "s2_hook.mp4",
+        is_vertical=True,
+        duration_sec=4.8,
+        seed=seed_base + 44,
+        call_idx=3,
+    )
+    long_motion = generate_opening_motion_clip(
+        prompt=long_prompts[0] if long_prompts else ep["thumbnail_prompt"],
+        first_frame_path=long_imgs[0] if long_imgs else None,
+        out_mp4=motion_dir / "long_hook.mp4",
+        is_vertical=False,
+        duration_sec=5.0,
+        seed=seed_base + 55,
+        call_idx=0,
     )
 
     long_mp4 = out_dir / f"{ch_id}_full_episode.mp4"
     s1_mp4 = out_dir / f"{ch_id}_short_1.mp4"
     s2_mp4 = out_dir / f"{ch_id}_short_2.mp4"
+    s3_mp4 = out_dir / f"{ch_id}_short_3.mp4"
+    s4_mp4 = out_dir / f"{ch_id}_short_4.mp4"
 
-    # 6) المونتاج السينمائي للحلقة الكاملة (شريط المقدمة التشويقية + بطاقات الفصول + 6 حركات كاميرا)
-    print(f"[{ch_id}] مونتاج الحلقة الكاملة HD (1280x720) مع شريط المقدمة التشويقية وبطاقات الفصول...", flush=True)
+    # 6) المونتاج السينمائي للحلقة الكاملة HD (1280x720)
+    print(f"[{ch_id}] مونتاج الحلقة الكاملة HD (1280x720)...", flush=True)
     render_long_episode_mp4(
         shot_images=long_imgs,
         shot_windows=audio_pack["long_8s_windows"],
@@ -184,48 +245,43 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         brand_name=ch["brand_name"],
         out_mp4=long_mp4,
         work_dir=work_root / "render_long",
+        opening_motion_mp4=long_motion,
     )
 
-    # 7) المونتاج السينمائي لمقطعي الشورتس الطوليين 9:16 (لافتة هوك افتتاحية + تقطيع سريع + CTA)
-    s1_hook_banner = _clean_hook_banner(str(ep.get("short_1_title") or ep["youtube_title"]))
-    s2_hook_banner = _clean_hook_banner(str(ep.get("short_2_title") or ep["youtube_title"]))
+    # 7) المونتاج السينمائي للـ 4 مقاطع شورتس 9:16 (شريط خطف علوي مرجاني 0.00ث + فيديو افتتاحي متحرك + قفلة جدلية ١ أو ٢)
+    short_specs = [
+        (1, s1_imgs, "short_1_windows", "short_1_mp3", "short_1_words", "short_1_hook_end", "short_1_banner_top", "short_1_title", s1_mp4, s1_motion),
+        (2, s2_imgs, "short_2_windows", "short_2_mp3", "short_2_words", "short_2_hook_end", "short_2_banner_top", "short_2_title", s2_mp4, s2_motion),
+        (3, s3_imgs, "short_3_windows", "short_3_mp3", "short_3_words", "short_3_hook_end", "short_3_banner_top", "short_3_title", s3_mp4, s3_motion),
+        (4, s4_imgs, "short_4_windows", "short_4_mp3", "short_4_words", "short_4_hook_end", "short_4_banner_top", "short_4_title", s4_mp4, s4_motion),
+    ]
+    for s_num, s_im, w_key, m_key, wd_key, hk_key, bn_key, tl_key, out_p, mot_p in short_specs:
+        hb_txt = _clean_hook_banner(str(ep.get(bn_key) or ep.get(tl_key) or ep["youtube_title"]))
+        print(f"[{ch_id}] مونتاج الشورت رقم {s_num} (720x1280 | متحرك افتتاحي={'نعم' if mot_p else 'تلقائي'})...", flush=True)
+        render_vertical_short_mp4(
+            vertical_images=s_im,
+            short_windows=audio_pack[w_key],
+            short_mp3=audio_pack[m_key],
+            short_words=audio_pack[wd_key],
+            brand_name=ch["brand_name"],
+            hook_banner=hb_txt,
+            hook_end_sec=float(audio_pack[hk_key]),
+            cta_banner=ep["cta_banner"],
+            out_mp4=out_p,
+            work_dir=work_root / f"render_s{s_num}",
+            opening_motion_mp4=mot_p,
+        )
 
-    print(f"[{ch_id}] مونتاج الشورت التشويقي الأول (720x1280 كادر طولي كامل)...", flush=True)
-    render_vertical_short_mp4(
-        vertical_images=s1_imgs,
-        short_windows=audio_pack["short_1_windows"],
-        short_mp3=audio_pack["short_1_mp3"],
-        short_words=audio_pack["short_1_words"],
-        brand_name=ch["brand_name"],
-        hook_banner=s1_hook_banner,
-        hook_end_sec=float(audio_pack["short_1_hook_end"]),
-        cta_banner=ep["cta_banner"],
-        out_mp4=s1_mp4,
-        work_dir=work_root / "render_s1",
-    )
-
-    print(f"[{ch_id}] مونتاج الشورت التشويقي الثاني (720x1280 كادر طولي كامل)...", flush=True)
-    render_vertical_short_mp4(
-        vertical_images=s2_imgs,
-        short_windows=audio_pack["short_2_windows"],
-        short_mp3=audio_pack["short_2_mp3"],
-        short_words=audio_pack["short_2_words"],
-        brand_name=ch["brand_name"],
-        hook_banner=s2_hook_banner,
-        hook_end_sec=float(audio_pack["short_2_hook_end"]),
-        cta_banner=ep["cta_banner"],
-        out_mp4=s2_mp4,
-        work_dir=work_root / "render_s2",
-    )
-
-    # 8) النشر التلقائي المتكامل (إن لم يكن dry-run)
+    # 8) النشر والجدولة التلقائية الموزعة على مدار اليوم (إن لم يكن dry-run)
     if dry_run:
         print(
-            f"[{ch_id}] DRY-RUN مكتمل بنجاح:\n"
+            f"[{ch_id}] DRY-RUN V13.0 مكتمل بنجاح:\n"
             f" - Thumbnail: {thumb_jpg} ({thumb_jpg.stat().st_size / 1024:.1f} KB)\n"
             f" - Long MP4 : {long_mp4} ({long_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
             f" - Short 1  : {s1_mp4} ({s1_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
-            f" - Short 2  : {s2_mp4} ({s2_mp4.stat().st_size / (1024*1024):.2f} MB)",
+            f" - Short 2  : {s2_mp4} ({s2_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
+            f" - Short 3  : {s3_mp4} ({s3_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
+            f" - Short 4  : {s4_mp4} ({s4_mp4.stat().st_size / (1024*1024):.2f} MB)",
             flush=True,
         )
     else:
@@ -237,16 +293,18 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
             thumbnail_jpg=thumb_jpg,
             short1_mp4=s1_mp4,
             short2_mp4=s2_mp4,
+            short3_mp4=s3_mp4,
+            short4_mp4=s4_mp4,
         )
         print(f"CDN_AUDIT_URLS: {json.dumps(pub_res.get('cdn_urls', {}), ensure_ascii=False)}", flush=True)
-        print(f"[{ch_id}] تم النشر بنجاح! رابط الحلقة الكاملة على يوتيوب: {pub_res.get('youtube_watch_url')}", flush=True)
+        print(f"[{ch_id}] تم نشر الفيلم وجدولة الـ 4 شورتس بنجاح! رابط يوتيوب: {pub_res.get('youtube_watch_url')}", flush=True)
 
     if not keep_output_dir:
         shutil.rmtree(work_root, ignore_errors=True)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Media Empire Autopilot V11.0")
+    parser = argparse.ArgumentParser(description="Media Empire Autopilot V13.0")
     parser.add_argument("--channel", type=str, default="all", help="معرف القناة أو all")
     parser.add_argument("--dry-run", action="store_true", help="توليد بدون نشر")
     parser.add_argument("--output-dir", type=str, default="", help="مجلد حفظ المخرجات عند الاختبار")
