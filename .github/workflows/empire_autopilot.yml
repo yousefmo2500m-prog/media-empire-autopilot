@@ -17,7 +17,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: empire-v6-funnel
+  group: empire-${{ github.event.inputs.channel || github.event.schedule }}
   cancel-in-progress: false
 
 jobs:
