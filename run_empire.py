@@ -10,6 +10,7 @@
 """
 
 import argparse
+import datetime as dt
 import json
 import os
 import re
@@ -17,10 +18,11 @@ import shutil
 import sys
 import traceback
 from pathlib import Path
+from typing import Optional
 
 from channels_config import CHANNELS
 from cinema_funnel_renderer import render_long_episode_mp4, render_vertical_short_mp4
-from empire_publisher import publish_channel_funnel
+from empire_publisher import publish_channel_funnel, resolve_channel_slot_status
 from sound_studio import get_audio_duration, synthesize_episode_and_climax_shorts
 from story_brain import (
     generate_8sec_shot_prompts,
@@ -29,6 +31,7 @@ from story_brain import (
     save_memory,
 )
 from story_visuals import (
+    _EXHAUSTED_SLOTS,
     build_viral_short_cover,
     build_viral_youtube_thumbnail,
     generate_8sec_shots_batch,
@@ -44,7 +47,12 @@ def _clean_hook_banner(raw_title: str) -> str:
     return " ".join(words[:7])[:52]
 
 
-def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str = "") -> None:
+def run_single_channel(
+    ch_id: str,
+    dry_run: bool = False,
+    keep_output_dir: str = "",
+    target_slot_utc: Optional[dt.datetime] = None,
+) -> None:
     if ch_id not in CHANNELS:
         raise ValueError(f"معرف القناة غير معروف: {ch_id}")
 
@@ -53,6 +61,7 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
         raise RuntimeError("مفتاح GROQ_API_KEY غير متوفر في البيئة!")
 
     ch = CHANNELS[ch_id]
+    _EXHAUSTED_SLOTS.clear()
     work_root = Path("/tmp/media_empire_work") / ch_id
     if work_root.exists():
         shutil.rmtree(work_root, ignore_errors=True)
@@ -314,26 +323,75 @@ def run_single_channel(ch_id: str, dry_run: bool = False, keep_output_dir: str =
             short2_cover=short_covers.get(2),
             short3_cover=short_covers.get(3),
             short4_cover=short_covers.get(4),
+            target_slot_utc=target_slot_utc,
         )
         print(f"CDN_AUDIT_URLS: {json.dumps(pub_res.get('cdn_urls', {}), ensure_ascii=False)}", flush=True)
-        print(f"[{ch_id}] تم نشر الفيلم وجدولة الـ 4 شورتس بنجاح! رابط يوتيوب: {pub_res.get('youtube_watch_url')}", flush=True)
+        print(
+            f"[{ch_id}] تم قفل/نشر الفيلم وجدولة الـ 4 شورتس بنجاح! الموعد المرجعي: {pub_res.get('scheduled_anchor_utc')} | رابط يوتيوب: {pub_res.get('youtube_watch_url')}",
+            flush=True,
+        )
 
     if not keep_output_dir:
         shutil.rmtree(work_root, ignore_errors=True)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Media Empire Autopilot V13.0")
-    parser.add_argument("--channel", type=str, default="all", help="معرف القناة أو all")
+    parser = argparse.ArgumentParser(description="Media Empire Autopilot V14.0")
+    parser.add_argument("--channel", type=str, default="smart-sync", help="معرف القناة أو all أو smart-sync أو catchup-all")
+    parser.add_argument("--max-per-sweep", type=int, default=1, help="أقصى عدد قنوات لكل مسحة جدولة دورية")
     parser.add_argument("--dry-run", action="store_true", help="توليد بدون نشر")
     parser.add_argument("--output-dir", type=str, default="", help="مجلد حفظ المخرجات عند الاختبار")
     args = parser.parse_args()
+
+    if args.channel in ("smart-sync", "catchup-all"):
+        now_utc = dt.datetime.now(dt.timezone.utc)
+        sweep_cap = 4 if args.channel == "catchup-all" else max(1, args.max_per_sweep)
+        print(f"=== [{args.channel.upper()} V14.0] فحص حالة القنوات الأربع عند {now_utc.strftime('%Y-%m-%d %H:%M:%S UTC')} ===", flush=True)
+        pending = []
+        for cid, ch_cfg in CHANNELS.items():
+            st = resolve_channel_slot_status(ch_cfg, now_utc=now_utc)
+            print(f"  • [{cid}] ({ch_cfg['brand_name']}): needs_run={st['needs_run']} | overdue={st['is_overdue']} | {st['reason']}", flush=True)
+            if st["needs_run"]:
+                pending.append((cid, st))
+
+        if not pending:
+            print("✅ جميع القنوات المستحقة منشورة أو مقفولة بموعدها الرسمي بالثانية داخل سحابة Zernio — لا حاجة لأي إجراء.", flush=True)
+            return
+
+        # الأولوية القصوى لأي قناة متأخرة (Overdue)، ثم الأقرب موعداً
+        pending.sort(key=lambda item: (0 if item[1]["is_overdue"] else 1, item[1]["target_slot_utc"]))
+        selected = pending[:sweep_cap]
+        print(f"🚀 سيتم إنتاج وقفل/نشر {len(selected)} قناة في هذه المسحة: {[x[0] for x in selected]}", flush=True)
+
+        failures = 0
+        for cid, st in selected:
+            try:
+                run_single_channel(
+                    cid,
+                    dry_run=args.dry_run,
+                    keep_output_dir=args.output_dir,
+                    target_slot_utc=st["target_slot_utc"],
+                )
+            except Exception as exc:
+                failures += 1
+                print(f"[ERROR] فشل تشغيل القناة {cid}: {exc}", file=sys.stderr, flush=True)
+                traceback.print_exc()
+
+        if failures == len(selected):
+            sys.exit(1)
+        return
 
     targets = list(CHANNELS.keys()) if args.channel == "all" else [args.channel]
     failures = 0
     for cid in targets:
         try:
-            run_single_channel(cid, dry_run=args.dry_run, keep_output_dir=args.output_dir)
+            st = resolve_channel_slot_status(CHANNELS[cid]) if (not args.dry_run and cid in CHANNELS) else {}
+            run_single_channel(
+                cid,
+                dry_run=args.dry_run,
+                keep_output_dir=args.output_dir,
+                target_slot_utc=st.get("target_slot_utc"),
+            )
         except Exception as exc:
             failures += 1
             print(f"[ERROR] فشل تشغيل القناة {cid}: {exc}", file=sys.stderr, flush=True)

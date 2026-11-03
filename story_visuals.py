@@ -259,6 +259,11 @@ def _try_cloudflare_flux(prompt: str, width: int, height: int, seed: int) -> Opt
 
 
 CLEAN_CINEMA_MODELS = [
+    "Z-Image-Turbo",
+    "Flux.1-Schnell fp8 (Compact)",
+    "Juggernaut XL",
+    "AlbedoBase XL 3.1",
+    "AlbedoBase XL (SDXL)",
     "Deliberate",
     "Dreamshaper",
     "ICBINP - I Can't Believe It's Not Photography",
@@ -275,21 +280,22 @@ NEGATIVE_MODEST_CINEMA = (
 
 def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) -> Image.Image:
     """
-    محرك مشاهد سينمائية نظيف ومحتشم 100% (V12.0):
-    - تم حظر نماذج البورتريه والعري (majicMIX / Analog Madness / Realistic Vision) نهائياً للأبد!
+    محرك مشاهد سينمائية نظيف ومحتشم 100% (V14.0):
+    - موسّع بتسعة نماذج فوتوغرافية وسينمائية نشطة عالية السرعة (بما فيها Z-Image-Turbo و FLUX و Juggernaut XL).
     - يرسم الموقف الدرامي الفعلي المنطوق في القصة بدقة 1:1 مع تفعيل فلتر الأمان censor_nsfw=True وملابس يومية محترمة بدون حجاب!
     """
     h_w, h_h = (576, 320) if width >= height else (320, 576)
-    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV12:1.2:auto"}
+    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV14:1.4:auto"}
 
-    for attempt in range(8):
+    for attempt in range(10):
         with _HORDE_SEM:
+            active_models = CLEAN_CINEMA_MODELS if attempt < 7 else CLEAN_CINEMA_MODELS + ["stable_diffusion"]
             payload = {
                 "prompt": f"{prompt} ### {NEGATIVE_MODEST_CINEMA}",
                 "params": {
                     "width": h_w,
                     "height": h_h,
-                    "steps": 18,
+                    "steps": 16 if attempt >= 5 else 18,
                     "cfg_scale": 6.5,
                     "sampler_name": "k_euler_a",
                     "seed": str((seed + attempt * 71) % 9999999),
@@ -297,7 +303,7 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
                 "nsfw": False,
                 "censor_nsfw": True,
                 "r2": True,
-                "models": CLEAN_CINEMA_MODELS,
+                "models": active_models,
             }
             job_id = None
             try:
@@ -461,20 +467,44 @@ def generate_8sec_shots_batch(
             flush=True,
         )
 
-        def _run_dedicated_shot(si: int) -> Tuple[int, Path]:
+        def _run_dedicated_shot(si: int) -> Tuple[int, Optional[Path]]:
             op = out_dir / f"{prefix}_{si:03d}.jpg"
-            generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97 + 19, shot_idx=si)
-            return si, op
+            try:
+                generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97 + 19, shot_idx=si)
+                return si, op
+            except Exception as shot_exc:
+                print(f"    ⚠️ [{prefix}] تعذر استلام اللقطة المنفردة {si} بعد كل المزودات ({shot_exc}) — سيتم تأطير كادر سينمائي مقرب بديل من المشهد المجاور دون إسقاط الحلقة.", flush=True)
+                return si, None
 
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futs2 = [ex.submit(_run_dedicated_shot, si) for si in missing_indices]
             done_extra = 0
             for f in as_completed(futs2):
                 si, p = f.result()
-                paths[si] = p
+                if p is not None:
+                    paths[si] = p
                 done_extra += 1
                 if done_extra % 5 == 0 or done_extra == len(missing_indices):
                     print(f"    🎨 [{prefix}] مشهد روائي 1:1 مكتمل: {done_extra}/{len(missing_indices)}...", flush=True)
+
+    # صمام أمان عدم سقوط الحلقة نهائياً: إذا تعذرت لقطة منفردة نادرة، نصنع كادراً مقرباً حاداً من أقرب لقطة FLUX حقيقية مجاورة
+    valid_existing = [(idx, p) for idx, p in enumerate(paths) if p is not None and p.exists()]
+    if valid_existing:
+        for si in range(n_total):
+            if paths[si] is None or not paths[si].exists():
+                nearest_idx, nearest_p = min(valid_existing, key=lambda item: abs(item[0] - si))
+                src_im = Image.open(nearest_p).convert("RGB")
+                sw, sh = src_im.size
+                zx = int(sw * 0.08)
+                zy = int(sh * 0.08)
+                if si % 2 == 0:
+                    crop_box = (zx, int(zy * 0.6), sw - int(zx * 0.5), sh - zy)
+                else:
+                    crop_box = (int(zx * 0.5), zy, sw - zx, sh - int(zy * 0.6))
+                reframed = _fit_cover_exact(src_im.crop(crop_box), width, height, polish=True)
+                op = out_dir / f"{prefix}_{si:03d}.jpg"
+                reframed.save(str(op), format="JPEG", quality=93, optimize=True)
+                paths[si] = op
 
     return [p for p in paths if p is not None]
 
