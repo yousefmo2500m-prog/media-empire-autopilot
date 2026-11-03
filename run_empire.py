@@ -31,6 +31,7 @@ from story_brain import (
     save_memory,
 )
 from story_visuals import (
+    _CLIENT_CACHE,
     _EXHAUSTED_SLOTS,
     build_viral_short_cover,
     build_viral_youtube_thumbnail,
@@ -62,6 +63,7 @@ def run_single_channel(
 
     ch = CHANNELS[ch_id]
     _EXHAUSTED_SLOTS.clear()
+    _CLIENT_CACHE.clear()
     work_root = Path("/tmp/media_empire_work") / ch_id
     if work_root.exists():
         shutil.rmtree(work_root, ignore_errors=True)
@@ -140,19 +142,7 @@ def run_single_channel(
 
     seed_base = abs(hash(ep["youtube_title"])) % 80000 + 100
 
-    # 4) توليد الصورة المصغرة السينمائية عالية النقر (1280x720)
-    print(f"[{ch_id}] توليد وتصميم الصورة المصغرة السينمائية (1280x720)...", flush=True)
-    thumb_jpg = build_viral_youtube_thumbnail(
-        prompt=ep["thumbnail_prompt"],
-        hook_text=ep["thumbnail_hook_text"],
-        badge_text=ep["thumbnail_badge_text"],
-        brand_name=ch["brand_name"],
-        language=ch["language"],
-        out_path=out_dir / f"{ch_id}_thumb.jpg",
-        seed=seed_base + 77,
-    )
-
-    # 5) توليد اللقطات الحادة 100% للحلقة الكاملة والـ 4 شورتس في دفعة موحدة سريعة
+    # 4) توليد اللقطات الحادة 100% للحلقة الكاملة والـ 4 شورتس في دفعة موحدة سريعة
     print(f"[{ch_id}] توليد {n_long_shots} صورة فوتوغرافية حادة 16:9 للفيلم الطويل...", flush=True)
     long_imgs = generate_8sec_shots_batch(
         prompts=long_prompts,
@@ -162,6 +152,19 @@ def run_single_channel(
         height=720,
         seed_base=seed_base + 200,
         max_workers=5,
+    )
+
+    # 5) توليد الصورة المصغرة السينمائية عالية النقر (1280x720) مع صمام أمان الكادر البطولي الافتتاحي
+    print(f"[{ch_id}] توليد وتصميم الصورة المصغرة السينمائية (1280x720)...", flush=True)
+    thumb_jpg = build_viral_youtube_thumbnail(
+        prompt=ep["thumbnail_prompt"],
+        hook_text=ep["thumbnail_hook_text"],
+        badge_text=ep["thumbnail_badge_text"],
+        brand_name=ch["brand_name"],
+        language=ch["language"],
+        out_path=out_dir / f"{ch_id}_thumb.jpg",
+        seed=seed_base + 77,
+        fallback_hero_path=long_imgs[0] if long_imgs else None,
     )
 
     print(f"[{ch_id}] توليد {total_v_shots} صورة طولية حادة 9:16 للـ 4 شورتس...", flush=True)

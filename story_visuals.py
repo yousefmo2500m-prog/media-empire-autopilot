@@ -144,6 +144,14 @@ def _extract_3x3_cells(grid_im: Image.Image) -> List[Image.Image]:
     return cells
 
 
+def _init_gradio_client(space_id: str, hf_tok: Optional[str]) -> Any:
+    from gradio_client import Client
+    try:
+        return Client(space_id, token=hf_tok or None, verbose=False)
+    except TypeError:
+        return Client(space_id, hf_token=hf_tok or None, verbose=False)
+
+
 def _call_flux_zerogpu_raw(
     prompt: str,
     width: int,
@@ -152,7 +160,7 @@ def _call_flux_zerogpu_raw(
     slot_idx: int = 0,
 ) -> Optional[Image.Image]:
     try:
-        from gradio_client import Client
+        import gradio_client  # noqa: F401
     except Exception:
         return None
 
@@ -178,7 +186,7 @@ def _call_flux_zerogpu_raw(
                 try:
                     client = _CLIENT_CACHE.get(cb_key)
                     if client is None:
-                        client = Client(sp, token=tok or None, verbose=False)
+                        client = _init_gradio_client(sp, tok)
                         _CLIENT_CACHE[cb_key] = client
 
                     img_p = None
@@ -259,11 +267,6 @@ def _try_cloudflare_flux(prompt: str, width: int, height: int, seed: int) -> Opt
 
 
 CLEAN_CINEMA_MODELS = [
-    "Z-Image-Turbo",
-    "Flux.1-Schnell fp8 (Compact)",
-    "Juggernaut XL",
-    "AlbedoBase XL 3.1",
-    "AlbedoBase XL (SDXL)",
     "Deliberate",
     "Dreamshaper",
     "ICBINP - I Can't Believe It's Not Photography",
@@ -280,16 +283,15 @@ NEGATIVE_MODEST_CINEMA = (
 
 def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) -> Image.Image:
     """
-    محرك مشاهد سينمائية نظيف ومحتشم 100% (V14.0):
-    - موسّع بتسعة نماذج فوتوغرافية وسينمائية نشطة عالية السرعة (بما فيها Z-Image-Turbo و FLUX و Juggernaut XL).
-    - يرسم الموقف الدرامي الفعلي المنطوق في القصة بدقة 1:1 مع تفعيل فلتر الأمان censor_nsfw=True وملابس يومية محترمة بدون حجاب!
+    محرك مشاهد سينمائية نظيف ومحتشم 100% (V14.1 — استهلاك 5.0 kudos فقط لتفادي 403 KudosUpfront نهائياً!):
+    - يستخدم حصراً نماذج SD1.5 الفوتوغرافية السريعة المقبولة فوراً بـ HTTP 202 بدون طلب رصيد مسبق!
     """
     h_w, h_h = (576, 320) if width >= height else (320, 576)
-    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV14:1.4:auto"}
+    headers = {"apikey": os.environ.get("AI_HORDE_KEY", "0000000000").strip() or "0000000000", "Client-Agent": "MediaEmpireV14:1.5:auto"}
 
     for attempt in range(10):
         with _HORDE_SEM:
-            active_models = CLEAN_CINEMA_MODELS if attempt < 7 else CLEAN_CINEMA_MODELS + ["stable_diffusion"]
+            active_models = CLEAN_CINEMA_MODELS if attempt < 6 else CLEAN_CINEMA_MODELS + ["stable_diffusion"]
             payload = {
                 "prompt": f"{prompt} ### {NEGATIVE_MODEST_CINEMA}",
                 "params": {
@@ -517,6 +519,7 @@ def build_viral_youtube_thumbnail(
     language: str,
     out_path: Path,
     seed: int = 7777,
+    fallback_hero_path: Optional[Path] = None,
 ) -> Path:
     """
     يصمّم بوستر سينمائي مزدوج التوافق (1280x720):
@@ -526,9 +529,17 @@ def build_viral_youtube_thumbnail(
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     raw_bg = out_path.parent / "_thumb_raw_flux.jpg"
-    generate_single_shot_image(prompt, raw_bg, 1280, 720, seed=seed, shot_idx=0)
+    try:
+        generate_single_shot_image(prompt, raw_bg, 1280, 720, seed=seed, shot_idx=0)
+        src_bg = Image.open(str(raw_bg)).convert("RGB")
+    except Exception as thumb_exc:
+        if fallback_hero_path and fallback_hero_path.exists():
+            print(f"    ⚠️ [Thumbnail] استخدام الكادر البطولي الافتتاحي FLUX للغلاف ({thumb_exc})", flush=True)
+            src_bg = Image.open(str(fallback_hero_path)).convert("RGB")
+        else:
+            raise
 
-    base = _fit_cover_exact(Image.open(str(raw_bg)), 1280, 720, polish=True)
+    base = _fit_cover_exact(src_bg, 1280, 720, polish=True)
     raw_bg.unlink(missing_ok=True)
 
     g_mean = float(np.asarray(base.convert("L"), dtype=np.float32).mean())
@@ -785,7 +796,7 @@ def generate_opening_motion_clip(
             continue
 
         def _worker(hf_tok: Optional[str]) -> Optional[str]:
-            client = Client("Lightricks/ltx-video-distilled", hf_token=hf_tok, verbose=False)
+            client = _init_gradio_client("Lightricks/ltx-video-distilled", hf_tok)
             res = None
             if first_frame_path and first_frame_path.exists():
                 try:
