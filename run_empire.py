@@ -20,11 +20,13 @@ import traceback
 from pathlib import Path
 from typing import Optional
 
+from channel_director import run_director_housekeeping
 from channels_config import CHANNELS
 from cinema_funnel_renderer import render_long_episode_mp4, render_vertical_short_mp4
 from empire_publisher import publish_channel_funnel, resolve_channel_slot_status
 from sound_studio import get_audio_duration, synthesize_episode_and_climax_shorts
 from story_brain import (
+    _groq_json,
     generate_8sec_shot_prompts,
     generate_full_episode_and_short,
     load_memory,
@@ -339,12 +341,29 @@ def run_single_channel(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Media Empire Autopilot V14.0")
-    parser.add_argument("--channel", type=str, default="smart-sync", help="معرف القناة أو all أو smart-sync أو catchup-all")
+    parser = argparse.ArgumentParser(description="Media Empire Autopilot V15.0 + AI Channel Director")
+    parser.add_argument("--channel", type=str, default="smart-sync", help="معرف القناة أو all أو smart-sync أو catchup-all أو director-only")
     parser.add_argument("--max-per-sweep", type=int, default=1, help="أقصى عدد قنوات لكل مسحة جدولة دورية")
     parser.add_argument("--dry-run", action="store_true", help="توليد بدون نشر")
     parser.add_argument("--output-dir", type=str, default="", help="مجلد حفظ المخرجات عند الاختبار")
     args = parser.parse_args()
+
+    groq_key_opt = os.environ.get("GROQ_API_KEY", "").strip()
+    if not args.dry_run:
+        try:
+            mem_for_dir = load_memory(MEMORY_FILE)
+            run_director_housekeeping(
+                channels_map=CHANNELS,
+                memory=mem_for_dir,
+                llm_json_fn=_groq_json if groq_key_opt else None,
+                groq_key=groq_key_opt,
+            )
+        except Exception as dir_err:
+            print(f"[DIRECTOR-WARN] تخطي آمن لدورة الإدارة ({dir_err})", flush=True)
+
+    if args.channel == "director-only":
+        print("✅ اكتملت دورة المدير الذكي الذاتي (تحليل الإحصائيات + التفاعل + الشفاء الذاتي) بنجاح.", flush=True)
+        return
 
     if args.channel in ("smart-sync", "catchup-all"):
         now_utc = dt.datetime.now(dt.timezone.utc)

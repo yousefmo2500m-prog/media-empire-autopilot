@@ -1,8 +1,8 @@
-name: 4-Channel Media Empire Autopilot V14.0
+name: 4-Channel Media Empire Autopilot V15.0 (AI Director + Zero-Miss Cloud Scheduler)
 
 on:
   schedule:
-    # 8 مسحات يومية موزعة خارج أوقات الزحام للتحضير المبكر وقفل الموعد الرسمي بالثانية داخل سحابة Zernio + الشفاء الذاتي التلقائي:
+    # 8 مسحات يومية موزعة خارج أوقات الزحام للتحضير المبكر وقفل الموعد الرسمي بالثانية داخل سحابة Zernio + دورة المدير الذكي الذاتي:
     # - 16:15 UTC (6:15م القاهرة — دفتر راوي)
     # - 18:15 UTC (8:15م القاهرة — الدليل الأخير)
     # - 21:15 UTC (11:15م القاهرة — Velvet Tales)
@@ -18,13 +18,14 @@ on:
   workflow_dispatch:
     inputs:
       channel_id:
-        description: 'معرف القناة للتشغيل اليدوي الفوري أو catchup-all أو smart-sync'
+        description: 'معرف القناة للتشغيل اليدوي الفوري أو catchup-all أو smart-sync أو director-only'
         required: true
-        default: 'catchup-all'
+        default: 'smart-sync'
         type: choice
         options:
-          - catchup-all
           - smart-sync
+          - catchup-all
+          - director-only
           - ch1_eg_thriller
           - ch2_eg_mystery
           - ch3_en_thriller
@@ -94,14 +95,14 @@ jobs:
         run: |
           python -u run_empire.py --channel "${{ steps.target.outputs.channel }}"
 
-      - name: Save Non-Repetition Memory Back to Repository (Race-Safe Retry)
+      - name: Save Non-Repetition Memory & AI Director Analytics Ledger (Race-Safe Retry)
         if: always()
         run: |
           git config user.name "empire-autopilot-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add state/empire_memory.json
+          git add state/
           if ! git diff --staged --quiet; then
-            git commit -m "chore: save episode memory"
+            git commit -m "chore: sync episode memory & AI director analytics"
             for attempt in 1 2 3 4 5; do
               git pull --rebase -X theirs origin main && git push origin main && break
               echo "Git push retry $attempt..."

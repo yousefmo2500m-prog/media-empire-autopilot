@@ -16,6 +16,13 @@ from typing import Any, Dict, List
 import os
 import requests
 
+from channel_director import (
+    build_director_prompt_injection,
+    load_director_state,
+    select_next_episode_strategy,
+    validate_text_against_constitution,
+)
+
 GROQ_BASE = "https://api.groq.com/openai/v1"
 PREFERRED_MODELS = [
     "llama-3.3-70b-versatile",
@@ -190,16 +197,36 @@ def generate_full_episode_and_short(
     niche = channel_cfg["niche"]
     ep_count = len(used)
 
+    director_state = load_director_state()
+    chosen_pillar_id = "default_pillar"
+    chosen_pillar_label = ""
+    director_brief = ""
+    selected_flavor = ""
+    if (channel_cfg.get("constitution") or {}).get("approved_pillars"):
+        try:
+            strategy = select_next_episode_strategy(channel_cfg, memory, director_state)
+            pillar_obj = strategy["pillar"]
+            chosen_pillar_id = str(pillar_obj["id"])
+            chosen_pillar_label = str(pillar_obj.get("label", chosen_pillar_id))
+            selected_flavor = str(pillar_obj["prompt_seed"])
+            director_brief = build_director_prompt_injection(channel_cfg, strategy)
+            print(
+                f"[{cid}][AI-DIRECTOR] وضع التحسين={strategy['mode']} | الركيزة المختارة=«{chosen_pillar_label}» ({chosen_pillar_id})",
+                flush=True,
+            )
+        except Exception as dir_exc:
+            print(f"[{cid}][AI-DIRECTOR-WARN] استخدام التناوب الافتراضي الآمن ({dir_exc})", flush=True)
+
     if lang == "ar":
         if niche == "eg_conan_detective":
-            flavor = EG_CONAN_CASES[ep_count % len(EG_CONAN_CASES)]
+            flavor = selected_flavor or EG_CONAN_CASES[ep_count % len(EG_CONAN_CASES)]
             style_guide = (
                 "أنتِ حكّاءة ألغاز وتحقيقات مصرية محترفة جداً (بأسلوب سامح سند وبيسوهات والمحقق كونان)، تتكلمين بالعامية المصرية القاهرية الحقيقية الدافئة 100%. "
                 "ممنوع نهائياً الكلمات الفصحى المترجمة مثل (التي، الذي، حيث، فندق مهجور، رمز ميكانيكي، الانقلاب القاتل، الخاتمة النفسية)! "
                 "اكتبي باللهجة اللي بنتكلم بيها في القاهرة بجد وبنفس بشري طبيعي مليان فواصل تشويق قصيرة `..` وتفاصيل واقعية ملموسة."
             )
         else:
-            flavor = EG_REALISTIC_THRILLERS[ep_count % len(EG_REALISTIC_THRILLERS)]
+            flavor = selected_flavor or EG_REALISTIC_THRILLERS[ep_count % len(EG_REALISTIC_THRILLERS)]
             style_guide = (
                 "أنتِ حكّاءة إثارة نفسية مصرية بارعة جداً (نفس روح أقوى حلقات سامح سند وبيسوهات)، تتكلمين بالعامية المصرية القاهرية الحقيقية السلسة 100%. "
                 "ممنوع نهائياً الخيال الرخيص أو الأشباح أو الجمل المترجمة الركيكة! "
@@ -207,6 +234,8 @@ def generate_full_episode_and_short(
             )
 
         blueprint_prompt = f"""
+{director_brief}
+
 الأفكار المستعملة سابقاً (ممنوع تكرارها نهائياً): {used}
 
 صمّمي حلقة إثارة نفسية واقعية / تحقيق ذكي لا يمكن التوقف عن سماعها (+16 دقيقة، تبدأ بمقدمة تشويقية نارية + 12 مشهداً) من فئة:
@@ -271,7 +300,7 @@ def generate_full_episode_and_short(
 }}
 """
     else:
-        flavor = (
+        flavor = selected_flavor or (
             EN_DETECTIVE_CASES[ep_count % len(EN_DETECTIVE_CASES)]
             if niche == "en_detective_mystery"
             else EN_REALISTIC_THRILLERS[ep_count % len(EN_REALISTIC_THRILLERS)]
@@ -281,6 +310,8 @@ def generate_full_episode_and_short(
             "Open every episode with an explosive 25-second Cold-Open Climax Teaser that matches the title/thumbnail promise and forces viewers to watch until the final minute."
         )
         blueprint_prompt = f"""
+{director_brief}
+
 Avoid all previously used premises: {used}
 
 Design a hyper-realistic, unputdownable 16-minute episode (25-second Cold-Open Teaser Intro + 12 Scenes) for:
@@ -333,7 +364,26 @@ Return exact valid JSON:
 }}
 """
 
-    plan = _groq_json(api_key, style_guide, blueprint_prompt, max_tokens=5600)
+    plan: Dict[str, Any] = {}
+    prompt_to_send = blueprint_prompt
+    for const_attempt in range(3):
+        plan = _groq_json(api_key, style_guide, prompt_to_send, max_tokens=5600)
+        check_blob = " \n ".join([
+            str(plan.get("youtube_title") or ""),
+            str(plan.get("teaser_intro") or ""),
+            str(plan.get("short_1_title") or ""),
+            str(plan.get("short_3_title") or ""),
+            json.dumps(plan.get("scenes_outline") or [], ensure_ascii=False),
+        ])
+        is_valid, reason = validate_text_against_constitution(check_blob, channel_cfg, require_language_match=True)
+        if is_valid:
+            break
+        print(f"[{cid}][CONSTITUTION-GATE] رفض مسودة مخالفة لدستور القناة ({reason}) — إعادة التوليد #{const_attempt + 1}...", flush=True)
+        prompt_to_send = (
+            f"CRITICAL CONSTITUTION CORRECTION: Your previous draft violated '{reason}'. "
+            "Stay 100% strictly inside the realistic channel identity with zero forbidden drift words!\n\n"
+            + blueprint_prompt
+        )
     char_anchor = str(
         plan.get("character_visual_anchor")
         or "a 29-year-old protagonist wearing a dark navy zip hoodie over a charcoal t-shirt in a realistic modern apartment"
@@ -428,6 +478,15 @@ Return valid JSON only:
         memory[cid].setdefault("used_topics", []).append(tk)
 
     yt_title = str(plan.get("youtube_title") or channel_cfg["brand_name"]).strip()
+    if chosen_pillar_id != "default_pillar":
+        memory[cid]["last_pillar_id"] = chosen_pillar_id
+        tp_map = memory[cid].setdefault("title_pillar_map", {})
+        clean_key = re.sub(r"#\S+", "", yt_title).strip(" -—|")[:48]
+        if clean_key:
+            tp_map[clean_key] = chosen_pillar_id
+        if len(tp_map) > 80:
+            keep_keys = list(tp_map.keys())[-80:]
+            memory[cid]["title_pillar_map"] = {k: tp_map[k] for k in keep_keys}
     raw_hook = re.sub(r"[\u064B-\u065F\u0670]", "", str(plan.get("thumbnail_hook_text") or "")).strip()
     if len(raw_hook.split()) < 2:
         raw_hook = " ".join(yt_title.split()[:4])
