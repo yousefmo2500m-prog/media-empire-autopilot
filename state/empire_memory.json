@@ -6,14 +6,16 @@
       "فندق مهجور جزيرة الليل المتقلبة",
       "مكالمة غلط تكشف سر شقة",
       "رسالة فجر تكشف مراقب سري بالشقة",
-      "اكتشاف كاميرا مخفية تكشف مؤامرة نفسية"
+      "اكتشاف كاميرا مخفية تكشف مؤامرة نفسية",
+      "فاتورة كهرباء تكشف غرفة سرية بالمعادي"
     ]
   },
   "ch2_eg_mystery": {
     "used_topics": [
       "لغز الدور الـ 13 السري وبصمة الإيد المختفية من 14 سنة",
       "سرقة مجوهرات المتحف القومي في القاهرة",
-      "لغز الماسة الزرقاء فوق مركب النيل"
+      "لغز الماسة الزرقاء فوق مركب النيل",
+      "لغز الغرفة المغلقة وجريمة المكتبي"
     ]
   },
   "ch3_en_thriller": {
@@ -21,7 +23,8 @@
       "2:47 AM baby monitor whisper and forged power of attorney sting",
       "Lost subway ticket reshapes strangers' lives",
       "Janitor finds warm desk, empty office",
-      "Cloud photo sent from his nightstand"
+      "Cloud photo sent from his nightstand",
+      "Doorbell camera receipt double life mystery"
     ]
   },
   "ch4_en_mystery": {
@@ -29,7 +32,8 @@
       "Ghost cargo vessel sealed container welded from inside",
       "Clockwork Alibi in Clocktower's Shadow Night",
       "Midnight museum gala, priceless diamond vanishes",
-      "flawed clockwork alibi mirror reflection mystery"
+      "flawed clockwork alibi mirror reflection mystery",
+      "locked study murder bulletless poison mystery"
     ]
   }
 }
