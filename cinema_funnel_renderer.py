@@ -197,9 +197,11 @@ def _render_single_long_8s_shot(
     out_seg: Path,
     fps: int = 20,
     opening_motion_mp4: Optional[Path] = None,
+    motion_clip_mp4: Optional[Path] = None,
 ) -> Tuple[int, Path]:
-    if idx == 0 and opening_motion_mp4 is not None:
-        if _render_motion_clip_segment(opening_motion_mp4, dur, out_seg, 1280, 720, fps, crf=22):
+    motion_source = opening_motion_mp4 if idx == 0 and opening_motion_mp4 is not None else motion_clip_mp4
+    if motion_source is not None:
+        if _render_motion_clip_segment(motion_source, dur, out_seg, 1280, 720, fps, crf=22):
             return idx, out_seg
 
     fade_out_st = max(0.16, dur - 0.20)
@@ -247,7 +249,9 @@ def render_long_episode_mp4(
     work_dir: Path,
     opening_motion_mp4: Optional[Path] = None,
     cover_jpg: Optional[Path] = None,
+    motion_clips: Optional[Dict[int, Path]] = None,
 ) -> Path:
+    motion_clips = motion_clips or {}
     work_dir.mkdir(parents=True, exist_ok=True)
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
     total_dur = get_audio_duration(audio_mp3)
@@ -266,6 +270,7 @@ def render_long_episode_mp4(
                 seg_paths[i],
                 fps,
                 opening_motion_mp4 if i == 0 else None,
+                motion_clips.get(i),
             )
             for i in range(n_shots)
         ]

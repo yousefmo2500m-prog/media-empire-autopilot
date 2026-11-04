@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-المايسترو الرئيسي V13.0 — محرك القنوات الأربع المستقل 100% (1 فيلم كامل + 4 شورتس يومياً + افتتاحية فيديو AI متحرك + كسر حاجز الـ 200 مشاهدة)
+المايسترو الرئيسي V17.0 — تحسين الإطارات الرئيسية وإضافة لقطة حركة عند نقطة التحول، مع بقاء الإنتاج والجدولة كما هما.
 لكل قناة يومياً:
-  1) كتابة سيناريو درامي عميق (>15 دقيقة) بعنوان بحثي عالي الطلب على يوتيوب + مقدمة تشويقية نارية + 4 شورتس (2 عميقين + 2 خاطفين <55ث)
-  2) إنتاج صوت استوديو بشري نقي 100% (Kore / Aoede / Charon — صفر صوت آلي) مع قفلات جدلية باختيارين (١ أو ٢) لتفجير التعليقات
-  3) توليد صورة مصغرة سينمائية (1280x720) + مشاهد فوتوغرافية حادة 100% + تحريك الافتتاحية بفيديو ذكاء اصطناعي حقيقي (LTX-Video)
-  4) مونتاج احترافي بشريط خطف علوي مرجاني منذ الثانية 0.00 وكابشن كاريوكي سريع وبطاقات فصول للفيلم الطويل
-  5) النشر والجدولة التلقائية الموزعة على مدار اليوم (كل 3 ساعات) على يوتيوب + فيسبوك + تيك توك بدون روابط خارجية تكتم وصول تيك توك
+  1) كتابة سيناريو القناة المعتاد + مقدمة تشويقية + 4 شورتس، دون تغيير التخصص أو اللهجة.
+  2) إنتاج الصوت والمونتاج والنشر عبر المسارات الحالية.
+  3) تحسين كادرات البداية المهمة بصورة مستقلة عالية التفاصيل ضمن حد مجاني محافظ، عند توافر الخدمة.
+  4) محاولة إضافة لقطة LTX متحركة إلى نقطة تحول واحدة في الفيلم الطويل؛ فشلها يرجع تلقائياً للكادر الثابت ولا يوقف النشر.
+  5) الحفاظ على فتحات الحركة الحالية للأفلام والشورتس، وعلى المواعيد والنشر التلقائي كما هي.
 """
 
 import argparse
@@ -18,7 +18,7 @@ import shutil
 import sys
 import traceback
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from channel_director import run_director_housekeeping
 from channels_config import CHANNELS
@@ -50,6 +50,40 @@ def _clean_hook_banner(raw_title: str) -> str:
     return " ".join(words[:7])[:52]
 
 
+_MOTION_REVEAL_TERMS = (
+    "اكتشف", "اكتشفت", "الحقيقة", "السر", "الدليل", "اعتراف", "اعترف", "الشاهد",
+    "المفتاح", "الرسالة", "الصورة", "الباب", "الملف", "المكالمة", "بصمة", "ظهر", "وجد",
+    "revealed", "reveal", "discovered", "realized", "the truth", "the secret", "evidence",
+    "confession", "witness", "the key", "message", "photo", "footage", "fingerprint", "finally",
+)
+
+
+def _choose_highlight_motion_index(windows: List[Dict[str, Any]]) -> Optional[int]:
+    """Choose a story-faithful turning-point shot for one optional long-form AI motion insert."""
+    if len(windows) < 3:
+        return None
+    last_end = max(float(w.get("end", 0.0) or 0.0) for w in windows)
+    if last_end <= 0:
+        last_end = float(len(windows))
+
+    candidates = []
+    for idx, window in enumerate(windows):
+        start = float(window.get("start", idx) or 0.0)
+        end = float(window.get("end", start + 1.0) or (start + 1.0))
+        fraction = max(0.0, min(1.0, ((start + end) * 0.5) / last_end))
+        if not 0.30 <= fraction <= 0.92:
+            continue
+        spoken = str(window.get("text", "")).lower()
+        keyword_score = sum(1 for term in _MOTION_REVEAL_TERMS if term in spoken)
+        # Prefer a meaningful reveal beat; if there is none, land near the final turn.
+        score = keyword_score * 3.0 - abs(fraction - 0.74)
+        candidates.append((score, -abs(fraction - 0.74), idx))
+
+    if not candidates:
+        return max(1, min(len(windows) - 2, int(round((len(windows) - 1) * 0.74))))
+    return max(candidates)[2]
+
+
 def run_single_channel(
     ch_id: str,
     dry_run: bool = False,
@@ -75,7 +109,7 @@ def run_single_channel(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 76, flush=True)
-    print(f"بدء الإنتاج السينمائي الاحترافي V13.0 لقناة: {ch['brand_name']} ({ch_id})", flush=True)
+    print(f"بدء الإنتاج السينمائي V17.0 المحسّن للقناة: {ch['brand_name']} ({ch_id})", flush=True)
     print("=" * 76, flush=True)
 
     # 1) توليد القصة الكاملة + المقدمة التشويقية + بيانات الـ 4 شورتس وحفظ الذاكرة
@@ -154,6 +188,7 @@ def run_single_channel(
         height=720,
         seed_base=seed_base + 200,
         max_workers=5,
+        refine_indices=[0],
     )
 
     # 5) توليد الصورة المصغرة السينمائية عالية النقر (1280x720) مع صمام أمان الكادر البطولي الافتتاحي
@@ -178,6 +213,7 @@ def run_single_channel(
         height=1280,
         seed_base=seed_base + 3200,
         max_workers=5,
+        refine_indices=[0, n_s1, n_s1 + n_s2, n_s1 + n_s2 + n_s3],
     )
     idx_1 = n_s1
     idx_2 = idx_1 + n_s2
@@ -241,6 +277,22 @@ def run_single_channel(
         call_idx=0,
     )
 
+    # Add one optional, story-aligned AI-motion beat near the major reveal of the long film.
+    # If the free model is queued, over quota, or unavailable, the still-shot renderer remains unchanged.
+    highlight_motion_idx = _choose_highlight_motion_index(audio_pack["long_8s_windows"])
+    long_highlight_motion = None
+    if highlight_motion_idx is not None and highlight_motion_idx < len(long_imgs) and highlight_motion_idx < len(long_prompts):
+        print(f"[{ch_id}] محاولة إضافة لقطة AI متحركة عند نقطة التحول رقم {highlight_motion_idx + 1} (اختيار اختياري آمن)...", flush=True)
+        long_highlight_motion = generate_opening_motion_clip(
+            prompt=long_prompts[highlight_motion_idx],
+            first_frame_path=long_imgs[highlight_motion_idx],
+            out_mp4=motion_dir / "long_turning_point.mp4",
+            is_vertical=False,
+            duration_sec=4.5,
+            seed=seed_base + 511,
+            call_idx=5,
+        )
+
     long_mp4 = out_dir / f"{ch_id}_full_episode.mp4"
     s1_mp4 = out_dir / f"{ch_id}_short_1.mp4"
     s2_mp4 = out_dir / f"{ch_id}_short_2.mp4"
@@ -262,6 +314,7 @@ def run_single_channel(
         work_dir=work_root / "render_long",
         opening_motion_mp4=long_motion,
         cover_jpg=thumb_jpg,
+        motion_clips=({highlight_motion_idx: long_highlight_motion} if highlight_motion_idx is not None and long_highlight_motion else {}),
     )
 
     # 7) تصميم الأغلفة الطولية المخصصة (720x1280) + مونتاج الـ 4 شورتس 9:16 بدون أي شاشة داكنة أو بنية
@@ -304,7 +357,7 @@ def run_single_channel(
     # 8) النشر والجدولة التلقائية الموزعة على مدار اليوم (إن لم يكن dry-run)
     if dry_run:
         print(
-            f"[{ch_id}] DRY-RUN V13.3 مكتمل بنجاح:\n"
+            f"[{ch_id}] DRY-RUN V17.0 مكتمل بنجاح:\n"
             f" - Thumbnail: {thumb_jpg} ({thumb_jpg.stat().st_size / 1024:.1f} KB)\n"
             f" - Long MP4 : {long_mp4} ({long_mp4.stat().st_size / (1024*1024):.2f} MB)\n"
             f" - Short 1  : {s1_mp4} ({s1_mp4.stat().st_size / (1024*1024):.2f} MB)\n"

@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-محرك المشاهد السينمائية الحقيقية 100% وغلاف اليوتيوب الناري V11.0 (Zero-Blur Guarantee + 3x3 1080p FLUX Grid + Sharpness Gate)
-- تم حذف أي صور غلوشة أو تدرجات لونية نهائياً للأبد! 100% من اللقطات صور مشاهد حقيقية واضحة حادة التفاصيل!
-- تقنية 3x3 Full-HD FLUX Cinema Grid (1920x1088 للأفقي و 1088x1920 للطولي):
-  تولّد 9 مشاهد FLUX سينمائية مختلفة تماماً في استدعاء واحد (تحتاج 19 استدعاء فقط لإنتاج ~165 صورة فريدة بلا تكرار في دقيقتين ونصف!).
-- كاشف فواصل ذكي بالبكسل + فلتر فحص الحدة والإضاءة (_is_valid_sharp_photo) يرفض أي صورة معتمة أو ضبابية ويعيد توليدها كصورة فوتوغرافية حقيقية فوراً!
-- محرك احتياطي محكوم بـ Semaphore(3) مع 10 محاولات إعادة لمنع خطأ التزاحم (429) نهائياً.
+محرك المشاهد والأغلفة السينمائية V17.0 (مراجعة جودة الإطارات الرئيسية + حدود مجانية آمنة)
+- يحتفظ بتوليد دفعات 3x3 الاقتصادي للمشاهد الثانوية حتى لا يتضخم وقت التشغيل أو استهلاك الخدمات المجانية.
+- يعيد توليد الإطارات الافتتاحية المهمة كلقطة مستقلة عالية التفاصيل عند توافر Cloudflare FLUX، وإلا يحتفظ بالكادر الأصلي دون تعطيل الإنتاج.
+- يفرض سقفاً محلياً يومياً ثابتاً على طلبات Cloudflare، مع فشل آمن عند تعذر قراءة سجل الحصة.
+- يرفض الصور المعتمة/الفارغة ويضيف توجيهاً أوضح لملامح البشر واليدين والملابس المحتشمة.
 """
 
 import base64
 import io
+import json
 import math
 import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -58,6 +59,54 @@ def _get_hf_auth_pool() -> List[Optional[str]]:
         if v and v not in pool:
             pool.append(v)
     return pool
+
+
+# Keep Cloudflare FLUX use well inside Workers AI's documented free allocation.
+# One project can reserve at most 24 image calls per UTC day; failed requests also
+# consume a slot, which makes this a conservative hard cap rather than a retry loop.
+_CLOUDFLARE_IMAGE_CALLS_PER_UTC_DAY = 24
+_CLOUDFLARE_BUDGET_LOCK = threading.Lock()
+
+
+def _cloudflare_budget_path() -> Path:
+    configured = os.environ.get("MEDIA_EMPIRE_CF_BUDGET_PATH", "").strip()
+    if configured:
+        return Path(configured)
+    return Path(__file__).resolve().parent / "state" / "visual_generation_budget.json"
+
+
+def _reserve_cloudflare_image_slot() -> bool:
+    """Reserve a small, persistent daily image budget; fail closed on corrupt state."""
+    budget_path = _cloudflare_budget_path()
+    today_utc = datetime.now(timezone.utc).date().isoformat()
+    with _CLOUDFLARE_BUDGET_LOCK:
+        try:
+            if budget_path.exists():
+                data = json.loads(budget_path.read_text(encoding="utf-8"))
+                if not isinstance(data, dict):
+                    print("    ⚠️ [CF FLUX] ملف حد الاستخدام غير سليم؛ تم إيقاف طلبات Cloudflare لتجنب أي تكلفة.", flush=True)
+                    return False
+            else:
+                data = {}
+
+            if data.get("utc_date") != today_utc:
+                data = {"utc_date": today_utc, "reserved_image_calls": 0}
+            used = int(data.get("reserved_image_calls", 0))
+            if used < 0 or used >= _CLOUDFLARE_IMAGE_CALLS_PER_UTC_DAY:
+                if used >= _CLOUDFLARE_IMAGE_CALLS_PER_UTC_DAY:
+                    print("    ℹ️ [CF FLUX] اكتملت الحصة المحلية المجانية الآمنة لليوم؛ سنستخدم المسارات المجانية الاحتياطية.", flush=True)
+                return False
+
+            data["reserved_image_calls"] = used + 1
+            data["utc_date"] = today_utc
+            budget_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = budget_path.with_name(budget_path.name + ".tmp")
+            tmp_path.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+            tmp_path.replace(budget_path)
+            return True
+        except Exception as exc:
+            print(f"    ⚠️ [CF FLUX] تعذر التحقق من حد الاستخدام ({type(exc).__name__})؛ تم إيقاف طلب Cloudflare لتجنب أي تكلفة.", flush=True)
+            return False
 
 
 def _is_valid_sharp_photo(im: Image.Image) -> bool:
@@ -248,21 +297,26 @@ def _try_cloudflare_flux(prompt: str, width: int, height: int, seed: int) -> Opt
     cf_tok = os.environ.get("CF_API_TOKEN", "").strip()
     if not (cf_acc and cf_tok):
         return None
+    if not _reserve_cloudflare_image_slot():
+        return None
     try:
         r = requests.post(
             f"https://api.cloudflare.com/client/v4/accounts/{cf_acc}/ai/run/@cf/black-forest-labs/flux-1-schnell",
             headers={"Authorization": f"Bearer {cf_tok}"},
-            json={"prompt": prompt, "steps": 4, "seed": seed % 999999},
+            json={"prompt": prompt[:2048], "steps": 4, "seed": seed % 999999},
             timeout=30,
         )
         if r.status_code == 200:
             b64_img = (r.json().get("result") or {}).get("image")
             if b64_img:
                 im = Image.open(io.BytesIO(base64.b64decode(b64_img))).convert("RGB")
-                if _is_valid_sharp_photo(im):
-                    return _fit_cover_exact(im, width, height)
-    except Exception:
-        pass
+                im.load()
+                # A priority frame must have real source detail; do not replace it with an
+                # upscaled low-resolution result if the endpoint changes its output size.
+                if min(im.size) >= 900 and _is_valid_sharp_photo(im):
+                    return im
+    except Exception as exc:
+        print(f"    ⚠️ [CF FLUX] تعذر توليد الكادر المميز ({type(exc).__name__}); سنكمل بالمحرك المجاني الاحتياطي.", flush=True)
     return None
 
 
@@ -277,6 +331,7 @@ NEGATIVE_MODEST_CINEMA = (
     "nudity, naked, nsfw, lingerie, underwear, bikini, swimsuit, cleavage, v-neck, low cut, deep neck, open shirt, open blazer, blouse, "
     "bare shoulders, bare chest, sleeveless, strap top, camisole, tank top, crop top, mini skirt, shorts, "
     "tight dress, seductive, glamour portrait, studio portrait, beauty portrait, fashion model, looking at camera, selfie, "
+    "bad anatomy, unnatural body proportions, distorted face, asymmetrical eyes, malformed hands, extra fingers, missing fingers, fused fingers, duplicate limbs, "
     "hijab, headscarf, niqab, burqa, sci-fi, futuristic, superhero, mask, neon, oversaturated, cartoon, anime, blurry, out of focus, pitch black, solid color, text, watermark"
 )
 
@@ -367,9 +422,12 @@ def generate_single_shot_image(
     height: int,
     seed: int,
     shot_idx: int = 0,
+    use_cloudflare: bool = True,
 ) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    img = _try_cloudflare_flux(prompt, width, height, seed)
+    img = _try_cloudflare_flux(prompt, width, height, seed) if use_cloudflare else None
+    if img is not None:
+        img = _fit_cover_exact(img, width, height, polish=True)
     if img is None:
         req_w = min(1280, max(576, (width // 32) * 32))
         req_h = min(1280, max(576, (height // 32) * 32))
@@ -380,6 +438,29 @@ def generate_single_shot_image(
         img = _try_ai_horde_guaranteed(prompt, width, height, seed)
     img.save(str(out_path), format="JPEG", quality=93, optimize=True)
     return out_path
+
+
+def _refine_priority_frame_with_cloudflare(
+    prompt: str,
+    out_path: Path,
+    width: int,
+    height: int,
+    seed: int,
+) -> bool:
+    """Replace a key hook frame only with a successful, genuinely high-resolution FLUX result."""
+    if not os.environ.get("CF_ACCOUNT_ID", "").strip() or not os.environ.get("CF_API_TOKEN", "").strip():
+        return False
+    quality_guidance = (
+        "Photorealistic cinema still, natural human anatomy and realistic proportions when people are visible, "
+        "natural facial features and correctly formed hands, modest everyday clothing, crisp fine detail."
+    )
+    raw = _try_cloudflare_flux(f"{prompt.strip()}, {quality_guidance}", width, height, seed)
+    if raw is None or min(raw.size) < 900 or not _is_valid_sharp_photo(raw):
+        return False
+    final_image = _fit_cover_exact(raw, width, height, polish=True)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    final_image.save(str(out_path), format="JPEG", quality=95, optimize=True)
+    return True
 
 
 def _clean_short_prompt(p: str) -> str:
@@ -399,14 +480,15 @@ def generate_8sec_shots_batch(
     height: int,
     seed_base: int,
     max_workers: int = 5,
+    refine_indices: Optional[List[int]] = None,
 ) -> List[Path]:
     """
-    يولّد كل 9 مشاهد متتالية في شبكة 3x3 FLUX (1536x864 للأفقي و 864x1536 للطولي) لاقتصاد 50% من حصة GPU
-    بحيث تنتج المفاتيح الأربعة جميع لقطات الحلقة والشورتس (~165 صورة FLUX حقيقية) في ~دقيقتين فقط!
-    ثم يفحص حدة وإضاءة كل خلية (_is_valid_sharp_photo) ويعيد رسم أي لقطة ناقصة بالتوازي الكامل!
+    يولّد اللقطات دفعات 3x3 لتقليل طلبات الـGPU، ثم يحسّن إطارات البداية المهمة بصورة مستقلة عالية التفاصيل
+    عند توافر حصة Cloudflare المجانية؛ تعذّر التحسين لا يوقف الفيلم ولا يغيّر مسار النشر.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     n_total = len(prompts)
+    refine_set = {int(i) for i in (refine_indices or []) if 0 <= int(i) < n_total}
     paths: List[Optional[Path]] = [None] * n_total
     missing_indices: List[int] = []
 
@@ -430,7 +512,9 @@ def generate_8sec_shots_batch(
         ]
         grid_prompt = (
             f"Clean 3x3 nine-panel cinema contact sheet ({orient}, 3 columns by 3 rows, zero text, zero letters), "
-            f"9 distinct, brightly lit, sharp photorealistic ARRI Alexa thriller movie scenes: "
+            f"9 distinct, brightly lit, sharp photorealistic ARRI Alexa thriller movie scenes. "
+            f"Every panel is a separate coherent shot with natural human anatomy, realistic face and body proportions, "
+            f"well-formed hands, no extra or fused fingers, no duplicated limbs, and no blending between panels: "
             + "; ".join(f"{labels[k]}: {sub_ps[k]}" for k in range(9))
         )
         gw, gh = (864, 1536) if height > width else (1536, 864)
@@ -472,7 +556,10 @@ def generate_8sec_shots_batch(
         def _run_dedicated_shot(si: int) -> Tuple[int, Optional[Path]]:
             op = out_dir / f"{prefix}_{si:03d}.jpg"
             try:
-                generate_single_shot_image(prompts[si], op, width, height, seed=seed_base + si * 97 + 19, shot_idx=si)
+                generate_single_shot_image(
+                    prompts[si], op, width, height, seed=seed_base + si * 97 + 19,
+                    shot_idx=si, use_cloudflare=False,
+                )
                 return si, op
             except Exception as shot_exc:
                 print(f"    ⚠️ [{prefix}] تعذر استلام اللقطة المنفردة {si} بعد كل المزودات ({shot_exc}) — سيتم تأطير كادر سينمائي مقرب بديل من المشهد المجاور دون إسقاط الحلقة.", flush=True)
@@ -507,6 +594,31 @@ def generate_8sec_shots_batch(
                 op = out_dir / f"{prefix}_{si:03d}.jpg"
                 reframed.save(str(op), format="JPEG", quality=93, optimize=True)
                 paths[si] = op
+
+    # Spend the small, persistent free image budget on the frames users see first:
+    # long-form hook and the opening frame of each Short. Failed attempts leave the
+    # already-renderable grid frame untouched.
+    for si in sorted(refine_set):
+        original_path = paths[si]
+        if original_path is None or not original_path.exists():
+            continue
+        refined_path = out_dir / f"{prefix}_{si:03d}_priority.jpg"
+        try:
+            ok = _refine_priority_frame_with_cloudflare(
+                prompt=prompts[si],
+                out_path=refined_path,
+                width=width,
+                height=height,
+                seed=seed_base + si * 97 + 73,
+            )
+            if ok:
+                refined_path.replace(original_path)
+                print(f"    ✨ [{prefix}] تم تحسين كادر البداية {si + 1} بصورة FLUX مستقلة عالية التفاصيل.", flush=True)
+            else:
+                refined_path.unlink(missing_ok=True)
+        except Exception as exc:
+            refined_path.unlink(missing_ok=True)
+            print(f"    ℹ️ [{prefix}] الكادر الاحتياطي {si + 1} سيبقى كما هو ({type(exc).__name__}).", flush=True)
 
     return [p for p in paths if p is not None]
 
@@ -785,7 +897,10 @@ def generate_opening_motion_clip(
     motion_prompt = (
         f"Smooth cinematic 35mm thriller camera push-in, subtle realistic human breathing and natural motion: {prompt[:260]}"
     )
-    neg_prompt = "worst quality, inconsistent motion, blurry, jittery, distorted, watermark, text, revealing clothes"
+    neg_prompt = (
+        "worst quality, inconsistent motion, blurry, jittery, warped face, bad anatomy, unnatural proportions, "
+        "extra fingers, fused fingers, duplicate limbs, flickering face, morphing, watermark, text, revealing clothes"
+    )
 
     auth_pool = [t for t in _get_hf_auth_pool() if t is not None] + [None]
     ordered_pool = [auth_pool[(call_idx + i) % len(auth_pool)] for i in range(len(auth_pool))]

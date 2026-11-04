@@ -558,9 +558,10 @@ def generate_8sec_shot_prompts(
         "concrete 28-38 word English cinema scene prompt depicting the EXACT physical event, action, object, or room situation happening in `spoken`.\n"
         "STRICT RULES:\n"
         "1. ACTION & SITUATION FIRST: Put the exact action, props, and setting in the VERY FIRST WORDS (e.g. 'Close-up of a hand holding a glowing smartphone showing a message at 3 AM beside a bedroom lamp...', 'Medium movie shot of a man in a navy jacket cautiously opening a wooden apartment door into a dim hallway...').\n"
-        "2. NO RANDOM FEMALE PORTRAITS: Never generate generic face portraits or random women! At least 45% of shots must focus on objects, clues, doors, phones, rooms, hands-in-action, or wide scenes without close-up faces.\n"
-        "3. MODEST NON-HIJAB EVERYDAY WARDROBE: Whenever any woman appears in the story, describe her with 'uncovered natural hair' wearing 'a closed high-neck turtleneck sweater or crewneck long-sleeve sweater and zipped winter coat'. NEVER write blazers, v-necks, sleeveless, straps, cleavage, or shorts, and NEVER write the word 'hijab' or 'headscarf'.\n"
-        "4. Bright dramatic cinema lighting (warm lamp + cool window/screen light, never pitch black), zero text/letters."
+        "2. STORY-FIRST COMPOSITION: Never generate generic face portraits or random women! At least 55% of shots must focus on story objects, clues, doors, phones, rooms, or wide scenes; avoid close-up faces and hands unless the spoken beat truly requires them.\n"
+        "3. NATURAL HUMAN APPEARANCE: If a person is visible, use lifelike anatomy and natural body proportions, a coherent realistic face, natural eyes, and correctly formed hands; avoid extra/fused fingers, duplicated limbs, warped faces, or distorted teeth. Prefer medium-wide, profile, or over-the-shoulder framing when a close-up is not essential.\n"
+        "4. MODEST NON-HIJAB EVERYDAY WARDROBE: Whenever any woman appears in the story, describe her with 'uncovered natural hair' wearing 'a closed high-neck turtleneck sweater or crewneck long-sleeve sweater and zipped winter coat'. NEVER write blazers, v-necks, sleeveless, straps, cleavage, or shorts, and NEVER write the word 'hijab' or 'headscarf'.\n"
+        "5. Bright dramatic cinema lighting (warm lamp + cool window/screen light, never pitch black), photorealistic detail, zero text/letters."
     )
 
     prompts_out: List[str] = []
