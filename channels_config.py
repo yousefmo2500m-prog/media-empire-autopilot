@@ -17,8 +17,9 @@ GLOBAL_BANNED_DRIFT_TERMS: List[str] = [
     "مباراة كرة", "الدوري الممتاز", "كريستيانو", "ميسي", "بيتكوين", "فوركس", "مقلب مضحك",
     "soccer match", "premier league", "bitcoin trading", "forex signal", "prank compilation",
     # خوارق رخيصة وأشباح وفضائيين وأساطير خيالية (محجوزة لقنوات مستقبلية مستقلة!)
-    "عفريت", "جني مسكون", "تعويذة سحرية", "كائن فضائي", "طبق طائر", "تنين أسطوري", "مصاص دماء", "زومبي",
-    "ghost possession", "demonic ritual", "alien abduction", "ufo spaceship", "vampire", "werewolf", "zombie apocalypse",
+    "عفريت", "جني مسكون", "الشبح", "شبح", "أشباح", "مسكون", "مسكونة", "الجن", "جني", "جنّي", "روح شريرة",
+    "تعويذة سحرية", "سحر خارق", "خارق للطبيعة", "ماورائي", "كائن فضائي", "طبق طائر", "تنين أسطوري", "مصاص دماء", "زومبي",
+    "ghost", "ghosts", "ghostly", "haunted", "haunting", "paranormal", "supernatural", "demon", "demonic", "witchcraft", "poltergeist", "apparition", "occult", "curse", "cursed", "spell", "alien", "aliens", "ufo", "ghost possession", "demonic ritual", "alien abduction", "ufo spaceship", "vampire", "werewolf", "zombie apocalypse",
 ]
 
 CHANNELS: Dict[str, Dict[str, Any]] = {

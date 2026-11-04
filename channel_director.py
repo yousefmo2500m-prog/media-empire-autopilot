@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-المدير الذكي الذاتي المحكوم بالدستور V15.0 (Constitution-Locked Autonomous Channel Director)
+المدير الذكي الذاتي المحكوم بالدستور V16.0 (Constitution-Locked Channel + Video Growth Director)
 يقوم بدور مدير قنوات احترافي متكامل 24/7 بتكلفة $0.00 وبدون أي انحراف عن هوية القناة:
   1) حصاد إحصائيات الأداء الحقيقية ومنحنيات الاحتفاظ بالمشاهد (Retention Curves) من يوتيوب + فيسبوك + تيك توك عبر Zernio + فحص يوتيوب المباشر.
   2) تحسين المحتوى والعناوين والهوك بقاعدة (70% للركائز الأعلى نجاحاً + 30% استكشاف متجدد) داخل دستور الهوية الثابت لكل قناة (صفر خروج عن التخصص!).
   3) بوابة حماية دستورية صارمة (Constitutional Guardrail Gate) تمنع أي كلمة أو فكرة خارج هوية القناة ومبادئها.
   4) التفاعل الذكي التلقائي مع تعليقات الجمهور الحقيقية (إعجاب + رد بشري مشوق بشخصية القناة بدون حرق النهاية).
-  5) إنقاذ عناوين يوتيوب الضعيفة بعد 36 ساعة (CTR Title Rescue — بحد أقصى مرة واحدة فقط للفيديو وبشرط مطابقة الدستور والقصة).
-  6) الطبيب الذاتي للمنشورات (إعادة محاولة أي شورت مجدول تعثر مؤقتاً) + تحديث لوحة تقرير المدير بالعربية (`state/تقرير_مدير_القنوات.md`).
+  5) سجل نمو مستقل لكل فيديو يوتيوب (الفيلم الطويل وكل الشورتس): نمو المشاهدات العام، التوقف المتكرر، تحديثات بيانات المشاهدة والاحتفاظ بعد اكتمال فترة المعالجة، مع تمييز قلة البيانات عن التعثر الحقيقي.
+  6) تجارب تغليف محافظة: تغيير عنوان واحد فقط بعد ثبات التعثر ووجود بيانات كافية، وتغيير غلاف الفيلم الطويل فقط عند توفر إشارة CTR/انطباعات موثوقة؛ حد أقصى لتعديلات الفيديو وفاصل 14 يوماً لمنع تقليب البيانات.
+  7) تنظيم حلقات الأفلام الطويلة في قائمة تشغيل عامة لكل قناة، إضافة تدريجية بحد أقصى حلقة واحدة لكل دورة؛ دون تغيير القائمة الافتراضية للحساب أو إعادة رفع الفيديو.
+  8) الطبيب الذاتي للمنشورات (إعادة محاولة أي شورت مجدول تعثر مؤقتاً) + تحديث لوحة تقرير المدير بالعربية (`state/تقرير_مدير_القنوات.md`).
 """
 
 import datetime as dt
@@ -74,7 +76,7 @@ def load_director_state(path: Path = DIRECTOR_STATE_FILE) -> Dict[str, Any]:
         except Exception:
             pass
     return {
-        "version": "15.0",
+        "version": "16.0",
         "updated_at_utc": "",
         "channels": {},
         "replied_comment_ids": [],
@@ -85,7 +87,7 @@ def load_director_state(path: Path = DIRECTOR_STATE_FILE) -> Dict[str, Any]:
 
 def save_director_state(state: Dict[str, Any], path: Path = DIRECTOR_STATE_FILE) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    state["version"] = "15.0"
+    state["version"] = "16.0"
     state["updated_at_utc"] = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     # تقليم القوائم لضمان بقاء حجم الملف خفيفاً للأبد (<60 كيلوبايت)
     state["replied_comment_ids"] = list(dict.fromkeys(state.get("replied_comment_ids", [])))[-400:]
@@ -164,7 +166,7 @@ def _fetch_live_youtube_watch_stats(url: str) -> Dict[str, int]:
     if not url or "youtube.com/watch" not in url:
         return out
     try:
-        r = requests.get(url, headers=YT_SCRAPE_HEADERS, timeout=10)
+        r = requests.get(url, headers=YT_SCRAPE_HEADERS, timeout=6)
         if r.status_code == 200:
             vc = re.search(r'"viewCount"\s*:\s*"(\d+)"', r.text)
             if vc:
@@ -328,7 +330,8 @@ def harvest_channel_telemetry(
     holds_15s: List[float] = []
     style_scores: Dict[str, List[float]] = {}
     format_scores: Dict[str, List[float]] = {"long_episode": [], "deep_short": [], "fast_short": []}
-    yt_scrape_budget = 2
+    # One fresh YouTube sample keeps the aggregate winner list current; V16 separately rotates through the full video catalog.
+    yt_scrape_budget = 1
     now_utc = dt.datetime.now(dt.timezone.utc)
 
     for plat_name, p_obj in raw_posts:
@@ -566,6 +569,7 @@ def select_next_episode_strategy(
         "top_winners": (ch_state.get("top_winners") or [])[:3],
         "bottom_laggards": (ch_state.get("bottom_laggards") or [])[:2],
         "retention_diagnostics": ch_state.get("retention_diagnostics") or {},
+        "growth_lessons": (ch_state.get("growth_lessons") or [])[:3],
     }
 
 
@@ -578,6 +582,7 @@ def build_director_prompt_injection(
     const = ch.get("constitution") or {}
     winners = strategy.get("top_winners") or []
     laggards = strategy.get("bottom_laggards") or []
+    growth_lessons = strategy.get("growth_lessons") or []
     ret = strategy.get("retention_diagnostics") or {}
     hold_3s = ret.get("avg_hold_3s")
     win_style = ret.get("winning_title_style", "mystery_statement")
@@ -602,6 +607,8 @@ def build_director_prompt_injection(
             lines.append(
                 f"• تشخيص منحنى الاحتفاظ الحقيقي: نسبة البقاء عند الثانية 3 هي {hold_3s*100:.0f}% — لذلك يجب أن تبدأ أول 4 كلمات من كل شورت ومن المقدمة التشويقية بفعل بصري صادم وملموس فوراً (مثل: فتحت الدولاب لقيت.. / الرسالة وصلت من جوه شقتي..) بدون أي تمهيد إنشائي!"
             )
+        for lesson in growth_lessons[:3]:
+            lines.append(f"• تعلّم من تعثر فيديوهات القناة (طبّقه على الفيديو القادم فقط، داخل الدستور): {lesson}")
         style_ar_map = {
             "question_curiosity": "السؤال الصادم المباشر أو التناقض المحير",
             "number_timestamp_hook": "تحديد رقم أو توقيت دقيق في العنوان (مثل: الساعة 3 الفجر / تفصيلة واحدة)",
@@ -628,6 +635,8 @@ def build_director_prompt_injection(
         lines.append(
             f"• LIVE RETENTION CURVE ALERT: 3-second hold rate is {hold_3s*100:.0f}% — start the very first 4 words of the teaser and every Short with a concrete physical discovery or visual anomaly, zero slow throat-clearing!"
         )
+    for lesson in growth_lessons[:3]:
+        lines.append(f"• VIDEO-LIFECYCLE LEARNING (future uploads only, within the constitution): {lesson}")
     return "\n".join(lines)
 
 
@@ -990,10 +999,13 @@ def write_director_report_md(
     out_md.parent.mkdir(parents=True, exist_ok=True)
     now_str = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
-        "# 📊 لوحة المدير الذكي الذاتي للقنوات (V15.0 — Constitution-Locked AI Director)",
+        "# 📊 لوحة مدير القنوات والنمو الذاتي (V16.0 — Constitution-Locked Video Lifecycle Director)",
         f"- **آخر فحص وتحديث تلقائي:** `{now_str}`",
-        "- **حماية الهوية والمبادئ:** مفعّلة بنسبة `100%` (دستور ثابت يمنع أي انحراف عن تخصص كل قناة للأبد).",
-        "- **قاعدة التطوير الذاتي:** `70%` للركائز الأعلى مشاهدات واحتفاظاً + `30%` استكشاف متجدد داخل نفس التخصص.",
+        "- **حماية الهوية:** كل عنوان مقترح يمر على بوابة الدستور واللغة؛ لا يغيّر المدير مجال القناة أو مبادئها.",
+        "- **التطوير التحريري:** `70%` للركائز الأعلى أداءً + `30%` استكشاف داخل نفس التخصص.",
+        "- **منهج إنقاذ الفيديوهات:** قياس نمو الفيديو نفسه على فواصل متعددة، وانتظار بيانات يوتيوب المتأخرة قبل التشخيص؛ لا تعديل عشوائي، ولا حذف أو إعادة رفع.",
+        "- **منع تقليب البيانات:** حد أقصى تجربتا عنوان وغلاف واحد لكل فيديو، مع انتظار 14 يوماً بين تغييرات العنوان، ثم إعادة قياس ما بعد التعديل.",
+        "- **حدود القياس:** انخفاض المشاهدات وحده لا يثبت سبباً خوارزمياً؛ تغيير الغلاف يحتاج CTR/انطباعات كافية، وبيانات الاحتفاظ تحتاج وقت معالجة يوتيوب.",
         "",
     ]
     for cid, ch in channels_map.items():
@@ -1016,6 +1028,52 @@ def write_director_report_md(
             f"متوسط نقاط الشورت الخاطف `{ret.get('fast_short_avg_vps', 0)}` مقابل العميق `{ret.get('deep_short_avg_vps', 0)}` | "
             f"نمط العنوان الأقوى: `{ret.get('winning_title_style', 'mystery_statement')}`"
         )
+        growth = cst.get("video_growth_summary") or {}
+        lines.append("### 📈 متابعة نمو كل فيديو يوتيوب")
+        if growth:
+            lines.append(
+                f"- **سجل المتابعة:** `{growth.get('tracked_videos', 0)}` فيديو | "
+                f"حالات تعثر مؤكدة: `{growth.get('plateau_videos', 0)}` | "
+                f"تجارب عناوين تراكمية: `{growth.get('title_experiments_total', 0)}` | "
+                f"تجارب أغلفة تراكمية: `{growth.get('thumbnail_experiments_total', 0)}` | "
+                f"إضافات قائمة التشغيل: `{growth.get('playlist_additions_total', 0)}`"
+            )
+            lines.append(
+                f"- **آخر دورة:** صفحة أرشيف `{growth.get('analytics_page', 0)}` | "
+                f"فحوص مشاهدات عامة `{growth.get('live_views_checked', 0)}` | "
+                f"استعلامات يومية ناضجة `{growth.get('daily_analytics_checked', 0)}` | "
+                f"استعلامات احتفاظ تفصيلية `{growth.get('retention_checked', 0)}` | "
+                f"آخر إجراء: `{growth.get('latest_action', 'none')}`"
+            )
+            cases = growth.get("cases") or []
+            reason_ar = {
+                "weak_click_packaging_signal": "إشارة نقر ضعيفة مع انطباعات كافية؛ الغلاف/العنوان مرشح للاختبار",
+                "weak_viewer_retention_signal": "الاحتفاظ أقل من خط القناة؛ تحسين الافتتاح للحلقات القادمة",
+                "limited_or_unmeasured_distribution": "التوزيع قليل أو بيانات الانطباعات غير متاحة؛ السبب غير محسوم",
+                "view_growth_flat_cause_not_proven": "النمو ثابت لكن السبب غير مثبت؛ لا تعديل أعمى",
+            }
+            if cases:
+                lines.append("- **أبرز حالات التوقف التي تستحق المراجعة:**")
+                for case in cases[:3]:
+                    title = str(case.get("title") or case.get("video_id") or "فيديو")[:100]
+                    reason = reason_ar.get(str(case.get("diagnosis")), "نمو بطيء يحتاج بيانات إضافية")
+                    delta = case.get("views_delta_since_sample")
+                    delta_txt = f"`+{delta}` منذ آخر عينة" if delta is not None else "لا توجد مقارنة بعد"
+                    ctr_value = case.get("ctr")
+                    ctr_txt = f"CTR `{float(ctr_value) * 100:.1f}%`" if ctr_value is not None else "CTR غير متاح"
+                    avg_pct = case.get("average_view_percentage")
+                    retention_txt = f"متوسط المشاهدة `{float(avg_pct):.1f}%`" if avg_pct is not None else "الاحتفاظ التفصيلي قيد التجميع"
+                    link = str(case.get("url") or "")
+                    lines.append(
+                        f"  - «{title}» — `{case.get('views', 0)}` مشاهدة، {delta_txt}؛ {reason}؛ {ctr_txt}؛ {retention_txt}. "
+                        f"[فتح الفيديو]({link})"
+                    )
+            else:
+                lines.append("- **حالة التوقف:** لم يُثبت تعثر مستمر ببيانات كافية في هذه الدورة؛ الفيديوهات الجديدة أو قليلة العينة تنتظر اكتمال القياس.")
+            if growth.get("action_note"):
+                lines.append(f"- **ملاحظة الإجراء:** `{growth.get('action_note')}`")
+        else:
+            lines.append("- **سجل نمو الفيديوهات:** يبدأ تلقائياً عند أول دورة ناجحة مع صلاحية يوتيوب.")
         if winners:
             lines.append("- **أنجح الفيديوهات الفعلية على القناة:**")
             for w in winners[:3]:
@@ -1041,29 +1099,53 @@ def run_director_housekeeping(
     memory: Dict[str, Any],
     llm_json_fn: Optional[Callable[..., Dict[str, Any]]] = None,
     groq_key: str = "",
+    growth_llm_json_fn: Optional[Callable[..., Dict[str, Any]]] = None,
+    growth_llm_key: str = "",
 ) -> Dict[str, Any]:
     """
     دورة الإدارة الذكية الشاملة (تعمل بأمان فائق Fail-Open دون أن تعطل إنتاج الفيديوهات إطلاقاً).
     """
+    from video_growth_manager import load_video_growth_state, run_video_growth_cycle, save_video_growth_state
+
     state = load_director_state()
-    print("=== [AI CHANNEL DIRECTOR V15.0] بدء دورة المتابعة وتحليل المشاهدات والتطوير الذاتي ===", flush=True)
+    growth_state = load_video_growth_state(list(channels_map.keys()))
+    growth_llm_json_fn = growth_llm_json_fn or llm_json_fn
+    growth_llm_key = growth_llm_key or groq_key
+    print("=== [AI CHANNEL DIRECTOR V16.0] بدء تحليل نمو كل فيديو يوتيوب والتطوير الذاتي المحكوم بالدستور ===", flush=True)
     for cid, ch in channels_map.items():
         try:
             healed = heal_failed_scheduled_posts(ch, state)
             ch_st = harvest_channel_telemetry(ch, memory, state)
+            try:
+                growth = run_video_growth_cycle(
+                    channel=ch,
+                    director_state=state,
+                    growth_state=growth_state,
+                    llm_json_fn=growth_llm_json_fn,
+                    llm_key=growth_llm_key,
+                    text_validator=validate_text_against_constitution,
+                )
+            except Exception as growth_err:
+                growth = {}
+                print(f"  [GROWTH-WARN] تخطي آمن لتحليل نمو الفيديوهات في {cid}: {growth_err}", flush=True)
             replies = manage_audience_comments(ch, state, llm_json_fn=llm_json_fn, groq_key=groq_key)
-            rescued = rescue_underperforming_youtube_titles(ch, state, llm_json_fn=llm_json_fn, groq_key=groq_key)
             ov = ch_st.get("account_overview") or {}
             ret = ch_st.get("retention_diagnostics") or {}
             print(
                 f"  📊 [{cid}] ({ch['brand_name']}): FB_30d={ov.get('fb_views_30d', 0)} | "
                 f"YT_30d={ov.get('yt_views_30d', 0)} | TT_30d={ov.get('tt_views_30d', 0)} | "
-                f"tracked_posts={ret.get('evaluated_posts', 0)} | replies={replies} | healed={healed} | ctr_rescued={rescued}",
+                f"tracked_posts={ret.get('evaluated_posts', 0)} | YT_videos={growth.get('tracked_videos', 0)} | "
+                f"plateaus={growth.get('plateau_videos', 0)} | growth_action={growth.get('latest_action', 'none')} | "
+                f"replies={replies} | healed={healed}",
                 flush=True,
             )
         except Exception as exc:
             print(f"  [DIRECTOR-WARN] تخطي آمن لخطأ غير مؤثر في متابعة {cid}: {exc}", flush=True)
 
+    try:
+        save_video_growth_state(growth_state)
+    except Exception as exc:
+        print(f"  [GROWTH-WARN] تعذر حفظ سجل نمو الفيديوهات، لكن دورة النشر مستمرة: {exc}", flush=True)
     try:
         save_director_state(state)
         write_director_report_md(channels_map, state)

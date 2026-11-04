@@ -341,7 +341,7 @@ def run_single_channel(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Media Empire Autopilot V15.0 + AI Channel Director")
+    parser = argparse.ArgumentParser(description="Media Empire Autopilot V16.0 + Constitution-Locked Video Growth Director")
     parser.add_argument("--channel", type=str, default="smart-sync", help="معرف القناة أو all أو smart-sync أو catchup-all أو director-only")
     parser.add_argument("--max-per-sweep", type=int, default=1, help="أقصى عدد قنوات لكل مسحة جدولة دورية")
     parser.add_argument("--dry-run", action="store_true", help="توليد بدون نشر")
@@ -349,6 +349,11 @@ def main() -> None:
     args = parser.parse_args()
 
     groq_key_opt = os.environ.get("GROQ_API_KEY", "").strip()
+    # Use an already-configured free Gemini key for video-growth edits if Groq is absent; leave comment replies unchanged.
+    director_llm_key = groq_key_opt or next(
+        (os.environ.get(name, "").strip() for name in ("GEMINI_API_KEY", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3", "GEMINI_API_KEY_4", "GEMINI_API_KEY_5") if os.environ.get(name, "").strip()),
+        "",
+    )
     if not args.dry_run:
         try:
             mem_for_dir = load_memory(MEMORY_FILE)
@@ -357,6 +362,8 @@ def main() -> None:
                 memory=mem_for_dir,
                 llm_json_fn=_groq_json if groq_key_opt else None,
                 groq_key=groq_key_opt,
+                growth_llm_json_fn=_groq_json if director_llm_key else None,
+                growth_llm_key=director_llm_key,
             )
         except Exception as dir_err:
             print(f"[DIRECTOR-WARN] تخطي آمن لدورة الإدارة ({dir_err})", flush=True)
@@ -368,7 +375,7 @@ def main() -> None:
     if args.channel in ("smart-sync", "catchup-all"):
         now_utc = dt.datetime.now(dt.timezone.utc)
         sweep_cap = 4 if args.channel == "catchup-all" else max(1, args.max_per_sweep)
-        print(f"=== [{args.channel.upper()} V14.0] فحص حالة القنوات الأربع عند {now_utc.strftime('%Y-%m-%d %H:%M:%S UTC')} ===", flush=True)
+        print(f"=== [{args.channel.upper()} V16.0] فحص حالة القنوات الأربع عند {now_utc.strftime('%Y-%m-%d %H:%M:%S UTC')} ===", flush=True)
         pending = []
         for cid, ch_cfg in CHANNELS.items():
             st = resolve_channel_slot_status(ch_cfg, now_utc=now_utc)
