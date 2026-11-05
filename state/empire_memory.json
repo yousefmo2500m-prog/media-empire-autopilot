@@ -37,8 +37,13 @@
       "Janitor finds warm desk, empty office",
       "Cloud photo sent from his nightstand",
       "Doorbell camera receipt double life mystery",
-      "Delivery driver delivers to himself nightmare"
-    ]
+      "Delivery driver delivers to himself nightmare",
+      "Electric bill reveals hidden basement scheme"
+    ],
+    "last_pillar_id": "en_thr_hidden_sublet",
+    "title_pillar_map": {
+      "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet"
+    }
   },
   "ch4_en_mystery": {
     "used_topics": [
