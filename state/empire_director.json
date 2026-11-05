@@ -1,32 +1,32 @@
 {
   "version": "16.0",
-  "updated_at_utc": "2026-11-05T15:00:54Z",
+  "updated_at_utc": "2026-11-05T17:31:07Z",
   "channels": {
     "ch1_eg_thriller": {
       "account_overview": {
         "yt_views_30d": 38,
         "yt_watch_min_30d": 11,
         "yt_subs_30d": 0,
-        "fb_views_30d": 5000,
+        "fb_views_30d": 5375,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T14:59:37Z",
+      "last_sync_utc": "2026-11-05T17:29:52Z",
       "pillar_stats": {
         "eg_thr_night_signal": {
           "label": "رسالة أو صورة الفجر المريبة",
           "posts": 21,
-          "total_vps": 4182.32,
-          "avg_vps": 199.16,
+          "total_vps": 4185.32,
+          "avg_vps": 199.3,
           "best_title": "مواجهة الجار الخفي في نص الليل!",
-          "best_vps": 1820.0
+          "best_vps": 1822.0
         },
         "eg_thr_apartment_secret": {
           "label": "سر الشقة أو الجيرة والعمارة",
           "posts": 10,
-          "total_vps": 2189.992,
-          "avg_vps": 219.0,
+          "total_vps": 2191.992,
+          "avg_vps": 219.2,
           "best_title": "فاتورة كهرباء بـ 4000 جنيه لشقة فاضية كانت الخيط لكشف أخطر جريمة تجسس في المعا",
-          "best_vps": 940.12
+          "best_vps": 941.12
         },
         "eg_thr_hidden_recording": {
           "label": "تسجيل أو كاميرا تفضح المؤامرة",
@@ -67,15 +67,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "مواجهة الجار الخفي في نص الليل!",
-          "views": 1104,
+          "views": 1106,
           "replays": 80,
           "likes": 3,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 1820.0,
+          "vps": 1822.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 33.6,
+          "age_hours": 36.1,
           "url": "https://www.facebook.com/reel/1582131380383947/"
         },
         {
@@ -83,15 +83,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "فاتورة كهرباء بـ 4000 جنيه لشقة فاضية كانت الخيط لكشف أخطر جريمة تجسس في المعا",
-          "views": 613,
+          "views": 614,
           "replays": 33,
           "likes": 3,
           "real_comments": 1,
           "shares": 0,
           "hold_3s": 0.053,
-          "vps": 940.12,
+          "vps": 941.12,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 39.5,
+          "age_hours": 42.0,
           "url": "https://www.facebook.com/reel/1758036515296920/"
         },
         {
@@ -107,7 +107,7 @@
           "hold_3s": 1.0,
           "vps": 580.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 22.6,
+          "age_hours": 25.1,
           "url": "https://www.facebook.com/reel/2242734373253666/"
         },
         {
@@ -123,7 +123,7 @@
           "hold_3s": 1.0,
           "vps": 543.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 16.7,
+          "age_hours": 19.2,
           "url": "https://www.facebook.com/reel/1718147039732051/"
         },
         {
@@ -139,7 +139,7 @@
           "hold_3s": 1.0,
           "vps": 494.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 39.4,
+          "age_hours": 41.9,
           "url": "https://www.facebook.com/reel/1598160288304893/"
         }
       ],
@@ -149,15 +149,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "توصيلة متأخرة في نص الليل تتحول لكابوس مرعب بعد ظهور مكالمة من رقم البطل نفسه.",
-          "views": 6,
+          "views": 7,
           "replays": 1,
           "likes": 0,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 0.0,
-          "vps": 14.0,
+          "vps": 15.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 22.7,
+          "age_hours": 25.2,
           "url": "https://www.facebook.com/reel/1732280831797625/"
         },
         {
@@ -173,33 +173,33 @@
           "hold_3s": 0.0,
           "vps": 299.0,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 68.4,
+          "age_hours": 70.9,
           "url": "https://www.facebook.com/reel/1455869436669103/"
         },
         {
-          "late_post_id": "6ae8d744ef909b88c051a330",
+          "late_post_id": "6aeaa6e22181a9f8f961d76a",
           "platform": "facebook",
           "format": "deep_short",
-          "title": "السر المخفي خلف الكاميرا!",
-          "views": 271,
-          "replays": 11,
-          "likes": 0,
+          "title": "رقمك بيرن عليا في نص الليل!",
+          "views": 247,
+          "replays": 3,
+          "likes": 1,
           "real_comments": 0,
           "shares": 0,
-          "hold_3s": 0.154,
-          "vps": 365.15,
-          "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 68.4,
-          "url": "https://www.facebook.com/reel/1437263647862119/"
+          "hold_3s": 0.6,
+          "vps": 307.0,
+          "pillar_id": "eg_thr_night_signal",
+          "age_hours": 22.2,
+          "url": "https://www.facebook.com/reel/2320528771839126/"
         }
       ],
       "retention_diagnostics": {
         "evaluated_posts": 36,
-        "total_tracked_views": 4653,
+        "total_tracked_views": 4658,
         "avg_hold_3s": 0.499,
         "avg_hold_15s": 0.077,
         "long_avg_vps": 1.0,
-        "deep_short_avg_vps": 259.15,
+        "deep_short_avg_vps": 259.37,
         "fast_short_avg_vps": 107.4,
         "winning_title_style": "number_timestamp_hook"
       },
@@ -217,7 +217,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 22.7,
+          "age_hours": 25.2,
           "url": "https://www.youtube.com/watch?v=lsnAzBFJcok"
         },
         {
@@ -233,7 +233,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 39.6,
+          "age_hours": 42.1,
           "url": "https://www.youtube.com/watch?v=buHMCMqpOag"
         },
         {
@@ -249,13 +249,13 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 68.4,
+          "age_hours": 70.9,
           "url": "https://www.youtube.com/watch?v=LWUiXtg-kFA"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T14:59:37Z",
+        "last_run_utc": "2026-11-05T17:29:52Z",
         "available": true,
         "tracked_videos": 13,
         "analytics_page": 1,
@@ -280,10 +280,10 @@
         "yt_views_30d": 19,
         "yt_watch_min_30d": 1,
         "yt_subs_30d": 1,
-        "fb_views_30d": 16529,
+        "fb_views_30d": 17390,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T14:59:52Z",
+      "last_sync_utc": "2026-11-05T17:30:14Z",
       "pillar_stats": {
         "eg_mys_locked_room": {
           "label": "لغز الغرفة المغلقة من الداخل",
@@ -296,24 +296,24 @@
         "eg_mys_impossible_alibi": {
           "label": "حجة الغياب المستحيلة والتوقيت المزيف",
           "posts": 11,
-          "total_vps": 4512.964,
-          "avg_vps": 410.27,
+          "total_vps": 4983.768,
+          "avg_vps": 453.07,
           "best_title": "خدعة التوقيت التي حيرت رجال المباحث",
-          "best_vps": 1573.0
+          "best_vps": 1587.0
         },
         "eg_mys_closed_circle": {
           "label": "لغز الباخرة النيلية أو العشاء المغلق",
           "posts": 4,
-          "total_vps": 2051.932,
-          "avg_vps": 512.98,
+          "total_vps": 2054.932,
+          "avg_vps": 513.73,
           "best_title": "الماسة طارت في ثانية الضلمة!",
-          "best_vps": 1697.18
+          "best_vps": 1699.18
         },
         "eg_mys_framed_innocent": {
           "label": "الأثر العكسي وتبرئة المتهم المظلوم",
           "posts": 21,
-          "total_vps": 14680.296,
-          "avg_vps": 699.06,
+          "total_vps": 15134.388,
+          "avg_vps": 720.69,
           "best_title": "الخيال المستخبي في المطبخ",
           "best_vps": 5697.0
         },
@@ -348,7 +348,7 @@
           "hold_3s": 1.0,
           "vps": 5697.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 61.4,
+          "age_hours": 64.0,
           "url": "https://www.facebook.com/reel/1084283231276935/"
         },
         {
@@ -364,7 +364,7 @@
           "hold_3s": 0.327,
           "vps": 2608.09,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 36.0,
+          "age_hours": 38.5,
           "url": "https://www.facebook.com/reel/1128437866820614/"
         },
         {
@@ -372,67 +372,51 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "لغز الشنطة اللي ظهرت من العدم",
-          "views": 1597,
+          "views": 1599,
           "replays": 50,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
-          "hold_3s": 0.248,
-          "vps": 2018.93,
+          "hold_3s": 0.249,
+          "vps": 2020.98,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 52.4,
+          "age_hours": 54.9,
           "url": "https://www.facebook.com/reel/1900966247983152/"
+        },
+        {
+          "late_post_id": "6aeb2e912e65f3c14fb8535e",
+          "platform": "facebook",
+          "format": "deep_short",
+          "title": "السر الخطير في فيديو الزمالك المسجل",
+          "views": 1441,
+          "replays": 46,
+          "likes": 7,
+          "real_comments": 0,
+          "shares": 0,
+          "hold_3s": 0.472,
+          "vps": 1911.87,
+          "pillar_id": "eg_mys_framed_innocent",
+          "age_hours": 14.2,
+          "url": "https://www.facebook.com/reel/1100915919244290/"
         },
         {
           "late_post_id": "6ae939c7d15a1768f1f3db26",
           "platform": "facebook",
           "format": "deep_short",
           "title": "الماسة طارت في ثانية الضلمة!",
-          "views": 1288,
+          "views": 1290,
           "replays": 48,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 0.329,
-          "vps": 1697.18,
+          "vps": 1699.18,
           "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 58.4,
+          "age_hours": 60.9,
           "url": "https://www.facebook.com/reel/1070664616021828/"
-        },
-        {
-          "late_post_id": "6aea7522df87e5c2ae955ae2",
-          "platform": "facebook",
-          "format": "deep_short",
-          "title": "نهاية صادمة لم يتوقعها أحد أبداً",
-          "views": 1051,
-          "replays": 70,
-          "likes": 1,
-          "real_comments": 0,
-          "shares": 0,
-          "hold_3s": 0.923,
-          "vps": 1659.94,
-          "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 33.0,
-          "url": "https://www.facebook.com/reel/1624900625983530/"
         }
       ],
       "bottom_laggards": [
-        {
-          "late_post_id": "6ae9397ddc3893e73d3a1d9f",
-          "platform": "youtube",
-          "format": "long_episode",
-          "title": "لغز اختفاء الماسة الزرقاء وسط 4 مشتبه فيهم على مركب في النيل | قصة واقعية كامل",
-          "views": 1,
-          "replays": 0,
-          "likes": 0,
-          "real_comments": 1,
-          "shares": 0,
-          "hold_3s": null,
-          "vps": 26.0,
-          "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 61.5,
-          "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
-        },
         {
           "late_post_id": "6aea74dd70bdef53551364de",
           "platform": "youtube",
@@ -446,8 +430,24 @@
           "hold_3s": null,
           "vps": 26.0,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 39.0,
+          "age_hours": 41.5,
           "url": "https://www.youtube.com/watch?v=iSby3QM1Euc"
+        },
+        {
+          "late_post_id": "6ae9397ddc3893e73d3a1d9f",
+          "platform": "youtube",
+          "format": "long_episode",
+          "title": "لغز اختفاء الماسة الزرقاء وسط 4 مشتبه فيهم على مركب في النيل | قصة واقعية كامل",
+          "views": 2,
+          "replays": 0,
+          "likes": 0,
+          "real_comments": 1,
+          "shares": 0,
+          "hold_3s": null,
+          "vps": 27.0,
+          "pillar_id": "eg_mys_closed_circle",
+          "age_hours": 64.0,
+          "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
         },
         {
           "late_post_id": "6aea7528df87e5c2ae955b49",
@@ -462,18 +462,18 @@
           "hold_3s": null,
           "vps": 27.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 30.0,
+          "age_hours": 32.5,
           "url": "https://www.youtube.com/watch?v=UlpF7i9TrP4"
         }
       ],
       "retention_diagnostics": {
         "evaluated_posts": 42,
-        "total_tracked_views": 16451,
-        "avg_hold_3s": 0.543,
-        "avg_hold_15s": 0.063,
-        "long_avg_vps": 31.67,
-        "deep_short_avg_vps": 627.25,
-        "fast_short_avg_vps": 616.2,
+        "total_tracked_views": 17108,
+        "avg_hold_3s": 0.542,
+        "avg_hold_15s": 0.064,
+        "long_avg_vps": 32.33,
+        "deep_short_avg_vps": 664.04,
+        "fast_short_avg_vps": 619.07,
         "winning_title_style": "mystery_statement"
       },
       "recent_youtube_longs": [
@@ -482,16 +482,32 @@
           "platform": "youtube",
           "format": "long_episode",
           "title": "لغز الجريمة المستحيلة وحجة الغياب بالكاميرات | قصة واقعية كاملة",
-          "views": 6,
+          "views": 7,
           "replays": 0,
           "likes": 1,
           "real_comments": 1,
           "shares": 0,
           "hold_3s": null,
-          "vps": 43.0,
+          "vps": 44.0,
           "pillar_id": "eg_mys_impossible_alibi",
-          "age_hours": 20.7,
+          "age_hours": 23.2,
           "url": "https://www.youtube.com/watch?v=SOxIYTwt3bA"
+        },
+        {
+          "late_post_id": "6ae9397ddc3893e73d3a1d9f",
+          "platform": "youtube",
+          "format": "long_episode",
+          "title": "لغز اختفاء الماسة الزرقاء وسط 4 مشتبه فيهم على مركب في النيل | قصة واقعية كامل",
+          "views": 2,
+          "replays": 0,
+          "likes": 0,
+          "real_comments": 1,
+          "shares": 0,
+          "hold_3s": null,
+          "vps": 27.0,
+          "pillar_id": "eg_mys_closed_circle",
+          "age_hours": 64.0,
+          "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
         },
         {
           "late_post_id": "6aea74dd70bdef53551364de",
@@ -506,29 +522,13 @@
           "hold_3s": null,
           "vps": 26.0,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 39.0,
+          "age_hours": 41.5,
           "url": "https://www.youtube.com/watch?v=iSby3QM1Euc"
-        },
-        {
-          "late_post_id": "6ae9397ddc3893e73d3a1d9f",
-          "platform": "youtube",
-          "format": "long_episode",
-          "title": "لغز اختفاء الماسة الزرقاء وسط 4 مشتبه فيهم على مركب في النيل | قصة واقعية كامل",
-          "views": 1,
-          "replays": 0,
-          "likes": 0,
-          "real_comments": 1,
-          "shares": 0,
-          "hold_3s": null,
-          "vps": 26.0,
-          "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 61.5,
-          "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T14:59:52Z",
+        "last_run_utc": "2026-11-05T17:30:14Z",
         "available": true,
         "tracked_videos": 15,
         "analytics_page": 1,
@@ -553,32 +553,32 @@
         "yt_views_30d": 29,
         "yt_watch_min_30d": 14,
         "yt_subs_30d": 0,
-        "fb_views_30d": 4028,
+        "fb_views_30d": 4030,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T15:00:15Z",
+      "last_sync_utc": "2026-11-05T17:30:33Z",
       "pillar_stats": {
         "en_thr_3am_notification": {
           "label": "3 AM Digital / Phone Anomaly",
           "posts": 32,
-          "total_vps": 3410.5840000000003,
-          "avg_vps": 106.58,
+          "total_vps": 3411.5400000000004,
+          "avg_vps": 106.61,
           "best_title": "Locked room mystery solved",
           "best_vps": 536.0
         },
         "en_thr_doorbell_neighbor": {
           "label": "Doorbell Cam & Neighbor Double Life",
           "posts": 16,
-          "total_vps": 1637.4360000000001,
-          "avg_vps": 102.34,
+          "total_vps": 1638.4360000000001,
+          "avg_vps": 102.4,
           "best_title": "The Reflection That Revealed The Monster",
           "best_vps": 406.0
         },
         "en_thr_night_shift": {
           "label": "Night-Shift & Rideshare Suspense",
           "posts": 5,
-          "total_vps": 563.752,
-          "avg_vps": 112.75,
+          "total_vps": 572.752,
+          "avg_vps": 114.55,
           "best_title": "The delivery address was HOME",
           "best_vps": 322.75
         },
@@ -621,7 +621,7 @@
           "hold_3s": 1.0,
           "vps": 536.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 59.6,
+          "age_hours": 62.1,
           "url": "https://www.facebook.com/reel/1095962593431472/"
         },
         {
@@ -637,7 +637,7 @@
           "hold_3s": 1.0,
           "vps": 442.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 63.5,
+          "age_hours": 66.0,
           "url": "https://www.facebook.com/reel/1581786840369378/"
         },
         {
@@ -653,7 +653,7 @@
           "hold_3s": 1.0,
           "vps": 406.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 38.3,
+          "age_hours": 40.8,
           "url": "https://www.facebook.com/reel/1104954408915363/"
         },
         {
@@ -669,7 +669,7 @@
           "hold_3s": 1.0,
           "vps": 399.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 11.7,
+          "age_hours": 14.2,
           "url": "https://www.facebook.com/reel/1574055351426869/"
         },
         {
@@ -685,7 +685,7 @@
           "hold_3s": 0.423,
           "vps": 396.94,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 60.4,
+          "age_hours": 62.9,
           "url": "https://www.facebook.com/reel/2239230146997128/"
         }
       ],
@@ -703,7 +703,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 32.4,
+          "age_hours": 35.0,
           "url": "https://www.facebook.com/reel/2322421645247386/"
         },
         {
@@ -719,7 +719,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 56.6,
+          "age_hours": 59.1,
           "url": "https://www.facebook.com/reel/3709424325875598/"
         },
         {
@@ -735,17 +735,17 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 54.5,
+          "age_hours": 57.0,
           "url": "https://www.youtube.com/watch?v=nMMvyVtGabE"
         }
       ],
       "retention_diagnostics": {
         "evaluated_posts": 56,
-        "total_tracked_views": 4211,
+        "total_tracked_views": 4222,
         "avg_hold_3s": 0.541,
         "avg_hold_15s": 0.053,
-        "long_avg_vps": 8.0,
-        "deep_short_avg_vps": 131.31,
+        "long_avg_vps": 10.5,
+        "deep_short_avg_vps": 131.34,
         "fast_short_avg_vps": 87.55,
         "winning_title_style": "mystery_statement"
       },
@@ -763,23 +763,39 @@
           "hold_3s": null,
           "vps": 22.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 59.7,
+          "age_hours": 62.2,
           "url": "https://www.youtube.com/watch?v=djgB6Qu-BVk"
+        },
+        {
+          "late_post_id": "6aeb4fcf8959e8c7373ee2fa",
+          "platform": "youtube",
+          "format": "long_episode",
+          "title": "The 3:00 AM Delivery to My Own House | True Mystery Story",
+          "views": 9,
+          "replays": 0,
+          "likes": 0,
+          "real_comments": 0,
+          "shares": 0,
+          "hold_3s": null,
+          "vps": 9.0,
+          "pillar_id": "en_thr_night_shift",
+          "age_hours": 20.3,
+          "url": "https://www.youtube.com/watch?v=Bc1F51UG0Cg"
         },
         {
           "late_post_id": "6aea7d0a7cbd23d305922bd1",
           "platform": "youtube",
           "format": "long_episode",
           "title": "The Doorbell Camera Footage That Exposed Her Neighbor | True Mystery Story",
-          "views": 8,
+          "views": 9,
           "replays": 0,
           "likes": 0,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": null,
-          "vps": 8.0,
+          "vps": 9.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 38.5,
+          "age_hours": 41.0,
           "url": "https://www.youtube.com/watch?v=apNSJaDjbcE"
         },
         {
@@ -795,29 +811,13 @@
           "hold_3s": null,
           "vps": 2.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 63.5,
+          "age_hours": 66.0,
           "url": "https://www.youtube.com/watch?v=Ao2BNyxp-dw"
-        },
-        {
-          "late_post_id": "6aeb4fcf8959e8c7373ee2fa",
-          "platform": "youtube",
-          "format": "long_episode",
-          "title": "The 3:00 AM Delivery to My Own House | True Mystery Story",
-          "views": 0,
-          "replays": 0,
-          "likes": 0,
-          "real_comments": 0,
-          "shares": 0,
-          "hold_3s": null,
-          "vps": 0.0,
-          "pillar_id": "en_thr_night_shift",
-          "age_hours": 17.7,
-          "url": "https://www.youtube.com/watch?v=Bc1F51UG0Cg"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T15:00:15Z",
+        "last_run_utc": "2026-11-05T17:30:33Z",
         "available": true,
         "tracked_videos": 20,
         "analytics_page": 1,
@@ -842,26 +842,26 @@
         "yt_views_30d": 6,
         "yt_watch_min_30d": 0,
         "yt_subs_30d": 0,
-        "fb_views_30d": 3286,
+        "fb_views_30d": 3297,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T15:00:37Z",
+      "last_sync_utc": "2026-11-05T17:30:53Z",
       "pillar_stats": {
         "en_mys_locked_room": {
           "label": "Classic Locked-Room Mechanism",
           "posts": 21,
-          "total_vps": 2409.84,
-          "avg_vps": 114.75,
+          "total_vps": 2415.84,
+          "avg_vps": 115.04,
           "best_title": "The Sound of a Killer",
-          "best_vps": 458.0
+          "best_vps": 463.0
         },
         "en_mys_clockwork_alibi": {
           "label": "Clockwork & CCTV Timestamp Paradox",
           "posts": 19,
-          "total_vps": 2314.9840000000004,
-          "avg_vps": 121.84,
+          "total_vps": 2317.9840000000004,
+          "avg_vps": 122.0,
           "best_title": "Caught in the Reflection",
-          "best_vps": 390.0
+          "best_vps": 391.0
         },
         "en_mys_closed_gala": {
           "label": "Closed-Circle Gala / Vessel Disappearance",
@@ -902,15 +902,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "The Sound of a Killer",
-          "views": 258,
+          "views": 263,
           "replays": 20,
           "likes": 0,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 458.0,
+          "vps": 463.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 9.2,
+          "age_hours": 11.7,
           "url": "https://www.facebook.com/reel/1886884982722071/"
         },
         {
@@ -918,15 +918,15 @@
           "platform": "facebook",
           "format": "fast_short",
           "title": "Caught in the Reflection",
-          "views": 242,
+          "views": 243,
           "replays": 12,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 390.0,
+          "vps": 391.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 15.1,
+          "age_hours": 17.6,
           "url": "https://www.facebook.com/reel/1170086229038946/"
         },
         {
@@ -942,7 +942,7 @@
           "hold_3s": 1.0,
           "vps": 378.0,
           "pillar_id": "en_mys_logical_sting",
-          "age_hours": 37.7,
+          "age_hours": 40.2,
           "url": "https://www.facebook.com/reel/2544205012730451/"
         },
         {
@@ -958,7 +958,7 @@
           "hold_3s": 1.0,
           "vps": 350.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 58.4,
+          "age_hours": 60.9,
           "url": "https://www.facebook.com/reel/1743736004030334/"
         },
         {
@@ -974,7 +974,7 @@
           "hold_3s": 1.0,
           "vps": 347.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 52.4,
+          "age_hours": 54.9,
           "url": "https://www.facebook.com/reel/985813371236676/"
         }
       ],
@@ -992,7 +992,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 58.4,
+          "age_hours": 60.9,
           "url": "https://www.youtube.com/watch?v=1bNjBpqLM84"
         },
         {
@@ -1008,7 +1008,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 49.4,
+          "age_hours": 51.9,
           "url": "https://www.youtube.com/watch?v=fCfEqQXJJCA"
         },
         {
@@ -1024,18 +1024,18 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 37.9,
+          "age_hours": 40.4,
           "url": "https://www.youtube.com/watch?v=tLlZyJqMJns"
         }
       ],
       "retention_diagnostics": {
         "evaluated_posts": 42,
-        "total_tracked_views": 3545,
+        "total_tracked_views": 3554,
         "avg_hold_3s": 0.556,
-        "avg_hold_15s": 0.089,
+        "avg_hold_15s": 0.088,
         "long_avg_vps": 104.8,
-        "deep_short_avg_vps": 155.9,
-        "fast_short_avg_vps": 76.87,
+        "deep_short_avg_vps": 156.26,
+        "fast_short_avg_vps": 76.93,
         "winning_title_style": "mystery_statement"
       },
       "recent_youtube_longs": [
@@ -1052,7 +1052,7 @@
           "hold_3s": null,
           "vps": 2.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 15.3,
+          "age_hours": 17.8,
           "url": "https://www.youtube.com/watch?v=pPlaoeuNDOI"
         },
         {
@@ -1068,7 +1068,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 37.9,
+          "age_hours": 40.4,
           "url": "https://www.youtube.com/watch?v=tLlZyJqMJns"
         },
         {
@@ -1084,13 +1084,13 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 58.4,
+          "age_hours": 60.9,
           "url": "https://www.youtube.com/watch?v=1bNjBpqLM84"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T15:00:37Z",
+        "last_run_utc": "2026-11-05T17:30:54Z",
         "available": true,
         "tracked_videos": 15,
         "analytics_page": 1,
@@ -1112,71 +1112,74 @@
     }
   },
   "replied_comment_ids": [
-    "Ugwr1QdCYGZTJxXyLKJ4AaABAg",
-    "122097878691541041_5611806819043590",
-    "UgyxJ83JD9_XEUZgRld4AaABAg",
-    "UgyOyAtzIEK8dywUjhF4AaABAg",
-    "122104772037530513_1792901515372345",
-    "UgxsGjszD-o6vXbpy5p4AaABAg",
-    "122102709405533795_1438442441689582",
-    "UgxqoaS_G7fVyT-ZjER4AaABAg",
-    "UgynQ4CymvFqMNRLuVd4AaABAg",
-    "122104846875527030_2037398313587151",
-    "Ugyy-pNQOPO-LrBssdd4AaABAg",
-    "122102585535533795_1900554944265019",
-    "122098466739541041_29264472823169293",
-    "Ugwx4HLRHAA8DVHeOgN4AaABAg",
-    "Ugys6Vegb5CMunFsiRt4AaABAg",
-    "UgxYHWOPRSLljLh3Mhd4AaABAg",
-    "122105025741527030_2340996443353632",
-    "122102820225533795_1363136242430096",
-    "122105462727527030_1132458989685219",
-    "122098377063541041_2207433263487351",
-    "Ugy5c_0hADkVl7s8zQB4AaABAg",
-    "122104179567530513_2019228112101728",
-    "122102043687533795_1745873476512629",
-    "122104873881530513_2129377787713850",
-    "UgwVlHtMPDRM2nhEI8R4AaABAg",
-    "UgzIR1S0xubDkBvZWjx4AaABAg",
-    "122097706695541041_1805425824039644",
-    "UgwRGXC08Wl9OAyWgRl4AaABAg",
-    "122105319693527030_1133771242587525",
-    "122098567113541041_1745463663806584",
-    "UgzzN7ASOidhK6cID3h4AaABAg",
-    "122098654713541041_1795303655135169",
-    "UgxaZcHzifOZ6E31arl4AaABAg",
-    "UgxSg_sd_wFv4bogBJl4AaABAg",
-    "UgwdHRRLHPwTR_9Pf1h4AaABAg",
-    "122104777269530513_1599006408125676",
-    "Ugz7iWXsqzQi1R2js6R4AaABAg",
-    "122097973869541041_1145307095124046",
-    "UgzCpXIWp9-uRErFFBB4AaABAg",
-    "UgwCVrNkHWFaB4enSNZ4AaABAg",
-    "Ugz2o6U_CD3bzrN62hF4AaABAg",
-    "122097793179541041_958029300370554",
-    "UgyABr3tVJWRycNaHN14AaABAg",
-    "UgxUYrr2vNkSj8e1clh4AaABAg",
-    "122097702849541041_1604377147455387",
-    "122101935507533795_1116001874346321",
-    "UgwgKeJdxkESNfqvxyF4AaABAg",
-    "122102447349533795_28854390267551978",
-    "UgxJHsvR6MuOttKIV7t4AaABAg",
-    "122102441751533795_1836632440712473",
-    "122105275119527030_2258283024747010",
-    "122105055897530513_1163331133042715",
-    "122098380483541041_1671371451324796",
-    "UgyAxGDtwBHoWqVQ7Lp4AaABAg",
-    "122104956999530513_2253453431887788",
-    "122105276343527030_1821021672785133",
-    "122102157141533795_1847341139754318",
     "122104943895527030_1398363412063079",
+    "Ugyy-pNQOPO-LrBssdd4AaABAg",
+    "UgyAxGDtwBHoWqVQ7Lp4AaABAg",
+    "122102447349533795_28854390267551978",
+    "122102043687533795_1745873476512629",
+    "UgyOyAtzIEK8dywUjhF4AaABAg",
+    "122105319693527030_1133771242587525",
+    "Ugz2o6U_CD3bzrN62hF4AaABAg",
+    "122098466739541041_29264472823169293",
+    "UgxsGjszD-o6vXbpy5p4AaABAg",
+    "Ugys6Vegb5CMunFsiRt4AaABAg",
+    "122105462727527030_1132458989685219",
+    "UgxSg_sd_wFv4bogBJl4AaABAg",
+    "UgyABr3tVJWRycNaHN14AaABAg",
+    "122104179567530513_2019228112101728",
+    "122097793179541041_958029300370554",
+    "UgwRGXC08Wl9OAyWgRl4AaABAg",
+    "122104890069527030_1676603837587818",
+    "UgwdHRRLHPwTR_9Pf1h4AaABAg",
+    "Ugz7iWXsqzQi1R2js6R4AaABAg",
     "122104074729530513_1448569780074262",
-    "Ugxy-QCQEyIBF5zm3Qp4AaABAg",
-    "122105392635527030_3683863245098524",
+    "122101935507533795_1116001874346321",
+    "UgxYHWOPRSLljLh3Mhd4AaABAg",
+    "122102709405533795_1438442441689582",
+    "122104873881530513_2129377787713850",
+    "122102441751533795_1836632440712473",
+    "122104772037530513_1792901515372345",
+    "122102820225533795_1363136242430096",
+    "122097878691541041_5611806819043590",
     "122104841907527030_2072675396723505",
+    "122105275119527030_2258283024747010",
+    "122102157141533795_1847341139754318",
+    "UgyxJ83JD9_XEUZgRld4AaABAg",
+    "UgwCVrNkHWFaB4enSNZ4AaABAg",
     "UgxYCESgp94fxEUXdgV4AaABAg",
+    "Ugxy-QCQEyIBF5zm3Qp4AaABAg",
+    "122098654713541041_1795303655135169",
+    "122097973869541041_1145307095124046",
+    "UgwmBF966LHPOjOtHPJ4AaABAg",
+    "UgynQ4CymvFqMNRLuVd4AaABAg",
+    "122097706695541041_1805425824039644",
+    "UgzzN7ASOidhK6cID3h4AaABAg",
+    "122097702849541041_1604377147455387",
+    "UgzCpXIWp9-uRErFFBB4AaABAg",
+    "UgwgKeJdxkESNfqvxyF4AaABAg",
+    "Ugwr1QdCYGZTJxXyLKJ4AaABAg",
+    "122105276343527030_1821021672785133",
+    "122103392157533795_2294631877777805",
+    "Ugwx4HLRHAA8DVHeOgN4AaABAg",
+    "122098377063541041_2207433263487351",
+    "UgwVlHtMPDRM2nhEI8R4AaABAg",
+    "Ugy5c_0hADkVl7s8zQB4AaABAg",
+    "122105055897530513_1163331133042715",
+    "122104777269530513_1599006408125676",
+    "UgxqoaS_G7fVyT-ZjER4AaABAg",
+    "UgxJHsvR6MuOttKIV7t4AaABAg",
     "122104293801530513_1029575433486451",
-    "122104890069527030_1676603837587818"
+    "122104846875527030_2037398313587151",
+    "122098567113541041_1745463663806584",
+    "122105025741527030_2340996443353632",
+    "122105392635527030_3683863245098524",
+    "122103385383533795_1441113671483978",
+    "122102585535533795_1900554944265019",
+    "UgxUYrr2vNkSj8e1clh4AaABAg",
+    "UgxaZcHzifOZ6E31arl4AaABAg",
+    "122098380483541041_1671371451324796",
+    "UgzIR1S0xubDkBvZWjx4AaABAg",
+    "122104956999530513_2253453431887788"
   ],
   "rescued_post_ids": [],
   "retried_post_ids": [

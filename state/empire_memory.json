@@ -52,7 +52,12 @@
       "Midnight museum gala, priceless diamond vanishes",
       "flawed clockwork alibi mirror reflection mystery",
       "locked study murder bulletless poison mystery",
-      "Security experts impossible remote alibi glitch"
-    ]
+      "Security experts impossible remote alibi glitch",
+      "The Disappearing Ink Vault Deception"
+    ],
+    "last_pillar_id": "en_mys_logical_sting",
+    "title_pillar_map": {
+      "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting"
+    }
   }
 }
