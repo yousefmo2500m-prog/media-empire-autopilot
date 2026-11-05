@@ -1,30 +1,30 @@
 {
   "version": "16.0",
-  "updated_at_utc": "2026-11-05T00:54:48Z",
+  "updated_at_utc": "2026-11-05T03:21:09Z",
   "channels": {
     "ch1_eg_thriller": {
       "account_overview": {
         "yt_views_30d": 32,
         "yt_watch_min_30d": 3,
         "yt_subs_30d": 0,
-        "fb_views_30d": 4611,
+        "fb_views_30d": 4958,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T00:53:51Z",
+      "last_sync_utc": "2026-11-05T03:20:14Z",
       "pillar_stats": {
         "eg_thr_night_signal": {
           "label": "رسالة أو صورة الفجر المريبة",
           "posts": 21,
-          "total_vps": 3666.532,
-          "avg_vps": 174.6,
+          "total_vps": 4140.532,
+          "avg_vps": 197.17,
           "best_title": "مواجهة الجار الخفي في نص الليل!",
-          "best_vps": 1812.0
+          "best_vps": 1814.0
         },
         "eg_thr_apartment_secret": {
           "label": "سر الشقة أو الجيرة والعمارة",
           "posts": 7,
-          "total_vps": 1727.772,
-          "avg_vps": 246.82,
+          "total_vps": 1728.772,
+          "avg_vps": 246.97,
           "best_title": "فاتورة كهرباء بـ 4000 جنيه لشقة فاضية كانت الخيط لكشف أخطر جريمة تجسس في المعا",
           "best_vps": 939.12
         },
@@ -67,15 +67,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "مواجهة الجار الخفي في نص الليل!",
-          "views": 1096,
+          "views": 1098,
           "replays": 80,
           "likes": 3,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 1812.0,
+          "vps": 1814.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 19.5,
+          "age_hours": 21.9,
           "url": "https://www.facebook.com/reel/1582131380383947/"
         },
         {
@@ -91,7 +91,7 @@
           "hold_3s": 0.053,
           "vps": 939.12,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 25.4,
+          "age_hours": 27.9,
           "url": "https://www.facebook.com/reel/1758036515296920/"
         },
         {
@@ -99,16 +99,32 @@
           "platform": "facebook",
           "format": "fast_short",
           "title": "صوتك الحقيقي بيكلمك في التليفون",
-          "views": 301,
+          "views": 303,
           "replays": 28,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 577.0,
+          "vps": 579.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 8.5,
+          "age_hours": 10.9,
           "url": "https://www.facebook.com/reel/2242734373253666/"
+        },
+        {
+          "late_post_id": "6aeaa6e92181a9f8f961d77f",
+          "platform": "facebook",
+          "format": "deep_short",
+          "title": "كشف الحقيقة الكاملة للمكالمة الغامضة",
+          "views": 319,
+          "replays": 18,
+          "likes": 2,
+          "real_comments": 0,
+          "shares": 0,
+          "hold_3s": 1.0,
+          "vps": 527.0,
+          "pillar_id": "eg_thr_night_signal",
+          "age_hours": 5.1,
+          "url": "https://www.facebook.com/reel/1718147039732051/"
         },
         {
           "late_post_id": "6aea6d8a73c3bea01cf1c705",
@@ -123,24 +139,8 @@
           "hold_3s": 1.0,
           "vps": 494.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 25.3,
+          "age_hours": 27.8,
           "url": "https://www.facebook.com/reel/1598160288304893/"
-        },
-        {
-          "late_post_id": "6ae8d7a1bfffecd84affb4a0",
-          "platform": "facebook",
-          "format": "deep_short",
-          "title": "الفخ اللي غير كل شيء!",
-          "views": 264,
-          "replays": 14,
-          "likes": 3,
-          "real_comments": 0,
-          "shares": 0,
-          "hold_3s": 0.283,
-          "vps": 423.32,
-          "pillar_id": "eg_thr_night_signal",
-          "age_hours": 54.3,
-          "url": "https://www.facebook.com/reel/1800733361016273/"
         }
       ],
       "bottom_laggards": [
@@ -157,7 +157,7 @@
           "hold_3s": 0.0,
           "vps": 298.0,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 54.3,
+          "age_hours": 56.7,
           "url": "https://www.facebook.com/reel/1455869436669103/"
         },
         {
@@ -173,7 +173,7 @@
           "hold_3s": 0.154,
           "vps": 365.15,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 54.3,
+          "age_hours": 56.8,
           "url": "https://www.facebook.com/reel/1437263647862119/"
         },
         {
@@ -189,18 +189,18 @@
           "hold_3s": 0.391,
           "vps": 397.65,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 22.5,
+          "age_hours": 24.9,
           "url": "https://www.facebook.com/reel/1103080215819926/"
         }
       ],
       "retention_diagnostics": {
         "evaluated_posts": 33,
-        "total_tracked_views": 3954,
+        "total_tracked_views": 4269,
         "avg_hold_3s": 0.526,
-        "avg_hold_15s": 0.075,
+        "avg_hold_15s": 0.08,
         "long_avg_vps": 1.0,
-        "deep_short_avg_vps": 207.69,
-        "fast_short_avg_vps": 178.5,
+        "deep_short_avg_vps": 227.39,
+        "fast_short_avg_vps": 178.83,
         "winning_title_style": "number_timestamp_hook"
       },
       "recent_youtube_longs": [
@@ -217,7 +217,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 8.6,
+          "age_hours": 11.1,
           "url": "https://www.youtube.com/watch?v=lsnAzBFJcok"
         },
         {
@@ -233,7 +233,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 25.5,
+          "age_hours": 27.9,
           "url": "https://www.youtube.com/watch?v=buHMCMqpOag"
         },
         {
@@ -249,13 +249,13 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 54.3,
+          "age_hours": 56.8,
           "url": "https://www.youtube.com/watch?v=LWUiXtg-kFA"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T00:53:52Z",
+        "last_run_utc": "2026-11-05T03:20:15Z",
         "available": true,
         "tracked_videos": 12,
         "analytics_page": 1,
@@ -280,26 +280,26 @@
         "yt_views_30d": 2,
         "yt_watch_min_30d": 0,
         "yt_subs_30d": 0,
-        "fb_views_30d": 13718,
+        "fb_views_30d": 14012,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T00:54:05Z",
+      "last_sync_utc": "2026-11-05T03:20:27Z",
       "pillar_stats": {
         "eg_mys_locked_room": {
           "label": "لغز الغرفة المغلقة من الداخل",
           "posts": 5,
-          "total_vps": 3107.888,
-          "avg_vps": 621.58,
+          "total_vps": 3109.936,
+          "avg_vps": 621.99,
           "best_title": "جريمة في مكتب مغلق لا يمكن اختراقه",
-          "best_vps": 2574.06
+          "best_vps": 2576.11
         },
         "eg_mys_impossible_alibi": {
           "label": "حجة الغياب المستحيلة والتوقيت المزيف",
           "posts": 11,
-          "total_vps": 2875.148,
-          "avg_vps": 261.38,
+          "total_vps": 2914.852,
+          "avg_vps": 264.99,
           "best_title": "دليل صغير يكشف أكبر خدعة في التاريخ",
-          "best_vps": 1487.0
+          "best_vps": 1488.0
         },
         "eg_mys_closed_circle": {
           "label": "لغز الباخرة النيلية أو العشاء المغلق",
@@ -311,9 +311,9 @@
         },
         "eg_mys_framed_innocent": {
           "label": "الأثر العكسي وتبرئة المتهم المظلوم",
-          "posts": 16,
-          "total_vps": 12549.308,
-          "avg_vps": 784.33,
+          "posts": 18,
+          "total_vps": 12558.475999999999,
+          "avg_vps": 697.69,
           "best_title": "الخيال المستخبي في المطبخ",
           "best_vps": 5678.0
         },
@@ -348,7 +348,7 @@
           "hold_3s": 1.0,
           "vps": 5678.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 47.3,
+          "age_hours": 49.8,
           "url": "https://www.facebook.com/reel/1084283231276935/"
         },
         {
@@ -356,15 +356,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "جريمة في مكتب مغلق لا يمكن اختراقه",
-          "views": 1953,
+          "views": 1955,
           "replays": 73,
           "likes": 2,
           "real_comments": 0,
           "shares": 0,
-          "hold_3s": 0.327,
-          "vps": 2574.06,
+          "hold_3s": 0.328,
+          "vps": 2576.11,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 21.9,
+          "age_hours": 24.4,
           "url": "https://www.facebook.com/reel/1128437866820614/"
         },
         {
@@ -380,7 +380,7 @@
           "hold_3s": 0.248,
           "vps": 2018.93,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 38.3,
+          "age_hours": 40.7,
           "url": "https://www.facebook.com/reel/1900966247983152/"
         },
         {
@@ -396,7 +396,7 @@
           "hold_3s": 0.329,
           "vps": 1697.18,
           "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 44.3,
+          "age_hours": 46.8,
           "url": "https://www.facebook.com/reel/1070664616021828/"
         },
         {
@@ -404,15 +404,15 @@
           "platform": "facebook",
           "format": "deep_short",
           "title": "نهاية صادمة لم يتوقعها أحد أبداً",
-          "views": 1039,
+          "views": 1042,
           "replays": 70,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
-          "hold_3s": 0.922,
-          "vps": 1647.9,
+          "hold_3s": 0.923,
+          "vps": 1650.91,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 18.9,
+          "age_hours": 21.4,
           "url": "https://www.facebook.com/reel/1624900625983530/"
         }
       ],
@@ -430,7 +430,7 @@
           "hold_3s": null,
           "vps": 25.0,
           "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 47.4,
+          "age_hours": 49.8,
           "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
         },
         {
@@ -446,7 +446,7 @@
           "hold_3s": null,
           "vps": 25.0,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 24.9,
+          "age_hours": 27.4,
           "url": "https://www.youtube.com/watch?v=iSby3QM1Euc"
         },
         {
@@ -462,18 +462,18 @@
           "hold_3s": null,
           "vps": 27.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 41.3,
+          "age_hours": 43.8,
           "url": "https://www.youtube.com/watch?v=34RQDl3kzqg"
         }
       ],
       "retention_diagnostics": {
-        "evaluated_posts": 37,
-        "total_tracked_views": 13944,
-        "avg_hold_3s": 0.508,
-        "avg_hold_15s": 0.061,
+        "evaluated_posts": 39,
+        "total_tracked_views": 13977,
+        "avg_hold_3s": 0.512,
+        "avg_hold_15s": 0.063,
         "long_avg_vps": 25.0,
-        "deep_short_avg_vps": 472.2,
-        "fast_short_avg_vps": 1028.88,
+        "deep_short_avg_vps": 455.6,
+        "fast_short_avg_vps": 917.56,
         "winning_title_style": "mystery_statement"
       },
       "recent_youtube_longs": [
@@ -490,7 +490,7 @@
           "hold_3s": null,
           "vps": 25.0,
           "pillar_id": "eg_mys_impossible_alibi",
-          "age_hours": 6.6,
+          "age_hours": 9.1,
           "url": "https://www.youtube.com/watch?v=SOxIYTwt3bA"
         },
         {
@@ -506,7 +506,7 @@
           "hold_3s": null,
           "vps": 25.0,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 24.9,
+          "age_hours": 27.4,
           "url": "https://www.youtube.com/watch?v=iSby3QM1Euc"
         },
         {
@@ -522,15 +522,15 @@
           "hold_3s": null,
           "vps": 25.0,
           "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 47.4,
+          "age_hours": 49.8,
           "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T00:54:05Z",
+        "last_run_utc": "2026-11-05T03:20:28Z",
         "available": true,
-        "tracked_videos": 13,
+        "tracked_videos": 14,
         "analytics_page": 1,
         "live_views_checked": 2,
         "daily_analytics_checked": 0,
@@ -553,34 +553,34 @@
         "yt_views_30d": 3,
         "yt_watch_min_30d": 0,
         "yt_subs_30d": 0,
-        "fb_views_30d": 3331,
+        "fb_views_30d": 3601,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T00:54:21Z",
+      "last_sync_utc": "2026-11-05T03:20:42Z",
       "pillar_stats": {
         "en_thr_3am_notification": {
           "label": "3 AM Digital / Phone Anomaly",
           "posts": 29,
-          "total_vps": 2799.288,
-          "avg_vps": 96.53,
+          "total_vps": 3118.288,
+          "avg_vps": 107.53,
           "best_title": "Locked room mystery solved",
-          "best_vps": 535.0
+          "best_vps": 536.0
         },
         "en_thr_doorbell_neighbor": {
           "label": "Doorbell Cam & Neighbor Double Life",
           "posts": 13,
-          "total_vps": 1081.824,
-          "avg_vps": 83.22,
+          "total_vps": 1085.4360000000001,
+          "avg_vps": 83.5,
           "best_title": "The Reflection That Revealed The Monster",
           "best_vps": 405.0
         },
         "en_thr_night_shift": {
           "label": "Night-Shift & Rideshare Suspense",
-          "posts": 2,
-          "total_vps": 1.0,
-          "avg_vps": 0.5,
+          "posts": 5,
+          "total_vps": 236.0,
+          "avg_vps": 47.2,
           "best_title": "A late-night delivery driver picks up a luxury order only to find the destinat",
-          "best_vps": 1.0
+          "best_vps": 236.0
         },
         "en_thr_hidden_sublet": {
           "label": "New Apartment / Utility Bill Anomaly",
@@ -613,15 +613,15 @@
           "platform": "facebook",
           "format": "fast_short",
           "title": "Locked room mystery solved",
-          "views": 323,
+          "views": 324,
           "replays": 20,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 535.0,
+          "vps": 536.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 45.5,
+          "age_hours": 48.0,
           "url": "https://www.facebook.com/reel/1095962593431472/"
         },
         {
@@ -629,15 +629,15 @@
           "platform": "facebook",
           "format": "fast_short",
           "title": "Don't Open The Floor",
-          "views": 268,
+          "views": 269,
           "replays": 15,
           "likes": 1,
           "real_comments": 0,
           "shares": 0,
           "hold_3s": 1.0,
-          "vps": 440.0,
+          "vps": 441.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 49.4,
+          "age_hours": 51.9,
           "url": "https://www.facebook.com/reel/1581786840369378/"
         },
         {
@@ -653,7 +653,7 @@
           "hold_3s": 1.0,
           "vps": 405.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 24.2,
+          "age_hours": 26.7,
           "url": "https://www.facebook.com/reel/1104954408915363/"
         },
         {
@@ -669,7 +669,7 @@
           "hold_3s": 0.423,
           "vps": 396.94,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 46.3,
+          "age_hours": 48.8,
           "url": "https://www.facebook.com/reel/2239230146997128/"
         },
         {
@@ -685,16 +685,16 @@
           "hold_3s": 1.0,
           "vps": 372.0,
           "pillar_id": "en_thr_hidden_sublet",
-          "age_hours": 39.5,
+          "age_hours": 42.0,
           "url": "https://www.facebook.com/reel/1656402706275934/"
         }
       ],
       "bottom_laggards": [
         {
-          "late_post_id": "6ae95344f832f43eb27849e6",
-          "platform": "youtube",
+          "late_post_id": "6aea7d4edf6e478db7788c5c",
+          "platform": "facebook",
           "format": "deep_short",
-          "title": "The 3:14 AM Impossible Photo",
+          "title": "The Doorbell Camera Conspiracy",
           "views": 0,
           "replays": 0,
           "likes": 0,
@@ -702,9 +702,9 @@
           "shares": 0,
           "hold_3s": null,
           "vps": 0.0,
-          "pillar_id": "en_thr_3am_notification",
-          "age_hours": 42.5,
-          "url": "https://www.youtube.com/watch?v=oKZUt9qZn0s"
+          "pillar_id": "en_thr_doorbell_neighbor",
+          "age_hours": 20.8,
+          "url": "https://www.facebook.com/reel/2322421645247386/"
         },
         {
           "late_post_id": "6ae91cdf592b59302f90280b",
@@ -719,7 +719,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 40.4,
+          "age_hours": 42.8,
           "url": "https://www.youtube.com/watch?v=nMMvyVtGabE"
         },
         {
@@ -735,18 +735,18 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 36.5,
+          "age_hours": 39.0,
           "url": "https://www.youtube.com/watch?v=3TchnTLiHhM"
         }
       ],
       "retention_diagnostics": {
-        "evaluated_posts": 47,
-        "total_tracked_views": 2992,
-        "avg_hold_3s": 0.543,
-        "avg_hold_15s": 0.048,
+        "evaluated_posts": 50,
+        "total_tracked_views": 3390,
+        "avg_hold_3s": 0.536,
+        "avg_hold_15s": 0.047,
         "long_avg_vps": 8.0,
-        "deep_short_avg_vps": 88.28,
-        "fast_short_avg_vps": 127.0,
+        "deep_short_avg_vps": 88.31,
+        "fast_short_avg_vps": 153.55,
         "winning_title_style": "mystery_statement"
       },
       "recent_youtube_longs": [
@@ -763,7 +763,7 @@
           "hold_3s": null,
           "vps": 22.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 45.6,
+          "age_hours": 48.0,
           "url": "https://www.youtube.com/watch?v=djgB6Qu-BVk"
         },
         {
@@ -779,7 +779,7 @@
           "hold_3s": null,
           "vps": 8.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 24.4,
+          "age_hours": 26.8,
           "url": "https://www.youtube.com/watch?v=apNSJaDjbcE"
         },
         {
@@ -795,7 +795,7 @@
           "hold_3s": null,
           "vps": 2.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 49.4,
+          "age_hours": 51.9,
           "url": "https://www.youtube.com/watch?v=Ao2BNyxp-dw"
         },
         {
@@ -811,15 +811,15 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_thr_night_shift",
-          "age_hours": 3.6,
+          "age_hours": 6.1,
           "url": "https://www.youtube.com/watch?v=Bc1F51UG0Cg"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T00:54:22Z",
+        "last_run_utc": "2026-11-05T03:20:43Z",
         "available": true,
-        "tracked_videos": 17,
+        "tracked_videos": 18,
         "analytics_page": 1,
         "live_views_checked": 2,
         "daily_analytics_checked": 0,
@@ -827,11 +827,11 @@
         "plateau_videos": 0,
         "title_experiments": 0,
         "thumbnail_experiments": 0,
-        "playlist_additions": 1,
-        "latest_action": "playlist",
+        "playlist_additions": 0,
+        "latest_action": "none",
         "cases": [],
         "lessons": [],
-        "action_video_id": "Bc1F51UG0Cg",
+        "action_note": "no_eligible_metadata_change",
         "title_experiments_total": 0,
         "thumbnail_experiments_total": 0,
         "playlist_additions_total": 4
@@ -842,26 +842,26 @@
         "yt_views_30d": 6,
         "yt_watch_min_30d": 0,
         "yt_subs_30d": 0,
-        "fb_views_30d": 2254,
+        "fb_views_30d": 2566,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-05T00:54:37Z",
+      "last_sync_utc": "2026-11-05T03:20:57Z",
       "pillar_stats": {
         "en_mys_locked_room": {
           "label": "Classic Locked-Room Mechanism",
           "posts": 15,
-          "total_vps": 1662.596,
-          "avg_vps": 110.84,
+          "total_vps": 1665.596,
+          "avg_vps": 111.04,
           "best_title": "The Mastermind We All Trusted",
           "best_vps": 347.0
         },
         "en_mys_clockwork_alibi": {
           "label": "Clockwork & CCTV Timestamp Paradox",
-          "posts": 12,
-          "total_vps": 1300.7640000000001,
-          "avg_vps": 108.4,
-          "best_title": "The Reflection That Exposed Everything",
-          "best_vps": 350.0
+          "posts": 17,
+          "total_vps": 1694.764,
+          "avg_vps": 99.69,
+          "best_title": "Caught in the Reflection",
+          "best_vps": 387.0
         },
         "en_mys_closed_gala": {
           "label": "Closed-Circle Gala / Vessel Disappearance",
@@ -898,6 +898,22 @@
       },
       "top_winners": [
         {
+          "late_post_id": "6aeb761d365e575df782ac7e",
+          "platform": "facebook",
+          "format": "fast_short",
+          "title": "Caught in the Reflection",
+          "views": 239,
+          "replays": 12,
+          "likes": 1,
+          "real_comments": 0,
+          "shares": 0,
+          "hold_3s": 1.0,
+          "vps": 387.0,
+          "pillar_id": "en_mys_clockwork_alibi",
+          "age_hours": 3.4,
+          "url": "https://www.facebook.com/reel/1170086229038946/"
+        },
+        {
           "late_post_id": "6aea85bef19b606d2de22537",
           "platform": "facebook",
           "format": "fast_short",
@@ -910,7 +926,7 @@
           "hold_3s": 1.0,
           "vps": 377.0,
           "pillar_id": "en_mys_logical_sting",
-          "age_hours": 23.6,
+          "age_hours": 26.0,
           "url": "https://www.facebook.com/reel/2544205012730451/"
         },
         {
@@ -926,7 +942,7 @@
           "hold_3s": 1.0,
           "vps": 350.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 44.3,
+          "age_hours": 46.8,
           "url": "https://www.facebook.com/reel/1743736004030334/"
         },
         {
@@ -942,7 +958,7 @@
           "hold_3s": 1.0,
           "vps": 347.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 38.3,
+          "age_hours": 40.7,
           "url": "https://www.facebook.com/reel/985813371236676/"
         },
         {
@@ -958,24 +974,8 @@
           "hold_3s": 1.0,
           "vps": 334.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 17.8,
+          "age_hours": 20.2,
           "url": "https://www.facebook.com/reel/1383632816934949/"
-        },
-        {
-          "late_post_id": "6aeb81240b31b6bb62c3d821",
-          "platform": "facebook",
-          "format": "deep_short",
-          "title": "An ironclad alibi backed by live security cameras seems foolproof until a sing",
-          "views": 235,
-          "replays": 8,
-          "likes": 0,
-          "real_comments": 0,
-          "shares": 0,
-          "hold_3s": 0.029,
-          "vps": 300.14,
-          "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 44.2,
-          "url": "https://www.facebook.com/reel/1477345627598499/"
         }
       ],
       "bottom_laggards": [
@@ -992,7 +992,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 44.3,
+          "age_hours": 46.8,
           "url": "https://www.youtube.com/watch?v=1bNjBpqLM84"
         },
         {
@@ -1008,7 +1008,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 35.3,
+          "age_hours": 37.7,
           "url": "https://www.youtube.com/watch?v=fCfEqQXJJCA"
         },
         {
@@ -1024,21 +1024,37 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 23.8,
+          "age_hours": 26.2,
           "url": "https://www.youtube.com/watch?v=tLlZyJqMJns"
         }
       ],
       "retention_diagnostics": {
-        "evaluated_posts": 29,
-        "total_tracked_views": 2350,
-        "avg_hold_3s": 0.556,
-        "avg_hold_15s": 0.091,
-        "long_avg_vps": 77.0,
-        "deep_short_avg_vps": 117.82,
-        "fast_short_avg_vps": 126.17,
+        "evaluated_posts": 34,
+        "total_tracked_views": 2599,
+        "avg_hold_3s": 0.596,
+        "avg_hold_15s": 0.088,
+        "long_avg_vps": 47.2,
+        "deep_short_avg_vps": 112.45,
+        "fast_short_avg_vps": 143.0,
         "winning_title_style": "mystery_statement"
       },
       "recent_youtube_longs": [
+        {
+          "late_post_id": "6aeb7611365e575df782ac49",
+          "platform": "youtube",
+          "format": "long_episode",
+          "title": "The Man Who Was in Two Places | True Mystery Story",
+          "views": 0,
+          "replays": 0,
+          "likes": 0,
+          "real_comments": 0,
+          "shares": 0,
+          "hold_3s": null,
+          "vps": 0.0,
+          "pillar_id": "en_mys_clockwork_alibi",
+          "age_hours": 3.6,
+          "url": "https://www.youtube.com/watch?v=pPlaoeuNDOI"
+        },
         {
           "late_post_id": "6aea858af19b606d2de223f0",
           "platform": "youtube",
@@ -1052,7 +1068,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 23.8,
+          "age_hours": 26.2,
           "url": "https://www.youtube.com/watch?v=tLlZyJqMJns"
         },
         {
@@ -1068,15 +1084,15 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 44.3,
+          "age_hours": 46.8,
           "url": "https://www.youtube.com/watch?v=1bNjBpqLM84"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-05T00:54:37Z",
+        "last_run_utc": "2026-11-05T03:20:58Z",
         "available": true,
-        "tracked_videos": 10,
+        "tracked_videos": 12,
         "analytics_page": 1,
         "live_views_checked": 2,
         "daily_analytics_checked": 0,
@@ -1084,70 +1100,77 @@
         "plateau_videos": 0,
         "title_experiments": 0,
         "thumbnail_experiments": 0,
-        "playlist_additions": 0,
-        "latest_action": "none",
+        "playlist_additions": 1,
+        "latest_action": "playlist",
         "cases": [],
         "lessons": [],
-        "action_note": "no_eligible_metadata_change",
+        "action_video_id": "pPlaoeuNDOI",
         "title_experiments_total": 0,
         "thumbnail_experiments_total": 0,
-        "playlist_additions_total": 2
+        "playlist_additions_total": 3
       }
     }
   },
   "replied_comment_ids": [
-    "122097702849541041_1604377147455387",
-    "122097793179541041_958029300370554",
-    "UgwdHRRLHPwTR_9Pf1h4AaABAg",
-    "UgxUYrr2vNkSj8e1clh4AaABAg",
-    "122104772037530513_1792901515372345",
     "Ugz2o6U_CD3bzrN62hF4AaABAg",
-    "122098466739541041_29264472823169293",
-    "122105275119527030_2258283024747010",
-    "UgxYCESgp94fxEUXdgV4AaABAg",
-    "UgwRGXC08Wl9OAyWgRl4AaABAg",
-    "122097706695541041_1805425824039644",
-    "Ugxy-QCQEyIBF5zm3Qp4AaABAg",
-    "UgxJHsvR6MuOttKIV7t4AaABAg",
-    "UgxaZcHzifOZ6E31arl4AaABAg",
-    "UgynQ4CymvFqMNRLuVd4AaABAg",
-    "122102709405533795_1438442441689582",
-    "UgyxJ83JD9_XEUZgRld4AaABAg",
-    "122102043687533795_1745873476512629",
-    "Ugys6Vegb5CMunFsiRt4AaABAg",
-    "UgwVlHtMPDRM2nhEI8R4AaABAg",
-    "UgyABr3tVJWRycNaHN14AaABAg",
-    "122098377063541041_2207433263487351",
-    "122097973869541041_1145307095124046",
-    "Ugwr1QdCYGZTJxXyLKJ4AaABAg",
-    "122104890069527030_1676603837587818",
-    "122104956999530513_2253453431887788",
-    "122102447349533795_28854390267551978",
-    "122105025741527030_2340996443353632",
-    "UgzIR1S0xubDkBvZWjx4AaABAg",
-    "122098380483541041_1671371451324796",
-    "122104179567530513_2019228112101728",
-    "122104841907527030_2072675396723505",
-    "UgyOyAtzIEK8dywUjhF4AaABAg",
-    "122102585535533795_1900554944265019",
-    "122101935507533795_1116001874346321",
-    "122105276343527030_1821021672785133",
-    "122097878691541041_5611806819043590",
-    "122102157141533795_1847341139754318",
-    "122104777269530513_1599006408125676",
-    "122104943895527030_1398363412063079",
-    "UgwCVrNkHWFaB4enSNZ4AaABAg",
+    "122105055897530513_1163331133042715",
+    "UgwgKeJdxkESNfqvxyF4AaABAg",
     "122102441751533795_1836632440712473",
-    "122104846875527030_2037398313587151",
-    "Ugy5c_0hADkVl7s8zQB4AaABAg",
-    "122104074729530513_1448569780074262",
-    "Ugz7iWXsqzQi1R2js6R4AaABAg",
-    "UgzCpXIWp9-uRErFFBB4AaABAg",
-    "122104293801530513_1029575433486451",
-    "UgxsGjszD-o6vXbpy5p4AaABAg",
-    "Ugyy-pNQOPO-LrBssdd4AaABAg",
+    "UgyxJ83JD9_XEUZgRld4AaABAg",
     "122104873881530513_2129377787713850",
-    "UgxSg_sd_wFv4bogBJl4AaABAg"
+    "122102585535533795_1900554944265019",
+    "UgxUYrr2vNkSj8e1clh4AaABAg",
+    "Ugwr1QdCYGZTJxXyLKJ4AaABAg",
+    "122097702849541041_1604377147455387",
+    "122097973869541041_1145307095124046",
+    "UgyABr3tVJWRycNaHN14AaABAg",
+    "122104074729530513_1448569780074262",
+    "122101935507533795_1116001874346321",
+    "Ugwx4HLRHAA8DVHeOgN4AaABAg",
+    "UgxYCESgp94fxEUXdgV4AaABAg",
+    "122098466739541041_29264472823169293",
+    "UgwRGXC08Wl9OAyWgRl4AaABAg",
+    "Ugxy-QCQEyIBF5zm3Qp4AaABAg",
+    "122097706695541041_1805425824039644",
+    "122104956999530513_2253453431887788",
+    "UgzIR1S0xubDkBvZWjx4AaABAg",
+    "122104890069527030_1676603837587818",
+    "UgxqoaS_G7fVyT-ZjER4AaABAg",
+    "122104179567530513_2019228112101728",
+    "122105025741527030_2340996443353632",
+    "UgwdHRRLHPwTR_9Pf1h4AaABAg",
+    "122105276343527030_1821021672785133",
+    "122105275119527030_2258283024747010",
+    "122104943895527030_1398363412063079",
+    "UgxJHsvR6MuOttKIV7t4AaABAg",
+    "Ugz7iWXsqzQi1R2js6R4AaABAg",
+    "UgxSg_sd_wFv4bogBJl4AaABAg",
+    "UgxsGjszD-o6vXbpy5p4AaABAg",
+    "122102043687533795_1745873476512629",
+    "122104841907527030_2072675396723505",
+    "122102709405533795_1438442441689582",
+    "Ugys6Vegb5CMunFsiRt4AaABAg",
+    "122102820225533795_1363136242430096",
+    "122098567113541041_1745463663806584",
+    "122105319693527030_1133771242587525",
+    "122097793179541041_958029300370554",
+    "122097878691541041_5611806819043590",
+    "122098380483541041_1671371451324796",
+    "UgynQ4CymvFqMNRLuVd4AaABAg",
+    "122098377063541041_2207433263487351",
+    "122104846875527030_2037398313587151",
+    "122104293801530513_1029575433486451",
+    "122102157141533795_1847341139754318",
+    "122102447349533795_28854390267551978",
+    "UgyOyAtzIEK8dywUjhF4AaABAg",
+    "122104772037530513_1792901515372345",
+    "UgwCVrNkHWFaB4enSNZ4AaABAg",
+    "Ugy5c_0hADkVl7s8zQB4AaABAg",
+    "UgxaZcHzifOZ6E31arl4AaABAg",
+    "UgzCpXIWp9-uRErFFBB4AaABAg",
+    "UgwVlHtMPDRM2nhEI8R4AaABAg",
+    "122104777269530513_1599006408125676",
+    "Ugyy-pNQOPO-LrBssdd4AaABAg"
   ],
   "rescued_post_ids": [],
   "retried_post_ids": [
