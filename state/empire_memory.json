@@ -44,11 +44,13 @@
       "Cloud photo sent from his nightstand",
       "Doorbell camera receipt double life mystery",
       "Delivery driver delivers to himself nightmare",
-      "Electric bill reveals hidden basement scheme"
+      "Electric bill reveals hidden basement scheme",
+      "Security guard finds hidden boiler room"
     ],
-    "last_pillar_id": "en_thr_hidden_sublet",
+    "last_pillar_id": "en_thr_night_shift",
     "title_pillar_map": {
-      "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet"
+      "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
+      "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift"
     }
   },
   "ch4_en_mystery": {
