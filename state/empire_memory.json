@@ -61,11 +61,13 @@
       "flawed clockwork alibi mirror reflection mystery",
       "locked study murder bulletless poison mystery",
       "Security experts impossible remote alibi glitch",
-      "The Disappearing Ink Vault Deception"
+      "The Disappearing Ink Vault Deception",
+      "The impossible typewriter alibi deception puzzle"
     ],
-    "last_pillar_id": "en_mys_logical_sting",
+    "last_pillar_id": "en_mys_staged_reversal",
     "title_pillar_map": {
-      "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting"
+      "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
+      "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal"
     }
   }
 }
