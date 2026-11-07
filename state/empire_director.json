@@ -1,16 +1,16 @@
 {
   "version": "16.0",
-  "updated_at_utc": "2026-11-07T17:02:52Z",
+  "updated_at_utc": "2026-11-07T19:02:38Z",
   "channels": {
     "ch1_eg_thriller": {
       "account_overview": {
         "yt_views_30d": 40,
         "yt_watch_min_30d": 16,
         "yt_subs_30d": 0,
-        "fb_views_30d": 8503,
+        "fb_views_30d": 8656,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-07T17:01:37Z",
+      "last_sync_utc": "2026-11-07T19:01:22Z",
       "pillar_stats": {
         "eg_thr_night_signal": {
           "label": "رسالة أو صورة الفجر المريبة",
@@ -75,7 +75,7 @@
           "hold_3s": 1.0,
           "vps": 1840.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 83.6,
+          "age_hours": 85.6,
           "url": "https://www.facebook.com/reel/1582131380383947/"
         },
         {
@@ -91,7 +91,7 @@
           "hold_3s": 0.053,
           "vps": 945.12,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 89.6,
+          "age_hours": 91.6,
           "url": "https://www.facebook.com/reel/1758036515296920/"
         },
         {
@@ -107,7 +107,7 @@
           "hold_3s": 1.0,
           "vps": 898.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 18.8,
+          "age_hours": 20.8,
           "url": "https://www.facebook.com/reel/2105020617051154/"
         },
         {
@@ -123,7 +123,7 @@
           "hold_3s": 1.0,
           "vps": 600.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 42.8,
+          "age_hours": 44.7,
           "url": "https://www.facebook.com/reel/1900623987766721/"
         },
         {
@@ -139,7 +139,7 @@
           "hold_3s": 1.0,
           "vps": 594.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 72.6,
+          "age_hours": 74.6,
           "url": "https://www.facebook.com/reel/2242734373253666/"
         }
       ],
@@ -157,7 +157,7 @@
           "hold_3s": 0.0,
           "vps": 17.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 72.7,
+          "age_hours": 74.7,
           "url": "https://www.facebook.com/reel/1732280831797625/"
         },
         {
@@ -173,7 +173,7 @@
           "hold_3s": 0.0,
           "vps": 299.0,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 118.4,
+          "age_hours": 120.4,
           "url": "https://www.facebook.com/reel/1455869436669103/"
         },
         {
@@ -189,7 +189,7 @@
           "hold_3s": 0.619,
           "vps": 311.76,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 69.7,
+          "age_hours": 71.7,
           "url": "https://www.facebook.com/reel/2320528771839126/"
         }
       ],
@@ -217,7 +217,7 @@
           "hold_3s": null,
           "vps": 3.0,
           "pillar_id": "eg_thr_night_shift",
-          "age_hours": 48.8,
+          "age_hours": 50.8,
           "url": "https://www.youtube.com/watch?v=SPCeA2r1ID8"
         },
         {
@@ -233,7 +233,7 @@
           "hold_3s": null,
           "vps": 2.0,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 89.6,
+          "age_hours": 91.6,
           "url": "https://www.youtube.com/watch?v=buHMCMqpOag"
         },
         {
@@ -249,7 +249,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_night_signal",
-          "age_hours": 72.8,
+          "age_hours": 74.8,
           "url": "https://www.youtube.com/watch?v=lsnAzBFJcok"
         },
         {
@@ -265,7 +265,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "eg_thr_hidden_recording",
-          "age_hours": 118.5,
+          "age_hours": 120.5,
           "url": "https://www.youtube.com/watch?v=LWUiXtg-kFA"
         },
         {
@@ -281,13 +281,13 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "eg_thr_apartment_secret",
-          "age_hours": 24.8,
+          "age_hours": 26.8,
           "url": "https://www.youtube.com/watch?v=aywgFtG8h18"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-07T17:01:38Z",
+        "last_run_utc": "2026-11-07T19:01:23Z",
         "available": true,
         "tracked_videos": 23,
         "analytics_page": 1,
@@ -312,10 +312,10 @@
         "yt_views_30d": 412,
         "yt_watch_min_30d": 160,
         "yt_subs_30d": 2,
-        "fb_views_30d": 25302,
+        "fb_views_30d": 25422,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-07T17:01:53Z",
+      "last_sync_utc": "2026-11-07T19:01:43Z",
       "pillar_stats": {
         "eg_mys_locked_room": {
           "label": "لغز الغرفة المغلقة من الداخل",
@@ -343,9 +343,9 @@
         },
         "eg_mys_framed_innocent": {
           "label": "الأثر العكسي وتبرئة المتهم المظلوم",
-          "posts": 41,
+          "posts": 42,
           "total_vps": 25543.448,
-          "avg_vps": 623.01,
+          "avg_vps": 608.18,
           "best_title": "الخيال المستخبي في المطبخ",
           "best_vps": 5718.0
         },
@@ -380,7 +380,7 @@
           "hold_3s": 1.0,
           "vps": 5718.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 111.5,
+          "age_hours": 113.5,
           "url": "https://www.facebook.com/reel/1084283231276935/"
         },
         {
@@ -396,7 +396,7 @@
           "hold_3s": 0.472,
           "vps": 5287.87,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 61.8,
+          "age_hours": 63.7,
           "url": "https://www.facebook.com/reel/1100915919244290/"
         },
         {
@@ -412,7 +412,7 @@
           "hold_3s": 0.327,
           "vps": 2617.09,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 86.0,
+          "age_hours": 88.0,
           "url": "https://www.facebook.com/reel/1128437866820614/"
         },
         {
@@ -428,7 +428,7 @@
           "hold_3s": 0.249,
           "vps": 2023.98,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 102.4,
+          "age_hours": 104.4,
           "url": "https://www.facebook.com/reel/1900966247983152/"
         },
         {
@@ -444,7 +444,7 @@
           "hold_3s": 0.328,
           "vps": 1716.12,
           "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 108.5,
+          "age_hours": 110.4,
           "url": "https://www.facebook.com/reel/1070664616021828/"
         }
       ],
@@ -462,7 +462,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 37.8,
+          "age_hours": 39.8,
           "url": "https://www.youtube.com/watch?v=GqS3q4e8dBw"
         },
         {
@@ -478,7 +478,7 @@
           "hold_3s": null,
           "vps": 6.0,
           "pillar_id": "eg_mys_cold_clue",
-          "age_hours": 43.8,
+          "age_hours": 45.8,
           "url": "https://www.youtube.com/watch?v=-whruKt8BzU"
         },
         {
@@ -494,18 +494,18 @@
           "hold_3s": null,
           "vps": 7.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 64.8,
+          "age_hours": 66.8,
           "url": "https://www.youtube.com/watch?v=MnMi6nQd2LQ"
         }
       ],
       "retention_diagnostics": {
-        "evaluated_posts": 70,
+        "evaluated_posts": 71,
         "total_tracked_views": 26376,
         "avg_hold_3s": 0.542,
         "avg_hold_15s": 0.07,
         "long_avg_vps": 104.8,
         "deep_short_avg_vps": 652.94,
-        "fast_short_avg_vps": 483.44,
+        "fast_short_avg_vps": 464.85,
         "winning_title_style": "mystery_statement"
       },
       "recent_youtube_longs": [
@@ -522,7 +522,7 @@
           "hold_3s": null,
           "vps": 198.0,
           "pillar_id": "eg_mys_impossible_alibi",
-          "age_hours": 70.8,
+          "age_hours": 72.8,
           "url": "https://www.youtube.com/watch?v=SOxIYTwt3bA"
         },
         {
@@ -538,7 +538,7 @@
           "hold_3s": null,
           "vps": 132.0,
           "pillar_id": "eg_mys_framed_innocent",
-          "age_hours": 22.8,
+          "age_hours": 24.8,
           "url": "https://www.youtube.com/watch?v=73sr9sFUdSg"
         },
         {
@@ -554,7 +554,7 @@
           "hold_3s": null,
           "vps": 108.0,
           "pillar_id": "eg_mys_cold_clue",
-          "age_hours": 46.8,
+          "age_hours": 48.8,
           "url": "https://www.youtube.com/watch?v=KEeS3loJB30"
         },
         {
@@ -570,7 +570,7 @@
           "hold_3s": null,
           "vps": 44.0,
           "pillar_id": "eg_mys_locked_room",
-          "age_hours": 89.1,
+          "age_hours": 91.1,
           "url": "https://www.youtube.com/watch?v=iSby3QM1Euc"
         },
         {
@@ -586,13 +586,13 @@
           "hold_3s": null,
           "vps": 42.0,
           "pillar_id": "eg_mys_closed_circle",
-          "age_hours": 111.5,
+          "age_hours": 113.5,
           "url": "https://www.youtube.com/watch?v=7iPgXHI7BIQ"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-07T17:01:53Z",
+        "last_run_utc": "2026-11-07T19:01:44Z",
         "available": true,
         "tracked_videos": 25,
         "analytics_page": 1,
@@ -617,10 +617,10 @@
         "yt_views_30d": 205,
         "yt_watch_min_30d": 163,
         "yt_subs_30d": 2,
-        "fb_views_30d": 6039,
+        "fb_views_30d": 6040,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-07T17:02:17Z",
+      "last_sync_utc": "2026-11-07T19:02:03Z",
       "pillar_stats": {
         "en_thr_3am_notification": {
           "label": "3 AM Digital / Phone Anomaly",
@@ -685,7 +685,7 @@
           "hold_3s": 1.0,
           "vps": 644.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 37.8,
+          "age_hours": 39.8,
           "url": "https://www.facebook.com/reel/29603670349217059/"
         },
         {
@@ -701,7 +701,7 @@
           "hold_3s": 1.0,
           "vps": 536.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 109.7,
+          "age_hours": 111.7,
           "url": "https://www.facebook.com/reel/1095962593431472/"
         },
         {
@@ -717,7 +717,7 @@
           "hold_3s": 1.0,
           "vps": 445.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 113.5,
+          "age_hours": 115.5,
           "url": "https://www.facebook.com/reel/1581786840369378/"
         },
         {
@@ -733,7 +733,7 @@
           "hold_3s": 1.0,
           "vps": 406.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 88.3,
+          "age_hours": 90.3,
           "url": "https://www.facebook.com/reel/1104954408915363/"
         },
         {
@@ -749,7 +749,7 @@
           "hold_3s": 1.0,
           "vps": 400.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 61.8,
+          "age_hours": 63.8,
           "url": "https://www.facebook.com/reel/1574055351426869/"
         }
       ],
@@ -767,7 +767,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 82.5,
+          "age_hours": 84.5,
           "url": "https://www.facebook.com/reel/2322421645247386/"
         },
         {
@@ -783,7 +783,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 43.8,
+          "age_hours": 45.7,
           "url": "https://www.facebook.com/reel/919412614589486/"
         },
         {
@@ -799,7 +799,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 106.6,
+          "age_hours": 108.6,
           "url": "https://www.facebook.com/reel/3709424325875598/"
         }
       ],
@@ -827,7 +827,7 @@
           "hold_3s": null,
           "vps": 22.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 109.7,
+          "age_hours": 111.7,
           "url": "https://www.youtube.com/watch?v=djgB6Qu-BVk"
         },
         {
@@ -843,7 +843,7 @@
           "hold_3s": null,
           "vps": 11.0,
           "pillar_id": "en_thr_night_shift",
-          "age_hours": 67.8,
+          "age_hours": 69.8,
           "url": "https://www.youtube.com/watch?v=Bc1F51UG0Cg"
         },
         {
@@ -859,7 +859,7 @@
           "hold_3s": null,
           "vps": 10.0,
           "pillar_id": "en_thr_doorbell_neighbor",
-          "age_hours": 88.5,
+          "age_hours": 90.5,
           "url": "https://www.youtube.com/watch?v=apNSJaDjbcE"
         },
         {
@@ -875,7 +875,7 @@
           "hold_3s": null,
           "vps": 4.0,
           "pillar_id": "en_thr_hidden_sublet",
-          "age_hours": 43.8,
+          "age_hours": 45.8,
           "url": "https://www.youtube.com/watch?v=0hkXosxhSUY"
         },
         {
@@ -891,7 +891,7 @@
           "hold_3s": null,
           "vps": 3.0,
           "pillar_id": "en_thr_night_shift",
-          "age_hours": 19.8,
+          "age_hours": 21.8,
           "url": "https://www.youtube.com/watch?v=pVLIliTEZOM"
         },
         {
@@ -907,13 +907,13 @@
           "hold_3s": null,
           "vps": 2.0,
           "pillar_id": "en_thr_3am_notification",
-          "age_hours": 113.6,
+          "age_hours": 115.5,
           "url": "https://www.youtube.com/watch?v=Ao2BNyxp-dw"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-07T17:02:19Z",
+        "last_run_utc": "2026-11-07T19:02:04Z",
         "available": true,
         "tracked_videos": 30,
         "analytics_page": 1,
@@ -938,10 +938,10 @@
         "yt_views_30d": 282,
         "yt_watch_min_30d": 159,
         "yt_subs_30d": 0,
-        "fb_views_30d": 5268,
+        "fb_views_30d": 5269,
         "tt_views_30d": 0
       },
-      "last_sync_utc": "2026-11-07T17:02:35Z",
+      "last_sync_utc": "2026-11-07T19:02:23Z",
       "pillar_stats": {
         "en_mys_locked_room": {
           "label": "Classic Locked-Room Mechanism",
@@ -1006,7 +1006,7 @@
           "hold_3s": 1.0,
           "vps": 469.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 17.1,
+          "age_hours": 19.1,
           "url": "https://www.facebook.com/reel/1424039616551806/"
         },
         {
@@ -1022,7 +1022,7 @@
           "hold_3s": 1.0,
           "vps": 465.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 59.3,
+          "age_hours": 61.3,
           "url": "https://www.facebook.com/reel/1886884982722071/"
         },
         {
@@ -1038,7 +1038,7 @@
           "hold_3s": 1.0,
           "vps": 442.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 35.3,
+          "age_hours": 37.3,
           "url": "https://www.facebook.com/reel/2365342647585728/"
         },
         {
@@ -1054,7 +1054,7 @@
           "hold_3s": 1.0,
           "vps": 413.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 65.1,
+          "age_hours": 67.1,
           "url": "https://www.facebook.com/reel/1170086229038946/"
         },
         {
@@ -1070,7 +1070,7 @@
           "hold_3s": 0.346,
           "vps": 385.83,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 38.3,
+          "age_hours": 40.3,
           "url": "https://www.facebook.com/reel/2334585024007514/"
         }
       ],
@@ -1088,7 +1088,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 108.5,
+          "age_hours": 110.5,
           "url": "https://www.youtube.com/watch?v=1bNjBpqLM84"
         },
         {
@@ -1104,7 +1104,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 99.4,
+          "age_hours": 101.4,
           "url": "https://www.youtube.com/watch?v=fCfEqQXJJCA"
         },
         {
@@ -1120,7 +1120,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 87.9,
+          "age_hours": 89.9,
           "url": "https://www.youtube.com/watch?v=tLlZyJqMJns"
         }
       ],
@@ -1148,7 +1148,7 @@
           "hold_3s": null,
           "vps": 3.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 65.3,
+          "age_hours": 67.3,
           "url": "https://www.youtube.com/watch?v=pPlaoeuNDOI"
         },
         {
@@ -1164,7 +1164,7 @@
           "hold_3s": null,
           "vps": 1.0,
           "pillar_id": "en_mys_logical_sting",
-          "age_hours": 41.3,
+          "age_hours": 43.3,
           "url": "https://www.youtube.com/watch?v=Dil1Iz9voSg"
         },
         {
@@ -1180,7 +1180,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_staged_reversal",
-          "age_hours": 17.3,
+          "age_hours": 19.3,
           "url": "https://www.youtube.com/watch?v=EBElRS75XhQ"
         },
         {
@@ -1196,7 +1196,7 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_locked_room",
-          "age_hours": 87.9,
+          "age_hours": 89.9,
           "url": "https://www.youtube.com/watch?v=tLlZyJqMJns"
         },
         {
@@ -1212,13 +1212,13 @@
           "hold_3s": null,
           "vps": 0.0,
           "pillar_id": "en_mys_clockwork_alibi",
-          "age_hours": 108.5,
+          "age_hours": 110.5,
           "url": "https://www.youtube.com/watch?v=1bNjBpqLM84"
         }
       ],
       "growth_lessons": [],
       "video_growth_summary": {
-        "last_run_utc": "2026-11-07T17:02:36Z",
+        "last_run_utc": "2026-11-07T19:02:24Z",
         "available": true,
         "tracked_videos": 25,
         "analytics_page": 1,
@@ -1240,147 +1240,151 @@
     }
   },
   "replied_comment_ids": [
-    "Ugwx4HLRHAA8DVHeOgN4AaABAg",
-    "UgynQ4CymvFqMNRLuVd4AaABAg",
-    "Ugyt-RzFyYxuXIPDVll4AaABAg",
-    "122098466739541041_29264472823169293",
-    "122100201843541041_1156750520297179",
-    "122099189577541041_1814743912901166",
-    "122098377063541041_2207433263487351",
-    "UgxcBzRAFUJcBh3Rx2x4AaABAg",
-    "UgyTOSzY1Gxqc2z9qsp4AaABAg",
-    "122105275119527030_2258283024747010",
-    "UgzCpXIWp9-uRErFFBB4AaABAg",
-    "Ugz6XY-aCjrtkg8VTBx4AaABAg",
-    "122106259203527030_1022565357521071",
-    "UgyLsNkICzbyqtBR4nV4AaABAg",
-    "UgxJHsvR6MuOttKIV7t4AaABAg",
-    "Ugyo8W4OCSgSqKDKY-x4AaABAg",
-    "UgwJj4aNCFS9A3Gx_zN4AaABAg",
-    "122105766027530513_2678116065968084",
-    "122099929587541041_2285098358952420",
-    "122105319693527030_1133771242587525",
-    "UgycpJ7qihrNUltZHsN4AaABAg",
-    "122099327895541041_2173254583588905",
-    "122104873881530513_2129377787713850",
-    "122106204651527030_1671448537712285",
-    "UgyABr3tVJWRycNaHN14AaABAg",
-    "UgwmBF966LHPOjOtHPJ4AaABAg",
-    "UgytLXGFa-4koqtKhcF4AaABAg",
-    "122105351937533795_1884281979260268",
     "UgzVEnn2tqYSYbcRbZV4AaABAg",
-    "122104179567530513_2019228112101728",
-    "UgxaZcHzifOZ6E31arl4AaABAg",
-    "UgwzJge6vBjGDZV0GuZ4AaABAg",
-    "122105974881530513_1852698335731340",
-    "122104293801530513_1029575433486451",
-    "122106107961527030_1668011341644448",
-    "122105859765527030_2169643660576502",
-    "UgyZ7pgMR0tv7eDtStV4AaABAg",
-    "122105392635527030_3683863245098524",
-    "122102820225533795_1363136242430096",
-    "UgyxJ83JD9_XEUZgRld4AaABAg",
-    "122104841907527030_2072675396723505",
-    "122105737665527030_1456001959991797",
     "UgwdHRRLHPwTR_9Pf1h4AaABAg",
-    "122104943895527030_1398363412063079",
-    "UgxSg_sd_wFv4bogBJl4AaABAg",
-    "Ugy5c_0hADkVl7s8zQB4AaABAg",
-    "122106068823530513_1441517881419954",
-    "122104956999530513_2253453431887788",
-    "UgwsrVfOmAqKc1g77xJ4AaABAg",
-    "Ugy4SAY5BXIyjuMFaCd4AaABAg",
-    "122097878691541041_5611806819043590",
-    "UgxUYrr2vNkSj8e1clh4AaABAg",
-    "Ugz7iWXsqzQi1R2js6R4AaABAg",
-    "122100094347541041_2281614829286135",
-    "122105025741527030_2340996443353632",
-    "122099417655541041_3630711567111670",
-    "UgwNKbu54xNW8ER9Oip4AaABAg",
-    "Ugxy-QCQEyIBF5zm3Qp4AaABAg",
-    "122103510795533795_1615288063057477",
-    "Ugyy-pNQOPO-LrBssdd4AaABAg",
-    "UgwCVrNkHWFaB4enSNZ4AaABAg",
-    "122097793179541041_958029300370554",
-    "122106716535530513_29019026801083062",
-    "122106930405530513_1144962878237320",
-    "122105462727527030_1132458989685219",
-    "122106840093530513_1843670243617297",
-    "Ugw4Pj5Jw9N85b70TvB4AaABAg",
-    "UgwgKeJdxkESNfqvxyF4AaABAg",
-    "UgxF16_itealPrzlmXF4AaABAg",
-    "122107001439530513_1516752416943611",
-    "122102447349533795_28854390267551978",
-    "122104618893533795_2097130970911063",
-    "122101935507533795_1116001874346321",
-    "UgxqoaS_G7fVyT-ZjER4AaABAg",
-    "UgwVlHtMPDRM2nhEI8R4AaABAg",
-    "122104298403533795_2468698433537547",
-    "UgyUcOApuYU6EZJrS2h4AaABAg",
-    "Ugys6Vegb5CMunFsiRt4AaABAg",
-    "122103385383533795_1441113671483978",
-    "122104772037530513_1792901515372345",
-    "UgyccLyvc5sBEiuTRoV4AaABAg",
-    "Ugw7V--a6MsHd2Ztli94AaABAg",
-    "122099186685541041_1154938880578134",
-    "122105055897530513_1163331133042715",
-    "Ugz9RLYAzPZ4RZQfErt4AaABAg",
-    "122102441751533795_1836632440712473",
-    "122098567113541041_1745463663806584",
-    "122103611049533795_1148317607664981",
-    "UgzIR1S0xubDkBvZWjx4AaABAg",
-    "122103704295533795_1910953636943346",
-    "UgxtrO56DaK3I6emTSd4AaABAg",
-    "122105695011527030_2025536064777589",
-    "UgxYHWOPRSLljLh3Mhd4AaABAg",
-    "122100007881541041_1262422506089694",
-    "UgyoYt2Sh4rwj3-tK1p4AaABAg",
-    "Ugz2o6U_CD3bzrN62hF4AaABAg",
     "122105799999527030_1825116812250742",
-    "122104517085533795_964600559679269",
-    "122104291935533795_1619258770244290",
+    "UgwsrVfOmAqKc1g77xJ4AaABAg",
+    "122098466739541041_29264472823169293",
+    "122103510795533795_1615288063057477",
+    "122106068823530513_1441517881419954",
+    "122098380483541041_1671371451324796",
+    "122099417655541041_3630711567111670",
+    "Ugw7V--a6MsHd2Ztli94AaABAg",
+    "122103385383533795_1441113671483978",
+    "Ugwn-oRlfgELUF31wy54AaABAg",
+    "122105275119527030_2258283024747010",
+    "Ugz9RLYAzPZ4RZQfErt4AaABAg",
+    "UgzlBzUhUzQpxAZ1sQR4AaABAg",
+    "122105351937533795_1884281979260268",
+    "122105276343527030_1821021672785133",
+    "122105346183533795_1867464557847393",
+    "122106259203527030_1022565357521071",
+    "UgyUcOApuYU6EZJrS2h4AaABAg",
+    "122102157141533795_1847341139754318",
+    "UgyLsNkICzbyqtBR4nV4AaABAg",
+    "122102043687533795_1745873476512629",
+    "122099327895541041_2173254583588905",
+    "122104293801530513_1029575433486451",
+    "122105319693527030_1133771242587525",
+    "Ugwx4HLRHAA8DVHeOgN4AaABAg",
+    "UgwgKeJdxkESNfqvxyF4AaABAg",
+    "122099924649541041_973849955345622",
+    "122097702849541041_1604377147455387",
+    "Ugw7zkcbN4TbWPotOEZ4AaABAg",
+    "UgzfFaHx9SpiXARbn2p4AaABAg",
+    "122099929587541041_2285098358952420",
+    "Ugy5c_0hADkVl7s8zQB4AaABAg",
+    "122103611049533795_1148317607664981",
+    "UgxF16_itealPrzlmXF4AaABAg",
+    "UgxSg_sd_wFv4bogBJl4AaABAg",
     "122106709875530513_1156958740020302",
-    "122103392157533795_2294631877777805",
-    "UgxGJ59R0BeugMjzkZV4AaABAg",
-    "122099258775541041_1153247257133130",
+    "122102709405533795_1438442441689582",
+    "UgynQ4CymvFqMNRLuVd4AaABAg",
+    "UgyZ7pgMR0tv7eDtStV4AaABAg",
+    "UgxtrO56DaK3I6emTSd4AaABAg",
+    "122104873881530513_2129377787713850",
+    "122099186685541041_1154938880578134",
+    "UgwNKbu54xNW8ER9Oip4AaABAg",
+    "122105025741527030_2340996443353632",
+    "122107577589530513_2349607989139443",
+    "122103704295533795_1910953636943346",
+    "Ugy4SAY5BXIyjuMFaCd4AaABAg",
+    "UgwmBF966LHPOjOtHPJ4AaABAg",
     "122104846875527030_2037398313587151",
+    "122101935507533795_1116001874346321",
+    "122103392157533795_2294631877777805",
+    "122105695011527030_2025536064777589",
+    "UgzJwSCqBdmmGU2Z_op4AaABAg",
+    "122105392635527030_3683863245098524",
+    "UgxqoaS_G7fVyT-ZjER4AaABAg",
+    "122106930405530513_1144962878237320",
+    "122105879667530513_1853841132455351",
+    "122102820225533795_1363136242430096",
+    "UgxGJ59R0BeugMjzkZV4AaABAg",
+    "Ugyt-RzFyYxuXIPDVll4AaABAg",
+    "122106109221527030_1404276985029496",
+    "Ugz2o6U_CD3bzrN62hF4AaABAg",
+    "122099189577541041_1814743912901166",
+    "UgxaZcHzifOZ6E31arl4AaABAg",
+    "122105737665527030_1456001959991797",
+    "122099258775541041_1153247257133130",
+    "122100007881541041_1262422506089694",
+    "UgwJj4aNCFS9A3Gx_zN4AaABAg",
+    "UgwVlHtMPDRM2nhEI8R4AaABAg",
+    "UgxYHWOPRSLljLh3Mhd4AaABAg",
+    "Ugz7iWXsqzQi1R2js6R4AaABAg",
+    "UgwRGXC08Wl9OAyWgRl4AaABAg",
+    "122102447349533795_28854390267551978",
+    "Ugyo8W4OCSgSqKDKY-x4AaABAg",
+    "Ugys6Vegb5CMunFsiRt4AaABAg",
+    "122106840093530513_1843670243617297",
+    "UgxNpahfqOFq0MAUOfR4AaABAg",
+    "UgxcBzRAFUJcBh3Rx2x4AaABAg",
+    "122106716535530513_29019026801083062",
+    "UgzCpXIWp9-uRErFFBB4AaABAg",
+    "UgyOyAtzIEK8dywUjhF4AaABAg",
+    "122105766027530513_2678116065968084",
+    "122105693841527030_1543973120799759",
+    "122100094347541041_2281614829286135",
+    "122097793179541041_958029300370554",
+    "122097878691541041_5611806819043590",
+    "UgycpJ7qihrNUltZHsN4AaABAg",
+    "122104956999530513_2253453431887788",
+    "122105974881530513_1852698335731340",
+    "122106138291527030_1657551529149353",
+    "UgzzN7ASOidhK6cID3h4AaABAg",
+    "UgyAxGDtwBHoWqVQ7Lp4AaABAg",
+    "UgxkjRQncTwsP41fEf14AaABAg",
+    "122105859765527030_2169643660576502",
+    "122106107961527030_1668011341644448",
+    "UgyTOSzY1Gxqc2z9qsp4AaABAg",
+    "Ugyy-pNQOPO-LrBssdd4AaABAg",
+    "122098567113541041_1745463663806584",
+    "Ugxe32actZa8RQVMwR94AaABAg",
+    "122104772037530513_1792901515372345",
+    "122102441751533795_1836632440712473",
     "122102585535533795_1900554944265019",
     "122104415337533795_1126424693451529",
-    "UgzlBzUhUzQpxAZ1sQR4AaABAg",
-    "UgxYCESgp94fxEUXdgV4AaABAg",
-    "Ugw7zkcbN4TbWPotOEZ4AaABAg",
-    "122097706695541041_1805425824039644",
-    "122106109221527030_1404276985029496",
-    "122102157141533795_1847341139754318",
-    "Ugwr1QdCYGZTJxXyLKJ4AaABAg",
-    "UgzJwSCqBdmmGU2Z_op4AaABAg",
-    "UgwbICAMefsdr9jGrOl4AaABAg",
-    "UgyAxGDtwBHoWqVQ7Lp4AaABAg",
-    "122099924649541041_973849955345622",
-    "122105879667530513_1853841132455351",
-    "122102709405533795_1438442441689582",
-    "UgwsmSsJvB5JQrIJ05V4AaABAg",
-    "UgxsGjszD-o6vXbpy5p4AaABAg",
-    "122104074729530513_1448569780074262",
-    "Ugxe32actZa8RQVMwR94AaABAg",
-    "122102043687533795_1745873476512629",
-    "122105770935530513_1445205640922549",
-    "122106138291527030_1657551529149353",
-    "122104777269530513_1599006408125676",
-    "122097702849541041_1604377147455387",
-    "UgzfFaHx9SpiXARbn2p4AaABAg",
-    "UgzzN7ASOidhK6cID3h4AaABAg",
-    "122097973869541041_1145307095124046",
-    "Ugwxsvy-WqpafX_INlZ4AaABAg",
-    "122105693841527030_1543973120799759",
-    "122105276343527030_1821021672785133",
-    "122098654713541041_1795303655135169",
     "122104890069527030_1676603837587818",
-    "122105346183533795_1867464557847393",
-    "122098380483541041_1671371451324796",
-    "UgxkjRQncTwsP41fEf14AaABAg",
-    "UgwRGXC08Wl9OAyWgRl4AaABAg",
-    "UgyOyAtzIEK8dywUjhF4AaABAg"
+    "UgwCVrNkHWFaB4enSNZ4AaABAg",
+    "UgxsGjszD-o6vXbpy5p4AaABAg",
+    "Ugwr1QdCYGZTJxXyLKJ4AaABAg",
+    "Ugxy-QCQEyIBF5zm3Qp4AaABAg",
+    "122105462727527030_1132458989685219",
+    "122107573149530513_1132154832634899",
+    "UgwbICAMefsdr9jGrOl4AaABAg",
+    "122105770935530513_1445205640922549",
+    "122097706695541041_1805425824039644",
+    "122104777269530513_1599006408125676",
+    "UgyoYt2Sh4rwj3-tK1p4AaABAg",
+    "UgxJHsvR6MuOttKIV7t4AaABAg",
+    "122104841907527030_2072675396723505",
+    "122104517085533795_964600559679269",
+    "122098377063541041_2207433263487351",
+    "Ugw4Pj5Jw9N85b70TvB4AaABAg",
+    "UgzIR1S0xubDkBvZWjx4AaABAg",
+    "Ugwxsvy-WqpafX_INlZ4AaABAg",
+    "UgytLXGFa-4koqtKhcF4AaABAg",
+    "122107001439530513_1516752416943611",
+    "UgyxJ83JD9_XEUZgRld4AaABAg",
+    "122104291935533795_1619258770244290",
+    "UgwzJge6vBjGDZV0GuZ4AaABAg",
+    "UgxUYrr2vNkSj8e1clh4AaABAg",
+    "122104179567530513_2019228112101728",
+    "122104943895527030_1398363412063079",
+    "UgyccLyvc5sBEiuTRoV4AaABAg",
+    "122104074729530513_1448569780074262",
+    "122098654713541041_1795303655135169",
+    "UgwsmSsJvB5JQrIJ05V4AaABAg",
+    "122105055897530513_1163331133042715",
+    "UgyABr3tVJWRycNaHN14AaABAg",
+    "122104618893533795_2097130970911063",
+    "122100201843541041_1156750520297179",
+    "Ugz6XY-aCjrtkg8VTBx4AaABAg",
+    "122104298403533795_2468698433537547",
+    "122097973869541041_1145307095124046",
+    "122106204651527030_1671448537712285",
+    "UgxYCESgp94fxEUXdgV4AaABAg"
   ],
   "rescued_post_ids": [],
   "retried_post_ids": [
