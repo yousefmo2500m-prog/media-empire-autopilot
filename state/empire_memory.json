@@ -49,12 +49,14 @@
       "Doorbell camera receipt double life mystery",
       "Delivery driver delivers to himself nightmare",
       "Electric bill reveals hidden basement scheme",
-      "Security guard finds hidden boiler room"
+      "Security guard finds hidden boiler room",
+      "Car dashcam records trusted partner's setup"
     ],
-    "last_pillar_id": "en_thr_night_shift",
+    "last_pillar_id": "en_thr_inner_circle_sting",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
-      "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift"
+      "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
+      "The Dashcam Clip That Exposed A Cold Betrayal | ": "en_thr_inner_circle_sting"
     }
   },
   "ch4_en_mystery": {
