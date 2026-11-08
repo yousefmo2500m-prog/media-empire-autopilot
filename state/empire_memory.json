@@ -75,13 +75,15 @@
       "Security experts impossible remote alibi glitch",
       "The Disappearing Ink Vault Deception",
       "The impossible typewriter alibi deception puzzle",
-      "The Magnetized Bullet Train Vault Mystery"
+      "The Magnetized Bullet Train Vault Mystery",
+      "cctv audio delay exposes airtight alibi"
     ],
-    "last_pillar_id": "en_mys_closed_gala",
+    "last_pillar_id": "en_mys_clockwork_alibi",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
-      "The Unstoppable Train Vault Heist | Locked-Room ": "en_mys_closed_gala"
+      "The Unstoppable Train Vault Heist | Locked-Room ": "en_mys_closed_gala",
+      "The Security Camera Audio That Proved Murder | L": "en_mys_clockwork_alibi"
     }
   }
 }
