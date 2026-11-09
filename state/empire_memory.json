@@ -59,14 +59,16 @@
       "Electric bill reveals hidden basement scheme",
       "Security guard finds hidden boiler room",
       "Car dashcam records trusted partner's setup",
-      "Swapped laptop bag reveals life stolen"
+      "Swapped laptop bag reveals life stolen",
+      "Partner rigs brakes, dashcam records confession"
     ],
-    "last_pillar_id": "en_thr_wrong_item_trail",
+    "last_pillar_id": "en_thr_inner_circle_sting",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
       "The Dashcam Clip That Exposed A Cold Betrayal | ": "en_thr_inner_circle_sting",
-      "The Laptop Swapped My Entire Life | True Mystery": "en_thr_wrong_item_trail"
+      "The Laptop Swapped My Entire Life | True Mystery": "en_thr_wrong_item_trail",
+      "The Dashcam Caught His Own Murder Plot | True My": "en_thr_inner_circle_sting"
     }
   },
   "ch4_en_mystery": {
