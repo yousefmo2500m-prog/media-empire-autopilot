@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-محرك المشاهد والأغلفة السينمائية V17.0 (مراجعة جودة الإطارات الرئيسية + حدود مجانية آمنة)
+محرك المشاهد والأغلفة السينمائية V18.0 (إطارات احتياطية محلية + حدود مجانية آمنة)
 - يحتفظ بتوليد دفعات 3x3 الاقتصادي للمشاهد الثانوية حتى لا يتضخم وقت التشغيل أو استهلاك الخدمات المجانية.
 - يعيد توليد الإطارات الافتتاحية المهمة كلقطة مستقلة عالية التفاصيل عند توافر Cloudflare FLUX، وإلا يحتفظ بالكادر الأصلي دون تعطيل الإنتاج.
 - يفرض سقفاً محلياً يومياً ثابتاً على طلبات Cloudflare، مع فشل آمن عند تعذر قراءة سجل الحصة.
-- يرفض الصور المعتمة/الفارغة ويضيف توجيهاً أوضح لملامح البشر واليدين والملابس المحتشمة.
+- يرفض الصور المعتمة/الفارغة؛ وعند فشل جميع المزودات ينشئ إطاراً محلياً نظيفاً قابلاً للتحريك بدلاً من إسقاط اللقطة.
 """
 
 import base64
@@ -143,6 +143,85 @@ def _fit_cover_exact(img: Image.Image, target_w: int, target_h: int, polish: boo
         cropped = ImageEnhance.Color(cropped).enhance(1.02)
         cropped = ImageEnhance.Sharpness(cropped).enhance(1.22)
     return cropped
+
+
+def _create_local_fallback_frame(
+    out_path: Path,
+    width: int,
+    height: int,
+    seed: int,
+    prompt: str = "",
+) -> Path:
+    """Create a clean, text-free local cinema frame without network or model dependencies."""
+    width = max(64, int(width))
+    height = max(64, int(height))
+    palettes = (
+        ((20, 31, 48), (73, 67, 59), (232, 166, 86)),
+        ((22, 34, 43), (63, 65, 63), (132, 190, 198)),
+        ((28, 30, 45), (76, 58, 52), (226, 145, 95)),
+        ((20, 36, 44), (66, 62, 52), (204, 183, 112)),
+    )
+    top, bottom, accent = palettes[abs(int(seed)) % len(palettes)]
+
+    yy = np.linspace(0.0, 1.0, height, dtype=np.float32)[:, None]
+    xx = np.linspace(0.0, 1.0, width, dtype=np.float32)[None, :]
+    top_rgb = np.asarray(top, dtype=np.float32)[None, None, :]
+    bottom_rgb = np.asarray(bottom, dtype=np.float32)[None, None, :]
+    base = top_rgb * (1.0 - yy[:, :, None]) + bottom_rgb * yy[:, :, None]
+    focus_x = 0.25 + (abs(int(seed)) % 51) / 100.0
+    focus_y = 0.22 + (abs(int(seed // 7)) % 35) / 100.0
+    glow = np.exp(-(((xx - focus_x) / 0.34) ** 2 + ((yy - focus_y) / 0.48) ** 2) * 2.8).astype(np.float32)
+    accent_rgb = np.asarray(accent, dtype=np.float32)[None, None, :]
+    frame = base * (1.0 - 0.34 * glow[:, :, None]) + accent_rgb * (0.34 * glow[:, :, None])
+    vignette = np.clip(1.0 - 0.18 * ((xx - 0.5) ** 2 * 3.0 + (yy - 0.5) ** 2 * 1.6), 0.72, 1.0)
+    frame *= vignette[:, :, None]
+    image = Image.fromarray(np.clip(frame, 0, 255).astype(np.uint8), mode="RGB")
+
+    draw = ImageDraw.Draw(image, "RGBA")
+    horizon = int(height * 0.66)
+    line_w = max(1, int(min(width, height) * 0.006))
+    center_x = int(width * (0.38 + (abs(int(seed)) % 25) / 100.0))
+    draw.polygon([(0, horizon), (width, horizon), (width, height), (0, height)], fill=(8, 12, 20, 112))
+    draw.line([(0, horizon), (center_x, int(height * 0.46))], fill=(*accent, 52), width=line_w)
+    draw.line([(width, horizon), (center_x, int(height * 0.46))], fill=(*accent, 42), width=line_w)
+    for band in range(1, 5):
+        y = horizon + int((height - horizon) * band / 5)
+        draw.line([(0, y), (width, y)], fill=(214, 188, 150, 20), width=1)
+
+    hint = str(prompt or "").casefold()
+    if any(word in hint for word in ("door", "hallway", "corridor", "باب", "ممر", "طرقة")):
+        layout = 0
+    elif any(word in hint for word in ("window", "balcony", "شباك", "نافذة", "بلكونة")):
+        layout = 1
+    else:
+        layout = abs(int(seed // 3)) % 3
+    if layout == 0:
+        x0, x1 = int(width * 0.64), int(width * 0.86)
+        y0, y1 = int(height * 0.14), horizon
+        draw.rounded_rectangle((x0, y0, x1, y1), radius=max(2, line_w * 2), fill=(10, 15, 23, 178), outline=(*accent, 175), width=line_w)
+        draw.line([(x0 + int((x1 - x0) * 0.72), y0 + 4), (x0 + int((x1 - x0) * 0.72), y1 - 4)], fill=(232, 203, 150, 65), width=max(1, line_w // 2))
+        knob_r = max(2, line_w)
+        knob_x, knob_y = x0 + int((x1 - x0) * 0.82), int((y0 + y1) * 0.55)
+        draw.ellipse((knob_x - knob_r, knob_y - knob_r, knob_x + knob_r, knob_y + knob_r), fill=(*accent, 210))
+    elif layout == 1:
+        x0, y0 = int(width * 0.15), int(height * 0.20)
+        x1, y1 = int(width * 0.43), int(height * 0.46)
+        draw.rounded_rectangle((x0, y0, x1, y1), radius=max(2, line_w), fill=(26, 43, 56, 190), outline=(*accent, 190), width=line_w)
+        draw.line([(int((x0 + x1) / 2), y0), (int((x0 + x1) / 2), y1)], fill=(*accent, 105), width=line_w)
+        draw.line([(x0, int((y0 + y1) / 2)), (x1, int((y0 + y1) / 2))], fill=(*accent, 105), width=line_w)
+    else:
+        outer = (int(width * 0.25), int(height * 0.17), int(width * 0.75), horizon)
+        inner = (int(width * 0.38), int(height * 0.28), int(width * 0.62), horizon)
+        draw.rectangle(outer, fill=(10, 16, 24, 78), outline=(*accent, 155), width=line_w)
+        draw.rectangle(inner, fill=(9, 14, 22, 95), outline=(*accent, 100), width=max(1, line_w // 2))
+
+    draw.ellipse(
+        (center_x - int(width * 0.025), int(height * 0.44), center_x + int(width * 0.025), int(height * 0.48)),
+        fill=(*accent, 75),
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(str(out_path), format="JPEG", quality=90, optimize=True)
+    return out_path
 
 
 def _trim_solid_edges(cell_im: Image.Image) -> Image.Image:
@@ -493,6 +572,8 @@ def generate_8sec_shots_batch(
     missing_indices: List[int] = []
 
     groups9: List[Tuple[int, List[int]]] = []
+    grid_provider_unavailable = threading.Event()
+    single_provider_unavailable = threading.Event()
     for g_start in range(0, n_total, 9):
         idxs = list(range(g_start, min(n_total, g_start + 9)))
         if len(idxs) == 9:
@@ -503,6 +584,8 @@ def generate_8sec_shots_batch(
     def _run_grid9(g_num: int, idxs: List[int]) -> Tuple[List[Tuple[int, Path]], List[int]]:
         done_local: List[Tuple[int, Path]] = []
         retry_local: List[int] = []
+        if grid_provider_unavailable.is_set():
+            return done_local, list(idxs)
         sub_ps = [_clean_short_prompt(prompts[i]) for i in idxs]
         orient = "vertical 9:16 portrait cells" if height > width else "widescreen 16:9 cinema cells"
         labels = [
@@ -518,19 +601,33 @@ def generate_8sec_shots_batch(
             + "; ".join(f"{labels[k]}: {sub_ps[k]}" for k in range(9))
         )
         gw, gh = (864, 1536) if height > width else (1536, 864)
-        grid_im = _call_flux_zerogpu_raw(grid_prompt, gw, gh, seed=seed_base + g_num * 409, slot_idx=g_num)
+        try:
+            grid_im = _call_flux_zerogpu_raw(grid_prompt, gw, gh, seed=seed_base + g_num * 409, slot_idx=g_num)
+        except Exception as provider_exc:
+            print(f"    ⚠️ [{prefix}] تعطل مزود الشبكة ({type(provider_exc).__name__}) — إيقاف المحاولات الجماعية والتحول لمسار احتياطي.", flush=True)
+            grid_provider_unavailable.set()
+            return [], list(idxs)
         if grid_im is None:
+            grid_provider_unavailable.set()
             return [], list(idxs)
 
-        cells = _extract_3x3_cells(grid_im)
+        try:
+            cells = _extract_3x3_cells(grid_im)
+        except Exception as cell_exc:
+            print(f"    ⚠️ [{prefix}] تعذر تحليل شبكة الصور ({type(cell_exc).__name__}) — التحول إلى الإطارات الاحتياطية.", flush=True)
+            grid_provider_unavailable.set()
+            return [], list(idxs)
         for local_k, shot_i in enumerate(idxs):
-            c_im = cells[local_k]
-            if _is_valid_sharp_photo(c_im):
-                out_p = out_dir / f"{prefix}_{shot_i:03d}.jpg"
-                final_panel = _fit_cover_exact(c_im, width, height, polish=True)
-                final_panel.save(str(out_p), format="JPEG", quality=93, optimize=True)
-                done_local.append((shot_i, out_p))
-            else:
+            try:
+                c_im = cells[local_k]
+                if _is_valid_sharp_photo(c_im):
+                    out_p = out_dir / f"{prefix}_{shot_i:03d}.jpg"
+                    final_panel = _fit_cover_exact(c_im, width, height, polish=True)
+                    final_panel.save(str(out_p), format="JPEG", quality=93, optimize=True)
+                    done_local.append((shot_i, out_p))
+                else:
+                    retry_local.append(shot_i)
+            except Exception:
                 retry_local.append(shot_i)
         return done_local, retry_local
 
@@ -554,6 +651,8 @@ def generate_8sec_shots_batch(
         )
 
         def _run_dedicated_shot(si: int) -> Tuple[int, Optional[Path]]:
+            if single_provider_unavailable.is_set():
+                return si, None
             op = out_dir / f"{prefix}_{si:03d}.jpg"
             try:
                 generate_single_shot_image(
@@ -562,7 +661,8 @@ def generate_8sec_shots_batch(
                 )
                 return si, op
             except Exception as shot_exc:
-                print(f"    ⚠️ [{prefix}] تعذر استلام اللقطة المنفردة {si} بعد كل المزودات ({shot_exc}) — سيتم تأطير كادر سينمائي مقرب بديل من المشهد المجاور دون إسقاط الحلقة.", flush=True)
+                single_provider_unavailable.set()
+                print(f"    ⚠️ [{prefix}] تعذر استلام اللقطة المنفردة {si} بعد تعطل المزودات ({type(shot_exc).__name__}) — إيقاف المحاولات المتكررة والتحول إلى كادرات محلية نظيفة.", flush=True)
                 return si, None
 
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
@@ -576,24 +676,41 @@ def generate_8sec_shots_batch(
                 if done_extra % 5 == 0 or done_extra == len(missing_indices):
                     print(f"    🎨 [{prefix}] مشهد روائي 1:1 مكتمل: {done_extra}/{len(missing_indices)}...", flush=True)
 
-    # صمام أمان عدم سقوط الحلقة نهائياً: إذا تعذرت لقطة منفردة نادرة، نصنع كادراً مقرباً حاداً من أقرب لقطة FLUX حقيقية مجاورة
+    # If at least one provider yielded a usable image, reuse it with a distinct crop for gaps.
+    # If every image provider failed, create a deterministic, clean local frame for each gap;
+    # the normal renderer will still apply its Ken Burns pan/zoom to these JPEGs.
     valid_existing = [(idx, p) for idx, p in enumerate(paths) if p is not None and p.exists()]
     if valid_existing:
         for si in range(n_total):
             if paths[si] is None or not paths[si].exists():
                 nearest_idx, nearest_p = min(valid_existing, key=lambda item: abs(item[0] - si))
-                src_im = Image.open(nearest_p).convert("RGB")
-                sw, sh = src_im.size
-                zx = int(sw * 0.08)
-                zy = int(sh * 0.08)
-                if si % 2 == 0:
-                    crop_box = (zx, int(zy * 0.6), sw - int(zx * 0.5), sh - zy)
-                else:
-                    crop_box = (int(zx * 0.5), zy, sw - zx, sh - int(zy * 0.6))
-                reframed = _fit_cover_exact(src_im.crop(crop_box), width, height, polish=True)
                 op = out_dir / f"{prefix}_{si:03d}.jpg"
-                reframed.save(str(op), format="JPEG", quality=93, optimize=True)
-                paths[si] = op
+                try:
+                    with Image.open(nearest_p) as source:
+                        src_im = source.convert("RGB")
+                    sw, sh = src_im.size
+                    zx = int(sw * 0.08)
+                    zy = int(sh * 0.08)
+                    if si % 2 == 0:
+                        crop_box = (zx, int(zy * 0.6), sw - int(zx * 0.5), sh - zy)
+                    else:
+                        crop_box = (int(zx * 0.5), zy, sw - zx, sh - int(zy * 0.6))
+                    reframed = _fit_cover_exact(src_im.crop(crop_box), width, height, polish=True)
+                    reframed.save(str(op), format="JPEG", quality=93, optimize=True)
+                    paths[si] = op
+                except Exception as fallback_exc:
+                    print(f"    ⚠️ [{prefix}] تعذر قص صورة مجاورة للإطار {si} ({fallback_exc}) — إنشاء كادر محلي نظيف.", flush=True)
+                    paths[si] = _create_local_fallback_frame(op, width, height, seed_base + si * 131, prompts[si])
+
+    # Final unconditional local safety net: never let missing image services return an empty/misaligned shot list.
+    for si in range(n_total):
+        if paths[si] is None or not paths[si].exists():
+            op = out_dir / f"{prefix}_{si:03d}.jpg"
+            paths[si] = _create_local_fallback_frame(
+                op, width, height, seed_base + si * 131, prompts[si]
+            )
+            if si == 0:
+                print(f"    🛟 [{prefix}] استخدام إطار سينمائي محلي نظيف كاحتياط نهائي مع استمرار حركة Ken Burns.", flush=True)
 
     # Spend the small, persistent free image budget on the frames users see first:
     # long-form hook and the opening frame of each Short. Failed attempts leave the

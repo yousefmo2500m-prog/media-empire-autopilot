@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 ZERNIO_BASE = "https://zernio.com/api/v1"
+_ZERNIO_GATEWAY_RETRY_DELAYS = (15, 30, 60)
 
 
 def _fmt_yt_timestamp(sec: float) -> str:
@@ -220,6 +221,7 @@ def resolve_channel_slot_status(
 
 
 def upload_media_to_zernio(api_key: str, file_path: Path, mime_type: str = "video/mp4") -> str:
+    gateway_retry_count = 0
     for attempt in range(4):
         try:
             r = requests.post(
@@ -228,6 +230,12 @@ def upload_media_to_zernio(api_key: str, file_path: Path, mime_type: str = "vide
                 json={"filename": file_path.name, "contentType": mime_type},
                 timeout=45,
             )
+            if r.status_code in (502, 504) and attempt < 3 and gateway_retry_count < len(_ZERNIO_GATEWAY_RETRY_DELAYS):
+                wait_s = _ZERNIO_GATEWAY_RETRY_DELAYS[gateway_retry_count]
+                gateway_retry_count += 1
+                print(f"[RETRY] Zernio media presign {file_path.name}: HTTP {r.status_code} — إعادة المحاولة بعد {wait_s}ث ({gateway_retry_count}/3)...", flush=True)
+                time.sleep(wait_s)
+                continue
             r.raise_for_status()
             pdata = r.json()
             upload_url = pdata["uploadUrl"]
@@ -240,6 +248,12 @@ def upload_media_to_zernio(api_key: str, file_path: Path, mime_type: str = "vide
                     headers={"Content-Type": mime_type},
                     timeout=600,
                 )
+                if put_r.status_code in (502, 504) and attempt < 3 and gateway_retry_count < len(_ZERNIO_GATEWAY_RETRY_DELAYS):
+                    wait_s = _ZERNIO_GATEWAY_RETRY_DELAYS[gateway_retry_count]
+                    gateway_retry_count += 1
+                    print(f"[RETRY] Zernio media upload {file_path.name}: HTTP {put_r.status_code} — إعادة المحاولة بعد {wait_s}ث ({gateway_retry_count}/3)...", flush=True)
+                    time.sleep(wait_s)
+                    continue
                 put_r.raise_for_status()
             return public_url
         except Exception as exc:
@@ -272,6 +286,15 @@ def wait_for_youtube_url(api_key: str, post_id: str, max_wait_sec: int = 120) ->
     return None
 
 
+def _facebook_channel_comment(base_comment: str, channel_url: str, lang: str) -> str:
+    url = str(channel_url or "").strip().rstrip("/")
+    if lang == "ar":
+        final_line = f"اشترك في قناتنا الرسمية على YouTube: {url}"
+    else:
+        final_line = f"Subscribe to our official YouTube channel: {url}"
+    return "\n\n".join(part for part in (str(base_comment or "").strip(), final_line) if part)
+
+
 def _strip_hashtags(txt: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"#\S+", "", txt)).strip(" -—|")
 
@@ -292,10 +315,11 @@ def _post_zernio_resilient(
     api_key: str,
     payload: Dict[str, Any],
     label: str,
-    max_attempts: int = 3,
+    max_attempts: int = 4,
 ) -> requests.Response:
-    """يرسل طلب النشر/الجدولة إلى Zernio مع إعادة محاولة ذكية ضد أخطاء الشبكة وجلسات الرفع العابرة."""
+    """يرسل طلبات Zernio مع ثلاث إعادات مخصصة لأخطاء 502/504، إضافة لمعالجة أخطاء الشبكة العابرة."""
     last_resp: Optional[requests.Response] = None
+    gateway_retry_count = 0
     for attempt in range(max_attempts):
         try:
             resp = requests.post(
@@ -325,7 +349,13 @@ def _post_zernio_resilient(
                                 time.sleep(12)
                                 continue
                 return resp
-            if resp.status_code in (400, 408, 429, 500, 502, 503, 504) and attempt < max_attempts - 1:
+            if resp.status_code in (502, 504) and attempt < max_attempts - 1 and gateway_retry_count < len(_ZERNIO_GATEWAY_RETRY_DELAYS):
+                wait_s = _ZERNIO_GATEWAY_RETRY_DELAYS[gateway_retry_count]
+                gateway_retry_count += 1
+                print(f"[RETRY] {label}: استجابة {resp.status_code} — إعادة المحاولة بعد {wait_s}ث ({gateway_retry_count}/3)...", flush=True)
+                time.sleep(wait_s)
+                continue
+            if resp.status_code in (400, 408, 429, 500, 503) and attempt < max_attempts - 1:
                 wait_s = 10 * (attempt + 1)
                 print(f"[RETRY] {label}: استجابة {resp.status_code} — إعادة المحاولة بعد {wait_s}ث...", flush=True)
                 time.sleep(wait_s)
@@ -371,6 +401,7 @@ def publish_channel_funnel(
 
     lang = ch["language"]
     yt_handle = ch["handle"]
+    channel_url = str(ch.get("channel_url") or f"https://www.youtube.com/{yt_handle}").strip().rstrip("/")
     brand_name = ch["brand_name"]
 
     tags_list = sanitize_tags_list(
@@ -478,6 +509,7 @@ def publish_channel_funnel(
         )
         hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '')}" for t in tags_list[:8])
 
+    facebook_first_comment_long = _facebook_channel_comment(first_comment_long, channel_url, lang)
     full_yt_description = "\n\n".join(
         part for part in [seo_hook_2lines, seo_synopsis, chapters_txt, subscribe_block, hashtags_line] if part
     )
@@ -545,7 +577,7 @@ def publish_channel_funnel(
                     "accountId": fb_acc,
                     "platformSpecificData": {
                         "title": ep_title,
-                        "firstComment": first_comment_long,
+                        "firstComment": facebook_first_comment_long,
                     },
                 }],
             },
@@ -609,6 +641,7 @@ def publish_channel_funnel(
                 f"{tt_hashtags}"
             )
 
+        facebook_first_comment_cta = _facebook_channel_comment(first_comment_cta, channel_url, lang)
         yt_s_title = f"{clean_title_no_tags[:82]} #shorts"
         short_res: Dict[str, Any] = {
             "delay_hours": delay_h,
@@ -659,7 +692,7 @@ def publish_channel_funnel(
                         "platformSpecificData": {
                             "contentType": "reel",
                             "title": clean_title_no_tags[:90],
-                            "firstComment": first_comment_cta,
+                            "firstComment": facebook_first_comment_cta,
                         },
                     }],
                 },

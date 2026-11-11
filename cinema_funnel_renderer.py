@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-محرك المونتاج السينمائي الاحترافي V13.3 (Universal Studio Cover Frame-0 Lock + LTX Moving Hook + Instant Coral Banner + 3-Word Karaoke)
+محرك المونتاج السينمائي V18.0 (Ken Burns Frames + White/Gold ASS Captions)
 - يقضي نهائياً 100% على مشكلة الشاشة البنية أو المظلمة في أغلفة فيسبوك وتيك توك ويوتيوب عبر:
   1) إلغاء التعتيم الافتتاحي (fade-in) نهائياً من اللقطة الأولى (Frame 0 ساطع 100%).
   2) دمج البوستر المصمم عالي الجاذبية (`cover_jpg`) كإطار غلاف مدمج في أول 0.15 ثانية من كل فيديو وشورت، بالإضافة لرفعه كغلاف رسمي عبر الـ API!
 - شريط عنوان علوي أحمر مرجاني عالي التباين (HookTop) لإيقاف المتصفح الصامت على فيسبوك وتيك توك!
-- كابشن كاريوكي خاطف (3 كلمات في اللقطة بخط عريض واضح) + شريط التحدي الجدلي (١ أو ٢) في الخاتمة لتفجير التعليقات!
+- ترجمات ASS سميكة بيضاء/ذهبية بحد أسود وظل واضح؛ تتحرك الكادرات بتأثير Ken Burns عند فشل فيديو الحركة الاختياري.
 """
 
 import re
@@ -60,7 +60,7 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 Style: Brand,Cairo,24,&H45FFFFFF,&H000000FF,&H85000000,&H00000000,-1,0,0,0,100,100,0,0,1,2,1,9,36,36,26,1
 Style: TeaserBadge,Cairo,31,&H00FFFFFF,&H000000FF,&H001210C5,&HD80E0C98,-1,0,0,0,100,100,0,0,3,13,0,8,40,40,26,1
 Style: ChapterCard,Cairo,30,&H0028DFFF,&H00FFFFFF,&H0012141E,&HC80A0E18,-1,0,0,0,100,100,0,0,3,12,0,7,38,38,28,1
-Style: Sub,Cairo,40,&H00FFFFFF,&H0000D7FF,&H00080810,&H96000000,-1,0,0,0,100,100,0,0,1,3.6,2.0,2,85,85,42,1
+Style: Sub,Cairo,40,&H00FFFFFF,&H0000C8FF,&H00000000,&H68000000,-1,0,0,0,100,100,0,0,1,4.4,3.0,2,85,85,42,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -114,7 +114,7 @@ ScaledBorderAndShadow: yes
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Brand,Cairo,27,&H3800D7FF,&H000000FF,&H85000000,&H00000000,-1,0,0,0,100,100,0,0,1,2.2,1,8,30,30,46,1
 Style: HookTop,Cairo,37,&H00FFFFFF,&H0028DFFF,&H001814C8,&HE8120EA8,-1,0,0,0,100,100,0,0,3,16,0,8,30,30,124,1
-Style: Cap,Cairo,53,&H00FFFFFF,&H0000D7FF,&H0006060E,&HA8000000,-1,0,0,0,100,100,0,0,1,4.6,2.5,2,42,42,262,1
+Style: Cap,Cairo,53,&H00FFFFFF,&H0000C8FF,&H00000000,&H68000000,-1,0,0,0,100,100,0,0,1,5.0,3.0,2,42,42,262,1
 Style: CTA,Cairo,35,&H0028DFFF,&H00FFFFFF,&H000E1224,&HE8080C1C,-1,0,0,0,100,100,0,0,3,15,0,8,30,30,124,1
 
 [Events]
@@ -143,7 +143,7 @@ Dialogue: 3,{_ass_ts(cta_start)},{_ass_ts(total_dur)},CTA,,0,0,0,,{{\\fad(160,80
         for idx_w, w in enumerate(grp):
             clean = _esc_ass(w["word"])
             if idx_w == len(grp) - 1:
-                parts.append(r"{\c&H0028DFFF&}" + clean + r"{\c&H00FFFFFF&}")
+                parts.append(r"{\c&H0000C8FF&}" + clean + r"{\c&H00FFFFFF&}")
             else:
                 parts.append(clean)
         lines.append(f"Dialogue: 2,{_ass_ts(s_t)},{_ass_ts(e_t)},Cap,,0,0,0,,{' '.join(parts)}")

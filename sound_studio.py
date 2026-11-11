@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-استوديو الصوت البشري والمقدمة التشويقية V11.0 (Cold-Open Teaser Intro + 5-Key Pure Human Voice + Dynamic Pacing Windows)
-- يسجّل المقدمة التشويقية النارية (`teaser_intro`) كافتتاحية سينمائية خاطفة (00:00–00:28) متبوعة بضربة تشويق سينمائية (Cinema Boom Transition) قبل بدء المشهد الأول!
-- تقطيع سريع في المقدمة (صورة كل ~4.5 ثانية في أول 28 ثانية لخطف عين المشاهد فوراً ومنع الخروج المبكر!) ثم صورة جديدة كل ~8 ثوانٍ طوال الـ 12 مشهداً بلا أي تكرار!
-- في الشورتات (Shorts): مقدمة خطف في أول 4 ثوانٍ + تقطيع بصري سريع (صورة طولية كاملة جديدة كل ~5.5 ثانية!) لرفع معدل الإكمال فوق 75%.
-- حظر الأصوات الآلية (edge_tts) نهائياً 100%.
+استوديو الصوت البشري وتوقيت النوافذ البصرية V18 (Cold-Open Teaser + 5-Key Gemini Failover).
+- يجزّئ الأفلام الطويلة والشورتات إلى نوافذ صورة/حركة تقارب 3 ثوانٍ، مع حد أقصى مضبوط حتى 3.5 ثانية.
+- ينتقل مباشرةً إلى مفتاح Gemini الاحتياطي التالي عند HTTP 429، مع إبقاء مسار الصوت البشري القائم كما هو.
+- لا يستخدم الأصوات الآلية edge_tts.
 """
 
 import base64
@@ -70,11 +69,11 @@ def _norm_token(word: str) -> str:
 def _get_gemini_keys() -> List[str]:
     keys: List[str] = []
     for env_name in (
+        "GEMINI_API_KEY",
         "GEMINI_API_KEY_2",
         "GEMINI_API_KEY_3",
         "GEMINI_API_KEY_4",
         "GEMINI_API_KEY_5",
-        "GEMINI_API_KEY",
     ):
         val = os.environ.get(env_name, "").strip()
         if val and val not in keys:
@@ -98,10 +97,8 @@ def _try_gemini_tts_strict(
     n_m = len(GEMINI_TTS_MODELS)
 
     for wave_try in range(3):
-        saw_minute_limit = False
-        for ki in range(len(gkeys)):
-            key_idx = (call_index + ki) % len(gkeys)
-            active_key = gkeys[key_idx]
+        saw_rate_limit = False
+        for key_idx, active_key in enumerate(gkeys):
             for mi in range(n_m):
                 model_id = GEMINI_TTS_MODELS[(call_index + mi) % n_m]
                 try:
@@ -137,13 +134,15 @@ def _try_gemini_tts_strict(
                             print(f"    🎙️ [Human Studio Voice: {model_id} / {vname} / Key#{key_idx+1}] -> {get_audio_duration(out_mp3):.1f}s", flush=True)
                             return True
                     elif r.status_code == 429:
-                        low_err = r.text.lower()
-                        if "perminute" in low_err or "per_minute" in low_err or "tokens" in low_err or "rate" in low_err:
-                            saw_minute_limit = True
+                        saw_rate_limit = True
+                        print(f"    ⚠️ [Gemini Studio] HTTP 429 على المفتاح #{key_idx + 1} — الانتقال مباشرةً للمفتاح الاحتياطي التالي.", flush=True)
+                        # A rate-limited key is skipped for the rest of this wave; don't burn
+                        # additional model requests against the same key before trying a backup.
+                        break
                 except Exception:
                     continue
-        if wave_try < 2 and saw_minute_limit:
-            print("    ⏳ [Gemini Studio Cooldown] انتظار 62 ثانية لتجديد نافذة الدقيقة وضمان ثبات الصوت البشري 100%...", flush=True)
+        if wave_try < 2 and saw_rate_limit:
+            print("    ⏳ [Gemini Studio Cooldown] جميع المفاتيح المتاحة لم تنتج صوتاً؛ انتظار 62 ثانية قبل دورة جديدة...", flush=True)
             time.sleep(62.0)
         elif wave_try < 2:
             time.sleep(15.0)
@@ -297,20 +296,19 @@ def build_dynamic_pacing_windows(
     teaser_end_sec: float,
     words: List[Dict[str, Any]],
     fallback_text: str,
-    teaser_interval_sec: float = 4.5,
-    body_interval_sec: float = 8.0,
+    teaser_interval_sec: float = 3.0,
+    body_interval_sec: float = 3.0,
 ) -> List[Dict[str, Any]]:
     """
-    تقطيع ديناميكي احترافي (2026 Retention Pacing):
-    - في المقدمة التشويقية (0 إلى teaser_end_sec): لقطة جديدة كل ~4.5 ثانية لخطف عين المشاهد ومنع الخروج المبكر!
-    - في جسم القصة (من teaser_end_sec للنهاية): لقطة جديدة كل ~8.0 ثانية بدون أي تكرار إطلاقاً!
+    تقطيع ديناميكي محافظ على وتيرة بصرية متجددة: نافذة صورة/حركة لا تتجاوز 3.5 ثانية.
     """
     windows: List[Dict[str, Any]] = []
     fb_words = fallback_text.split()
 
     def _slice_span(span_start: float, span_end: float, step_s: float) -> None:
         span = max(0.5, span_end - span_start)
-        n_w = max(1, int(round(span / max(3.0, step_s))))
+        step_s = min(3.5, max(2.5, float(step_s)))
+        n_w = max(1, int(math.ceil(span / step_s)))
         w_d = span / float(n_w)
         for k in range(n_w):
             st = span_start + k * w_d
@@ -339,7 +337,7 @@ def synthesize_episode_and_climax_shorts(
     language: str,
     work_dir: Path,
     min_duration_sec: float = 945.0,
-    shot_interval_sec: float = 8.0,
+    shot_interval_sec: float = 3.0,
 ) -> Dict[str, Any]:
     work_dir.mkdir(parents=True, exist_ok=True)
     is_ar = language == "ar"
@@ -494,13 +492,14 @@ def synthesize_episode_and_climax_shorts(
 
     master_dur = get_audio_duration(master_mp3)
     full_story_text = teaser_text + " " + " ".join(s["narration"] for s in scenes)
+    visual_interval_sec = min(3.2, max(2.5, float(shot_interval_sec)))
     long_windows = build_dynamic_pacing_windows(
         total_dur=master_dur + 0.4,
         teaser_end_sec=final_teaser_end,
         words=final_words,
         fallback_text=full_story_text,
-        teaser_interval_sec=4.5,
-        body_interval_sec=shot_interval_sec,
+        teaser_interval_sec=3.0,
+        body_interval_sec=visual_interval_sec,
     )
 
     # الشورت الأول والثاني (شورتس درامية عميقة ~90-100ث) + الشورت الثالث والرابع (شورتس خاطفة سريعة 36-54ث لكسر حاجز الـ 200 مشاهدة ورف YouTube Shorts السريع)
@@ -533,8 +532,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh1_hook_end,
         words=sh1_words,
         fallback_text=f"{episode.get('short_1_hook_intro','')} {scenes[0]['narration']} {scenes[1]['narration']}",
-        teaser_interval_sec=4.0,
-        body_interval_sec=6.2,
+        teaser_interval_sec=3.0,
+        body_interval_sec=3.0,
     )
 
     sh2_mp3, sh2_words, sh2_hook_end = _build_climax_short_from_master_voice(
@@ -559,8 +558,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh2_hook_end,
         words=sh2_words,
         fallback_text=f"{episode.get('short_2_hook_intro','')} {scenes[5]['narration']} {scenes[6]['narration']}",
-        teaser_interval_sec=4.0,
-        body_interval_sec=6.2,
+        teaser_interval_sec=3.0,
+        body_interval_sec=3.0,
     )
 
     sh3_mp3, sh3_words, sh3_hook_end = _build_climax_short_from_master_voice(
@@ -586,8 +585,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh3_hook_end,
         words=sh3_words,
         fallback_text=f"{episode.get('short_3_hook_intro','')} {scenes[min(4, len(scenes)-1)]['narration']}",
-        teaser_interval_sec=2.7,
-        body_interval_sec=3.2,
+        teaser_interval_sec=3.0,
+        body_interval_sec=3.0,
     )
 
     sh4_mp3, sh4_words, sh4_hook_end = _build_climax_short_from_master_voice(
@@ -613,8 +612,8 @@ def synthesize_episode_and_climax_shorts(
         teaser_end_sec=sh4_hook_end,
         words=sh4_words,
         fallback_text=f"{episode.get('short_4_hook_intro','')} {scenes[min(9, len(scenes)-1)]['narration']}",
-        teaser_interval_sec=2.8,
-        body_interval_sec=3.4,
+        teaser_interval_sec=3.0,
+        body_interval_sec=3.0,
     )
 
     return {

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-العقل النفسي والخوارزمي V11.0 (Cold-Open Teaser Intro + 2026 Viral Retention Bridges + 8s Shot Prompts + Algorithm SEO)
+العقل القصصي V18 (Cold-Open Teaser + Gemini Key Failover + Visual-Beat Prompts)
 1) مقدمة تشويقية إجبارية حابسة للأنفاس في أول 25–30 ثانية (`teaser_intro`) لكل فيديو طويل + مقدمة خاطفة (`short_hook_intro`) لكل شورت:
    - تبدأ بومضة نارية من أخطر لحظة قبل النهاية (Flash-Forward بدون حرق!) + تطابق 100% مع وعد العنوان والصورة المصغرة (أهم عامل في خوارزمية يوتيوب 2026!) + سؤال مفتوح يجبر المشاهد يكمل لآخر ثانية ليعرف النهاية!
 2) جسور احتفاظ بالمشاهد (Retention Bridges) كل 3 دقائق لكسر الملل ومنع هبوط منحنى المشاهدة (AVD > 55%).
-3) أوصاف بصرية واضحة ومضاءة درامياً لكل نافذة ~8 ثوانٍ لمنع أي لقطة معتمة أو مكررة.
+3) أوصاف بصرية واضحة ومضاءة درامياً لكل نافذة زمنية يمررها محرر الفيديو.
 """
 
 import json
@@ -124,14 +124,22 @@ def _groq_json(api_key: str, sys_prompt: str, usr_prompt: str, max_tokens: int =
                 },
             }
             gr = requests.post(g_url, json=g_payload, timeout=90)
-            if gr.status_code == 200:
-                cands = gr.json().get("candidates") or []
-                if cands:
-                    parts = cands[0].get("content", {}).get("parts") or []
-                    txt_chunks = [p.get("text", "") for p in parts if not p.get("thought") and p.get("text")]
-                    raw_txt = "\n".join(txt_chunks).strip()
-                    if raw_txt:
-                        return _extract_json(raw_txt)
+            if gr.status_code == 429:
+                last_err = RuntimeError(f"Gemini key #{gi + 1} rate-limited (HTTP 429)")
+                print(f"[Gemini JSON] HTTP 429 على المفتاح #{gi + 1} — الانتقال مباشرةً للمفتاح الاحتياطي التالي.", flush=True)
+                continue
+            if gr.status_code != 200:
+                last_err = RuntimeError(f"Gemini returned HTTP {gr.status_code} for key #{gi + 1}")
+                time.sleep(1.2)
+                continue
+            cands = gr.json().get("candidates") or []
+            if cands:
+                parts = cands[0].get("content", {}).get("parts") or []
+                txt_chunks = [p.get("text", "") for p in parts if not p.get("thought") and p.get("text")]
+                raw_txt = "\n".join(txt_chunks).strip()
+                if raw_txt:
+                    return _extract_json(raw_txt)
+            last_err = ValueError(f"Gemini key #{gi + 1} returned no JSON content")
         except Exception as exc:
             last_err = exc
             time.sleep(1.2)
