@@ -96,16 +96,18 @@
       "The Magnetized Bullet Train Vault Mystery",
       "cctv audio delay exposes airtight alibi",
       "The Detective's Lethal Logic Trap",
-      "Archived photo shatters perfect alibi reflection"
+      "Archived photo shatters perfect alibi reflection",
+      "locked study air vent alibi"
     ],
-    "last_pillar_id": "en_mys_cold_cipher",
+    "last_pillar_id": "en_mys_locked_room",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
       "The Unstoppable Train Vault Heist | Locked-Room ": "en_mys_closed_gala",
       "The Security Camera Audio That Proved Murder | L": "en_mys_clockwork_alibi",
       "The Genius Who Corrected The Detective | Locked-": "en_mys_logical_sting",
-      "The Impossible Study Disappearance and the 1994 ": "en_mys_cold_cipher"
+      "The Impossible Study Disappearance and the 1994 ": "en_mys_cold_cipher",
+      "The Locked Study Alibi That Shattered at Midnigh": "en_mys_locked_room"
     }
   }
 }
