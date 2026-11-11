@@ -1,0 +1,42 @@
+name: Dependency smoke test (no production or publishing)
+
+on:
+  push:
+    branches:
+      - repair/dependency-install-ubuntu24
+    paths:
+      - '.github/workflows/empire_autopilot.yml'
+      - '.github/workflows/dependency_smoke_test.yml'
+      - 'requirements.txt'
+      - 'scripts/install_ci_dependencies.sh'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/empire_autopilot.yml'
+      - '.github/workflows/dependency_smoke_test.yml'
+      - 'requirements.txt'
+      - 'scripts/install_ci_dependencies.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-smoke-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: Check out source without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install and verify dependencies only
+        run: bash scripts/install_ci_dependencies.sh

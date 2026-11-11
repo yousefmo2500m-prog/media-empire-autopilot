@@ -38,7 +38,7 @@ concurrency:
 
 jobs:
   produce-and-publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 300
     permissions:
       contents: write
@@ -53,10 +53,8 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libass-dev libraqm0 fonts-hosny-amiri
-          pip install -q --upgrade -r requirements.txt
+      - name: Install and verify media dependencies
+        run: bash scripts/install_ci_dependencies.sh
 
       - name: Select target mode
         id: target
