@@ -103,9 +103,10 @@
       "cctv audio delay exposes airtight alibi",
       "The Detective's Lethal Logic Trap",
       "Archived photo shatters perfect alibi reflection",
-      "locked study air vent alibi"
+      "locked study air vent alibi",
+      "Logical trap exposes silent killer mastermind"
     ],
-    "last_pillar_id": "en_mys_locked_room",
+    "last_pillar_id": "en_mys_logical_sting",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -113,7 +114,8 @@
       "The Security Camera Audio That Proved Murder | L": "en_mys_clockwork_alibi",
       "The Genius Who Corrected The Detective | Locked-": "en_mys_logical_sting",
       "The Impossible Study Disappearance and the 1994 ": "en_mys_cold_cipher",
-      "The Locked Study Alibi That Shattered at Midnigh": "en_mys_locked_room"
+      "The Locked Study Alibi That Shattered at Midnigh": "en_mys_locked_room",
+      "The Fake Clue That Exposed The Truth | Locked-Ro": "en_mys_logical_sting"
     }
   }
 }
