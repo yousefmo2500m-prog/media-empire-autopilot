@@ -74,9 +74,10 @@
       "Swapped laptop bag reveals life stolen",
       "Partner rigs brakes, dashcam records confession",
       "Swapped laptop bag reveals home tracking",
-      "Delivery photo reflection exposes neighbor's crime"
+      "Delivery photo reflection exposes neighbor's crime",
+      "Dashcam audio exposes wife's lethal plot"
     ],
-    "last_pillar_id": "en_thr_doorbell_neighbor",
+    "last_pillar_id": "en_thr_inner_circle_sting",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
@@ -84,7 +85,8 @@
       "The Laptop Swapped My Entire Life | True Mystery": "en_thr_wrong_item_trail",
       "The Dashcam Caught His Own Murder Plot | True My": "en_thr_inner_circle_sting",
       "The Coffee Shop Swap Was No Accident | True Myst": "en_thr_wrong_item_trail",
-      "The Delivery Photo That Shouldn't Exist | True M": "en_thr_doorbell_neighbor"
+      "The Delivery Photo That Shouldn't Exist | True M": "en_thr_doorbell_neighbor",
+      "The Dashcam Recorded Her Darkest Secret | True M": "en_thr_inner_circle_sting"
     }
   },
   "ch4_en_mystery": {
