@@ -84,9 +84,10 @@
       "Swapped laptop bag reveals home tracking",
       "Delivery photo reflection exposes neighbor's crime",
       "Dashcam audio exposes wife's lethal plot",
-      "Fake night-shift job traps innocent guard"
+      "Fake night-shift job traps innocent guard",
+      "Landlord runs shadow hotel beneath tenant"
     ],
-    "last_pillar_id": "en_thr_night_shift",
+    "last_pillar_id": "en_thr_hidden_sublet",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
@@ -96,7 +97,8 @@
       "The Coffee Shop Swap Was No Accident | True Myst": "en_thr_wrong_item_trail",
       "The Delivery Photo That Shouldn't Exist | True M": "en_thr_doorbell_neighbor",
       "The Dashcam Recorded Her Darkest Secret | True M": "en_thr_inner_circle_sting",
-      "The Security Guard Job That Didn't Exist | True ": "en_thr_night_shift"
+      "The Security Guard Job That Didn't Exist | True ": "en_thr_night_shift",
+      "The $900 Studio Apartment Power Bill | True Myst": "en_thr_hidden_sublet"
     }
   },
   "ch4_en_mystery": {
