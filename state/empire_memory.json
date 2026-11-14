@@ -117,9 +117,10 @@
       "Archived photo shatters perfect alibi reflection",
       "locked study air vent alibi",
       "Logical trap exposes silent killer mastermind",
-      "Bone-dry cigar in humidified room"
+      "Bone-dry cigar in humidified room",
+      "The Frozen Lock Metal Contraction Mystery"
     ],
-    "last_pillar_id": "en_mys_staged_reversal",
+    "last_pillar_id": "en_mys_locked_room",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -129,7 +130,8 @@
       "The Impossible Study Disappearance and the 1994 ": "en_mys_cold_cipher",
       "The Locked Study Alibi That Shattered at Midnigh": "en_mys_locked_room",
       "The Fake Clue That Exposed The Truth | Locked-Ro": "en_mys_logical_sting",
-      "The Humidity Sensor That Exposed a Killer | Lock": "en_mys_staged_reversal"
+      "The Humidity Sensor That Exposed a Killer | Lock": "en_mys_staged_reversal",
+      "The Frozen Lock That Shouldn't Exist | Locked-Ro": "en_mys_locked_room"
     }
   }
 }
