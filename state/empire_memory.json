@@ -124,9 +124,10 @@
       "locked study air vent alibi",
       "Logical trap exposes silent killer mastermind",
       "Bone-dry cigar in humidified room",
-      "The Frozen Lock Metal Contraction Mystery"
+      "The Frozen Lock Metal Contraction Mystery",
+      "Audio delay shatters perfect studio alibi"
     ],
-    "last_pillar_id": "en_mys_locked_room",
+    "last_pillar_id": "en_mys_clockwork_alibi",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -137,7 +138,8 @@
       "The Locked Study Alibi That Shattered at Midnigh": "en_mys_locked_room",
       "The Fake Clue That Exposed The Truth | Locked-Ro": "en_mys_logical_sting",
       "The Humidity Sensor That Exposed a Killer | Lock": "en_mys_staged_reversal",
-      "The Frozen Lock That Shouldn't Exist | Locked-Ro": "en_mys_locked_room"
+      "The Frozen Lock That Shouldn't Exist | Locked-Ro": "en_mys_locked_room",
+      "The Two-Second Audio Delay That Caught A Killer ": "en_mys_clockwork_alibi"
     }
   }
 }
