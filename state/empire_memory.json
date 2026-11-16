@@ -131,9 +131,10 @@
       "Logical trap exposes silent killer mastermind",
       "Bone-dry cigar in humidified room",
       "The Frozen Lock Metal Contraction Mystery",
-      "Audio delay shatters perfect studio alibi"
+      "Audio delay shatters perfect studio alibi",
+      "Vintage photo reveals hidden elevator vault"
     ],
-    "last_pillar_id": "en_mys_clockwork_alibi",
+    "last_pillar_id": "en_mys_cold_cipher",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -145,7 +146,8 @@
       "The Fake Clue That Exposed The Truth | Locked-Ro": "en_mys_logical_sting",
       "The Humidity Sensor That Exposed a Killer | Lock": "en_mys_staged_reversal",
       "The Frozen Lock That Shouldn't Exist | Locked-Ro": "en_mys_locked_room",
-      "The Two-Second Audio Delay That Caught A Killer ": "en_mys_clockwork_alibi"
+      "The Two-Second Audio Delay That Caught A Killer ": "en_mys_clockwork_alibi",
+      "The 1970s Photo That Exposed a Thief | Locked-Ro": "en_mys_cold_cipher"
     }
   }
 }
