@@ -19,7 +19,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import requests
 import edge_tts
-import _env_loader
+try:
+    import _env_loader
+except ImportError:
+    pass
 
 # ==============================================================================
 # الأدوات والمساعدات العامة
