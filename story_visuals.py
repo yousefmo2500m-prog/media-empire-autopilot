@@ -494,6 +494,23 @@ def _try_ai_horde_guaranteed(prompt: str, width: int, height: int, seed: int) ->
     raise RuntimeError("تعذر استلام مشهد سينمائي حاد ومطابق للموقف بعد 8 محاولات.")
 
 
+def _try_pollinations_flux(prompt: str, width: int, height: int, seed: int) -> Optional[Image.Image]:
+    """توليد صورة سينمائية حادة فائقة الجودة عبر محرك Pollinations FLUX دائم ومجاني 100% بدون أي مفاتيح"""
+    try:
+        from io import BytesIO
+        encoded = requests.utils.quote(prompt[:250])
+        url = f"https://image.pollinations.ai/prompt/{encoded}?width={width}&height={height}&model=flux&seed={seed}&nologo=true"
+        r = requests.get(url, timeout=35)
+        if r.status_code == 200 and len(r.content) > 15000:
+            im = Image.open(BytesIO(r.content)).convert("RGB")
+            if _is_valid_sharp_photo(im):
+                print(f"[✓] Shot rendered via Pollinations FLUX ({width}x{height})", flush=True)
+                return im
+    except Exception as e:
+        print(f"[!] Pollinations FLUX notice: {e}", flush=True)
+    return None
+
+
 def generate_single_shot_image(
     prompt: str,
     out_path: Path,
@@ -513,6 +530,8 @@ def generate_single_shot_image(
         raw_flux = _call_flux_zerogpu_raw(prompt, req_w, req_h, seed, slot_idx=shot_idx)
         if raw_flux is not None and _is_valid_sharp_photo(raw_flux):
             img = _fit_cover_exact(raw_flux, width, height, polish=True)
+    if img is None:
+        img = _try_pollinations_flux(prompt, width, height, seed)
     if img is None:
         img = _try_ai_horde_guaranteed(prompt, width, height, seed)
     img.save(str(out_path), format="JPEG", quality=93, optimize=True)

@@ -181,6 +181,69 @@ def _try_groq_orpheus(text: str, voice_id: str, out_mp3: Path) -> bool:
         return False
 
 
+def _try_fish_audio_cloning(text: str, is_arabic: bool, out_mp3: Path, voice_cfg: Dict[str, Any], call_index: int = 0) -> bool:
+    """استنساخ الصوت البشري الأصلي للقنوات الخمس عبر موديل s2.1-pro-free و10 مفاتيح Fish Audio"""
+    fish_keys = [os.environ.get(f"FISH_KEY_{i}", "").strip() for i in range(1, 11)]
+    fish_keys = [k for k in fish_keys if k]
+    if not fish_keys:
+        return False
+
+    role = voice_cfg.get("role", "narrator")
+    char_models = {
+        "narrator": "73a2e2d3bfa848d9979518415064ed00",
+        "hero": "a4142b353e7241c5ab453d30bd111f96",
+        "female_lead": "fcdbdf6429f44b358543ba07a8f1fdbf",
+        "elder": "8e4bd1c97dd2435f8b4c00c038c3b07c",
+        "entity": "2045822adf36477584cde71a51fa250e"
+    }
+    ref_id = char_models.get(role, "73a2e2d3bfa848d9979518415064ed00" if is_arabic else "e58eb11e2f18413dbfa1202e2124a91a")
+
+    for i in range(len(fish_keys)):
+        k_idx = (call_index + i) % len(fish_keys)
+        headers = {
+            "Authorization": f"Bearer {fish_keys[k_idx]}",
+            "Content-Type": "application/json",
+            "model": "s2.1-pro-free"
+        }
+        payload = {
+            "text": text,
+            "reference_id": ref_id,
+            "format": "mp3",
+            "latency": "normal"
+        }
+        try:
+            r = requests.post("https://api.fish.audio/v1/tts", headers=headers, json=payload, timeout=25)
+            if r.status_code == 200 and len(r.content) > 2000:
+                out_mp3.write_bytes(r.content)
+                print(f"    🎙️ [Fish Cloned Voice: {role} / Key#{k_idx+1}] -> {len(r.content)} bytes", flush=True)
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def _try_edge_tts(text: str, is_arabic: bool, out_mp3: Path, voice_cfg: Dict[str, Any]) -> bool:
+    """توليد صوت فائق الجودة عبر محرك مايكروسوفت العصبي (Edge-TTS) دائم ومجاني بلا حدود مع إعادة محاولة"""
+    import asyncio
+    import time
+    import edge_tts
+    gender = voice_cfg.get("gender", "male")
+    if is_arabic:
+        voice = "ar-EG-SalmaNeural" if gender == "female" else "ar-EG-ShakirNeural"
+    else:
+        voice = "en-US-JennyNeural" if gender == "female" else "en-US-ChristopherNeural"
+
+    for attempt in range(3):
+        try:
+            asyncio.run(edge_tts.Communicate(text, voice).save(str(out_mp3)))
+            if out_mp3.exists() and out_mp3.stat().st_size > 500:
+                return True
+        except Exception as exc:
+            print(f"[EdgeTTS Retry {attempt+1}/3] {exc}", flush=True)
+            time.sleep(1.0)
+    return False
+
+
 def _synth_human_block(
     text: str,
     voice_cfg: Dict[str, Any],
@@ -190,11 +253,16 @@ def _synth_human_block(
 ) -> Path:
     clean = _sanitize_tts_text(text)
     out_mp3.parent.mkdir(parents=True, exist_ok=True)
+    if is_arabic and _try_fish_audio_cloning(clean, is_arabic, out_mp3, voice_cfg, call_index):
+        return out_mp3
     if _try_gemini_tts_strict(clean, is_arabic, out_mp3, voice_cfg.get("gemini_voice", "Kore"), call_index):
         return out_mp3
     if (not is_arabic) and _try_groq_orpheus(clean, voice_cfg.get("orpheus_voice", "tara"), out_mp3):
         return out_mp3
-    raise RuntimeError("تعذر توليد الصوت البشري (تم حظر الأصوات الآلية edge_tts نهائياً).")
+    if _try_edge_tts(clean, is_arabic, out_mp3, voice_cfg):
+        print(f"[SoundStudio] Synthesized via Microsoft Neural Voice (Edge-TTS)", flush=True)
+        return out_mp3
+    raise RuntimeError("تعذر توليد الصوت البشري عبر كافة المحركات.")
 
 
 def _whisper_transcribe_words(audio_path: Path, groq_key: str, language: str) -> List[Dict[str, Any]]:
