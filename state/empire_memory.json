@@ -145,9 +145,10 @@
       "The Frozen Lock Metal Contraction Mystery",
       "Audio delay shatters perfect studio alibi",
       "Vintage photo reveals hidden elevator vault",
-      "Shadow angle shatters live video alibi"
+      "Shadow angle shatters live video alibi",
+      "Logical trap reveals hidden arsonist mastermind"
     ],
-    "last_pillar_id": "en_mys_clockwork_alibi",
+    "last_pillar_id": "en_mys_logical_sting",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -161,7 +162,8 @@
       "The Frozen Lock That Shouldn't Exist | Locked-Ro": "en_mys_locked_room",
       "The Two-Second Audio Delay That Caught A Killer ": "en_mys_clockwork_alibi",
       "The 1970s Photo That Exposed a Thief | Locked-Ro": "en_mys_cold_cipher",
-      "The 2-Second Shadow Error That Exposed Him | Loc": "en_mys_clockwork_alibi"
+      "The 2-Second Shadow Error That Exposed Him | Loc": "en_mys_clockwork_alibi",
+      "The False Witness: A Detective's Logical Trap | ": "en_mys_logical_sting"
     }
   }
 }
