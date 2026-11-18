@@ -233,7 +233,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "tiktok_profile_id": "6ae7d2e4fa06d9df9c45dd4b",
         "accounts": {
             "youtube": "6ae7d81a3a502a73a1634519",
-            "facebook": "6ae7d841df2a5a7ca0789146",
+            "facebook": "6afdc65779436b32ce49acb4",
             "tiktok": "6ae7db62c5b7eb7a48c705db",
         },
         "language": "en",
@@ -334,7 +334,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "tiktok_profile_id": "6ae7d2e58b38647997f523b5",
         "accounts": {
             "youtube": "6ae7d871bdfac131ee354bcd",
-            "facebook": "6ae7d89168b951402ee910a9",
+            "facebook": "6afdc76147cc7214709c73ad",
             "tiktok": "6ae7dbac97252a684ca5e37f",
         },
         "language": "en",
