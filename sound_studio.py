@@ -181,6 +181,28 @@ def _try_groq_orpheus(text: str, voice_id: str, out_mp3: Path) -> bool:
         return False
 
 
+def _try_edge_tts(text: str, is_arabic: bool, out_mp3: Path, voice_cfg: Dict[str, Any]) -> bool:
+    """توليد صوت فائق الجودة عبر محرك مايكروسوفت العصبي (Edge-TTS) دائم ومجاني بلا حدود مع إعادة محاولة"""
+    import asyncio
+    import time
+    import edge_tts
+    gender = voice_cfg.get("gender", "male")
+    if is_arabic:
+        voice = "ar-EG-SalmaNeural" if gender == "female" else "ar-EG-ShakirNeural"
+    else:
+        voice = "en-US-JennyNeural" if gender == "female" else "en-US-ChristopherNeural"
+
+    for attempt in range(3):
+        try:
+            asyncio.run(edge_tts.Communicate(text, voice).save(str(out_mp3)))
+            if out_mp3.exists() and out_mp3.stat().st_size > 500:
+                return True
+        except Exception as exc:
+            print(f"[EdgeTTS Retry {attempt+1}/3] {exc}", flush=True)
+            time.sleep(1.0)
+    return False
+
+
 def _synth_human_block(
     text: str,
     voice_cfg: Dict[str, Any],
@@ -194,7 +216,10 @@ def _synth_human_block(
         return out_mp3
     if (not is_arabic) and _try_groq_orpheus(clean, voice_cfg.get("orpheus_voice", "tara"), out_mp3):
         return out_mp3
-    raise RuntimeError("تعذر توليد الصوت البشري (تم حظر الأصوات الآلية edge_tts نهائياً).")
+    if _try_edge_tts(clean, is_arabic, out_mp3, voice_cfg):
+        print(f"[SoundStudio] Synthesized via Microsoft Neural Voice (Edge-TTS)", flush=True)
+        return out_mp3
+    raise RuntimeError("تعذر توليد الصوت البشري عبر كافة المحركات.")
 
 
 def _whisper_transcribe_words(audio_path: Path, groq_key: str, language: str) -> List[Dict[str, Any]]:
