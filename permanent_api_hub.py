@@ -194,30 +194,32 @@ class PermanentLLMHub:
                 except Exception:
                     continue
 
-        # 3. حوض مفاتيح XKiro API (كل حساب 10 مليون توكن تتجدد يومياً)
+        # 3. حوض مفاتيح XKiro API (كل حساب 10 مليون توكن تتجدد يومياً عبر 7 مفاتيح)
         xkiro_keys = collect_provider_keys("XKIRO")
+        xkiro_models = ["mistralai/ministral-14b", "sensenova/sensenova-6.8-flash-lite", "cohere/aya-vision-32b", "mistralai/ministral-3b"]
         for xk in xkiro_keys:
-            try:
-                r = requests.post(
-                    "https://api.xkiro.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {xk}", "Content-Type": "application/json"},
-                    json={
-                        "model": "deepseek-v3",
-                        "messages": [
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt}
-                        ],
-                        "temperature": temperature
-                    },
-                    timeout=18
-                )
-                if r.status_code == 200:
-                    txt = r.json()["choices"][0]["message"]["content"].strip()
-                    if txt:
-                        print("   [PermanentLLMHub] Success via XKiro (DeepSeek V3)")
-                        return txt
-            except Exception:
-                continue
+            for xm in xkiro_models:
+                try:
+                    r = requests.post(
+                        "https://api.xkiro.com/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {xk}", "Content-Type": "application/json"},
+                        json={
+                            "model": xm,
+                            "messages": [
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": user_prompt}
+                            ],
+                            "temperature": temperature
+                        },
+                        timeout=18
+                    )
+                    if r.status_code == 200:
+                        txt = r.json()["choices"][0]["message"]["content"].strip()
+                        if txt:
+                            print(f"   [PermanentLLMHub] Success via XKiro ({xm})")
+                            return txt
+                except Exception:
+                    continue
 
         # 4. حوض مفاتيح Google Gemini Flash (حسابات متعددة)
         gem_keys = collect_provider_keys("GEMINI")

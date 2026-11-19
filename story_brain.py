@@ -126,6 +126,42 @@ def _try_groq(prompt: str) -> Optional[Dict[str, Any]]:
                 continue
     return None
 
+def _try_xkiro(prompt: str) -> Optional[Dict[str, Any]]:
+    """محاولة التوليد عبر XKiro API Pool المتجدد يومياً بـ 7 مفاتيح"""
+    keys = _collect_keys([f"XKIRO_KEY_{i}" for i in range(1, 11)] + ["XKIRO_API_KEY"])
+    if not keys:
+        return None
+
+    models = [
+        "mistralai/ministral-14b",
+        "sensenova/sensenova-6.8-flash-lite",
+        "cohere/aya-vision-32b",
+        "mistralai/ministral-3b"
+    ]
+    for key in keys:
+        for model in models:
+            try:
+                r = requests.post(
+                    "https://api.xkiro.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    json={
+                        "model": model,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "temperature": 0.7,
+                        "response_format": {"type": "json_object"}
+                    },
+                    timeout=15
+                )
+                if r.status_code == 200:
+                    raw = r.json()["choices"][0]["message"]["content"].strip()
+                    parsed = _clean_json_text(raw)
+                    if parsed:
+                        print(f"   [StoryBrain] Story generated via XKiro ({model})")
+                        return parsed
+            except Exception:
+                continue
+    return None
+
 def _try_bigmodel(prompt: str) -> Optional[Dict[str, Any]]:
     """محاولة التوليد عبر BigModel GLM-4-Flash المجاني دائمياً"""
     keys = _collect_keys(["BIGMODEL_API_KEY", "ZHIPUAI_API_KEY", "GLM_API_KEY"])
@@ -297,7 +333,12 @@ Output strict JSON only:
     if res:
         return res
 
-    # 2. Gemini Flash Multi-Key / Multi-Model
+    # 2. XKiro API Pool (7 keys - Millions of daily reset tokens)
+    res = _try_xkiro(system_prompt)
+    if res:
+        return res
+
+    # 3. Gemini Flash Multi-Key / Multi-Model
     res = _try_gemini(system_prompt)
     if res:
         return res
