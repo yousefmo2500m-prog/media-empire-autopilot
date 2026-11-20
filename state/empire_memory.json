@@ -120,9 +120,10 @@
       "Mirror gait-analysis security breach trap",
       "Doorbell camera delivery receipt double life",
       "Photo of self in dry-cleaned suit",
-      "3:14 AM phone photo reveals inside hallway"
+      "3:14 AM phone photo reveals inside hallway",
+      "Night shift guard traps own shadow"
     ],
-    "last_pillar_id": "en_thr_3am_notification",
+    "last_pillar_id": "en_thr_night_shift",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
@@ -138,7 +139,8 @@
       "The Night Shift Mirror Reflection Trap | True My": "en_thr_night_shift",
       "The Delivery Receipt That Exposed A Neighbor | T": "en_thr_doorbell_neighbor",
       "The Dry Cleaner’s Impossible Mistake | True Myst": "en_thr_wrong_item_trail",
-      "The Photo Taken From His Own Living Room Floor |": "en_thr_3am_notification"
+      "The Photo Taken From His Own Living Room Floor |": "en_thr_3am_notification",
+      "The Security Guard Who Locked Himself In His Own": "en_thr_night_shift"
     }
   },
   "ch4_en_mystery": {
