@@ -68,14 +68,44 @@ jobs:
       - name: Produce 16-min Movie + Universal Covers + 4 Shorts & Lock/Publish via Zernio
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_API_KEY_1: ${{ secrets.GROQ_API_KEY_1 }}
+          GROQ_API_KEY_2: ${{ secrets.GROQ_API_KEY_2 }}
+          GROQ_API_KEY_3: ${{ secrets.GROQ_API_KEY_3 }}
+          GROQ_API_KEY_4: ${{ secrets.GROQ_API_KEY_4 }}
+          GROQ_API_KEY_5: ${{ secrets.GROQ_API_KEY_5 }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
           GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
           GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
           GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_TOKEN_1: ${{ secrets.HF_TOKEN_1 }}
           HF_TOKEN_2: ${{ secrets.HF_TOKEN_2 }}
           HF_TOKEN_3: ${{ secrets.HF_TOKEN_3 }}
+          HF_TOKEN_4: ${{ secrets.HF_TOKEN_4 }}
+          HF_TOKEN_5: ${{ secrets.HF_TOKEN_5 }}
+          HF_TOKEN_6: ${{ secrets.HF_TOKEN_6 }}
+          HF_TOKEN_7: ${{ secrets.HF_TOKEN_7 }}
+          HF_TOKEN_8: ${{ secrets.HF_TOKEN_8 }}
+          HF_TOKEN_9: ${{ secrets.HF_TOKEN_9 }}
+          HF_TOKEN_10: ${{ secrets.HF_TOKEN_10 }}
+          FISH_KEY_1: ${{ secrets.FISH_KEY_1 }}
+          FISH_KEY_2: ${{ secrets.FISH_KEY_2 }}
+          FISH_KEY_3: ${{ secrets.FISH_KEY_3 }}
+          FISH_KEY_4: ${{ secrets.FISH_KEY_4 }}
+          FISH_KEY_5: ${{ secrets.FISH_KEY_5 }}
+          FISH_KEY_6: ${{ secrets.FISH_KEY_6 }}
+          FISH_KEY_7: ${{ secrets.FISH_KEY_7 }}
+          FISH_KEY_8: ${{ secrets.FISH_KEY_8 }}
+          FISH_KEY_9: ${{ secrets.FISH_KEY_9 }}
+          FISH_KEY_10: ${{ secrets.FISH_KEY_10 }}
+          XKIRO_KEY_1: ${{ secrets.XKIRO_KEY_1 }}
+          XKIRO_KEY_2: ${{ secrets.XKIRO_KEY_2 }}
+          XKIRO_KEY_3: ${{ secrets.XKIRO_KEY_3 }}
+          XKIRO_KEY_4: ${{ secrets.XKIRO_KEY_4 }}
+          XKIRO_KEY_5: ${{ secrets.XKIRO_KEY_5 }}
+          XKIRO_KEY_6: ${{ secrets.XKIRO_KEY_6 }}
+          XKIRO_KEY_7: ${{ secrets.XKIRO_KEY_7 }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CH1_ZERNIO_KEY: ${{ secrets.CH1_ZERNIO_KEY }}

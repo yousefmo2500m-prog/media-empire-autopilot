@@ -20,6 +20,11 @@ import imageio_ffmpeg
 import numpy as np
 import requests
 
+try:
+    import _env_loader
+except Exception:
+    pass
+
 FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
 
 GEMINI_TTS_MODELS = (
@@ -266,7 +271,12 @@ def _synth_human_block(
 
 
 def _whisper_transcribe_words(audio_path: Path, groq_key: str, language: str) -> List[Dict[str, Any]]:
-    if not groq_key:
+    keys_to_try = [groq_key.strip()] if groq_key and groq_key.strip() else []
+    for k in ("GROQ_API_KEY", "GROQ_API_KEY_1", "GROQ_API_KEY_2", "GROQ_API_KEY_3", "GROQ_API_KEY_4", "GROQ_API_KEY_5"):
+        v = os.environ.get(k, "").strip()
+        if v and v not in keys_to_try:
+            keys_to_try.append(v)
+    if not keys_to_try:
         return []
     slim_mp3 = audio_path.parent / f"_wslim_{audio_path.stem}.mp3"
     try:
@@ -274,11 +284,11 @@ def _whisper_transcribe_words(audio_path: Path, groq_key: str, language: str) ->
             [FFMPEG_BIN, "-y", "-i", str(audio_path), "-ar", "16000", "-ac", "1", "-b:a", "48k", "-loglevel", "error", str(slim_mp3)],
             check=True,
         )
-        for _ in range(3):
+        for cur_key in keys_to_try:
             with open(slim_mp3, "rb") as fh:
                 resp = requests.post(
                     "https://api.groq.com/openai/v1/audio/transcriptions",
-                    headers={"Authorization": f"Bearer {groq_key}"},
+                    headers={"Authorization": f"Bearer {cur_key}"},
                     files={"file": (slim_mp3.name, fh, "audio/mpeg")},
                     data=[
                         ("model", "whisper-large-v3-turbo"),
@@ -298,6 +308,8 @@ def _whisper_transcribe_words(audio_path: Path, groq_key: str, language: str) ->
                         out_w.append({"word": txt, "norm": _norm_token(txt), "start": s, "end": e})
                 return out_w
             if resp.status_code == 429:
+                time.sleep(1.0)
+                continue
                 time.sleep(6.0)
     except Exception:
         pass

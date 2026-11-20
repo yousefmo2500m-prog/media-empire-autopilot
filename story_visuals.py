@@ -54,7 +54,8 @@ def _load_bold_font(size: int) -> ImageFont.FreeTypeFont:
 
 def _get_hf_auth_pool() -> List[Optional[str]]:
     pool: List[Optional[str]] = [None]
-    for k in ("HF_TOKEN", "HF_TOKEN_2", "HF_TOKEN_3"):
+    names = ["HF_TOKEN"] + [f"HF_TOKEN_{i}" for i in range(1, 11)]
+    for k in names:
         v = os.environ.get(k, "").strip()
         if v and v not in pool:
             pool.append(v)
@@ -1041,7 +1042,7 @@ def generate_opening_motion_clip(
     auth_pool = [t for t in _get_hf_auth_pool() if t is not None] + [None]
     ordered_pool = [auth_pool[(call_idx + i) % len(auth_pool)] for i in range(len(auth_pool))]
 
-    for tok in ordered_pool[:2]:
+    for tok in ordered_pool[:4]:
         slot_key = f"ltx::{tok or 'anon'}"
         if slot_key in _EXHAUSTED_SLOTS:
             continue
