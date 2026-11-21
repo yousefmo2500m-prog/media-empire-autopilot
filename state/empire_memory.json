@@ -180,9 +180,10 @@
       "Audio delay shatters perfect studio alibi",
       "Vintage photo reveals hidden elevator vault",
       "Shadow angle shatters live video alibi",
-      "Logical trap reveals hidden arsonist mastermind"
+      "Logical trap reveals hidden arsonist mastermind",
+      "Silent Elevator Stairs Switch Alibi Puzzle"
     ],
-    "last_pillar_id": "en_mys_logical_sting",
+    "last_pillar_id": "en_mys_staged_reversal",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -197,7 +198,8 @@
       "The Two-Second Audio Delay That Caught A Killer ": "en_mys_clockwork_alibi",
       "The 1970s Photo That Exposed a Thief | Locked-Ro": "en_mys_cold_cipher",
       "The 2-Second Shadow Error That Exposed Him | Loc": "en_mys_clockwork_alibi",
-      "The False Witness: A Detective's Logical Trap | ": "en_mys_logical_sting"
+      "The False Witness: A Detective's Logical Trap | ": "en_mys_logical_sting",
+      "The Elevator Switch Murder — Alibi Crumbles | Lo": "en_mys_staged_reversal"
     }
   }
 }
