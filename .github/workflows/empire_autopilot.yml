@@ -59,7 +59,7 @@ jobs:
       - name: Select target mode
         id: target
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.channel_id }}" ]; then
             echo "channel=${{ github.event.inputs.channel_id }}" >> $GITHUB_OUTPUT
           else
             echo "channel=smart-sync" >> $GITHUB_OUTPUT

@@ -482,6 +482,40 @@ def publish_channel_via_make(
         r_s = requests.post(make_url, json=s_payload, timeout=60)
         print(f"[{ch['id']}] تم إرسال {s_id} مجدولاً عند ({s_sched.strftime('%H:%M UTC')}) إلى Make.com ({r_s.status_code})", flush=True)
         results[s_id] = {"make_status": r_s.status_code, "scheduled_time": s_sched.isoformat()}
+
+        # نشر / جدولة الشورت على تيك توك عبر Zernio بمفتاح الحساب النظيف
+        prefix = ch.get("env_prefix", "")
+        tt_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
+        tt_acc = os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip() or ch.get("accounts", {}).get("tiktok", "")
+        if tt_key and tt_acc:
+            tt_caption = (
+                f"{s_title}\n\nتختار ١ ولا ٢؟ اكتب في التعليقات! 👇\n#قصص #حكايات #{ch['brand_name'].replace(' ', '_')}"
+                if ch.get("language") == "ar"
+                else f"{s_title}\n\nWould you pick 1 or 2? Comment below! 👇\n#shorts #mystery #{ch['brand_name'].replace(' ', '')}"
+            )
+            tt_payload = {
+                "content": tt_caption[:2000],
+                "mediaItems": [{"type": "video", "url": s_cdn}],
+                "platforms": [{"platform": "tiktok", "accountId": tt_acc}],
+                "tiktokSettings": {
+                    "privacy_level": "PUBLIC_TO_EVERYONE",
+                    "allow_comments": True,
+                    "allow_duet": True,
+                    "allow_stitch": True,
+                    "media_type": "video",
+                },
+            }
+            if (s_sched - now_utc).total_seconds() > 90:
+                tt_payload["scheduledFor"] = s_sched.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            else:
+                tt_payload["publishNow"] = True
+            try:
+                r_tt = requests.post(f"{ZERNIO_BASE}/posts", headers=_headers(tt_key), json=tt_payload, timeout=60)
+                print(f"[{ch['id']}] تم إرسال {s_id} إلى TikTok عبر Zernio ({r_tt.status_code}): {r_tt.text[:120]}", flush=True)
+                results[f"{s_id}_tiktok"] = {"status": r_tt.status_code, "resp": r_tt.text[:120]}
+            except Exception as tt_err:
+                print(f"[{ch['id']}] تحذير تيك توك Zernio: {tt_err}", flush=True)
+
         time.sleep(2)
 
     return results
