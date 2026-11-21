@@ -39,6 +39,7 @@ from story_visuals import (
     build_viral_youtube_thumbnail,
     generate_8sec_shots_batch,
     generate_opening_motion_clip,
+    generate_scene_motion_clips_batch,
 )
 
 MEMORY_FILE = Path(__file__).resolve().parent / "state" / "empire_memory.json"
@@ -340,8 +341,19 @@ def run_single_channel(
     s3_mp4 = out_dir / f"{ch_id}_short_3.mp4"
     s4_mp4 = out_dir / f"{ch_id}_short_4.mp4"
 
-    # 6) المونتاج السينمائي للحلقة الكاملة HD (1280x720) مع دمج الغلاف السينمائي المشرق في الإطار الأول
-    print(f"[{ch_id}] مونتاج الحلقة الكاملة HD (1280x720)...", flush=True)
+    # 6) تجهيز لقطات الفيديو المتحركة للفيلم ومونتاج الحلقة كفيلم متصل بالكامل
+    print(f"[{ch_id}] 🎬 تجهيز لقطات الفيديو المتحركة لتكوين الفيلم السينمائي المتصل...", flush=True)
+    all_long_motion_clips = generate_scene_motion_clips_batch(
+        prompts=long_prompts,
+        out_dir=motion_dir / "long_movie_clips",
+        prefix=f"{ch_id}_movie",
+        is_vertical=False,
+        max_clips=len(long_imgs),
+    )
+    if highlight_motion_idx is not None and long_highlight_motion:
+        all_long_motion_clips[highlight_motion_idx] = long_highlight_motion
+
+    print(f"[{ch_id}] مونتاج الحلقة الكاملة HD كفيلم سينمائي متصل (1280x720)...", flush=True)
     render_long_episode_mp4(
         shot_images=long_imgs,
         shot_windows=audio_pack["long_8s_windows"],
@@ -355,18 +367,18 @@ def run_single_channel(
         work_dir=work_root / "render_long",
         opening_motion_mp4=long_motion,
         cover_jpg=thumb_jpg,
-        motion_clips=({highlight_motion_idx: long_highlight_motion} if highlight_motion_idx is not None and long_highlight_motion else {}),
+        motion_clips=all_long_motion_clips,
     )
 
-    # 7) تصميم الأغلفة الطولية المخصصة (720x1280) + مونتاج الـ 4 شورتس 9:16 بدون أي شاشة داكنة أو بنية
+    # 7) تصميم الأغلفة الطولية المخصصة (720x1280) + مونتاج الـ 4 شورتس 9:16 بلقطات متحركة وبدون أي شاشة داكنة
     short_covers = {}
     short_specs = [
-        (1, s1_imgs, "short_1_windows", "short_1_mp3", "short_1_words", "short_1_hook_end", "short_1_banner_top", "short_1_title", s1_mp4, s1_motion),
-        (2, s2_imgs, "short_2_windows", "short_2_mp3", "short_2_words", "short_2_hook_end", "short_2_banner_top", "short_2_title", s2_mp4, s2_motion),
-        (3, s3_imgs, "short_3_windows", "short_3_mp3", "short_3_words", "short_3_hook_end", "short_3_banner_top", "short_3_title", s3_mp4, s3_motion),
-        (4, s4_imgs, "short_4_windows", "short_4_mp3", "short_4_words", "short_4_hook_end", "short_4_banner_top", "short_4_title", s4_mp4, s4_motion),
+        (1, s1_imgs, s1_prompts, "short_1_windows", "short_1_mp3", "short_1_words", "short_1_hook_end", "short_1_banner_top", "short_1_title", s1_mp4, s1_motion),
+        (2, s2_imgs, s2_prompts, "short_2_windows", "short_2_mp3", "short_2_words", "short_2_hook_end", "short_2_banner_top", "short_2_title", s2_mp4, s2_motion),
+        (3, s3_imgs, s3_prompts, "short_3_windows", "short_3_mp3", "short_3_words", "short_3_hook_end", "short_3_banner_top", "short_3_title", s3_mp4, s3_motion),
+        (4, s4_imgs, s4_prompts, "short_4_windows", "short_4_mp3", "short_4_words", "short_4_hook_end", "short_4_banner_top", "short_4_title", s4_mp4, s4_motion),
     ]
-    for s_num, s_im, w_key, m_key, wd_key, hk_key, bn_key, tl_key, out_p, mot_p in short_specs:
+    for s_num, s_im, s_prm, w_key, m_key, wd_key, hk_key, bn_key, tl_key, out_p, mot_p in short_specs:
         hb_txt = _clean_hook_banner(str(ep.get(bn_key) or ep.get(tl_key) or ep["youtube_title"]))
         s_cov = out_dir / f"{ch_id}_short_{s_num}_cover.jpg"
         if s_im:
@@ -379,7 +391,18 @@ def run_single_channel(
                 out_path=s_cov,
             )
             short_covers[s_num] = s_cov
-        print(f"[{ch_id}] مونتاج الشورت رقم {s_num} (720x1280 + غلاف مخصص 9:16 | متحرك افتتاحي={'نعم' if mot_p else 'تلقائي'})...", flush=True)
+
+        s_motion_clips = generate_scene_motion_clips_batch(
+            prompts=s_prm,
+            out_dir=motion_dir / f"short_{s_num}_clips",
+            prefix=f"{ch_id}_s{s_num}",
+            is_vertical=True,
+            max_clips=len(s_im),
+        )
+        if mot_p:
+            s_motion_clips[0] = mot_p
+
+        print(f"[{ch_id}] مونتاج الشورت رقم {s_num} (720x1280 + مقاطع فيديو متحركة + غلاف مخصص 9:16)...", flush=True)
         render_vertical_short_mp4(
             vertical_images=s_im,
             short_windows=audio_pack[w_key],
@@ -388,11 +411,12 @@ def run_single_channel(
             brand_name=ch["brand_name"],
             hook_banner=hb_txt,
             hook_end_sec=float(audio_pack[hk_key]),
-            cta_banner=ep["cta_banner"],
+            cta_banner=str(ch.get("cta_banner", "اشترك للمزيد")),
             out_mp4=out_p,
-            work_dir=work_root / f"render_s{s_num}",
+            work_dir=work_root / f"render_short_{s_num}",
             opening_motion_mp4=mot_p,
-            cover_jpg=short_covers.get(s_num),
+            cover_jpg=s_cov if s_im else None,
+            motion_clips=s_motion_clips,
         )
 
     # 8) النشر والجدولة التلقائية الموزعة على مدار اليوم (إن لم يكن dry-run)

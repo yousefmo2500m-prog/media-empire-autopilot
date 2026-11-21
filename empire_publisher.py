@@ -566,9 +566,9 @@ def publish_channel_via_make(
         tt_acc = os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip() or ch.get("accounts", {}).get("tiktok", "")
         if tt_key and tt_acc:
             tt_caption = (
-                f"{s_title}\n\nتختار ١ ولا ٢؟ اكتب في التعليقات! 👇\n#قصص #حكايات #{ch['brand_name'].replace(' ', '_')}"
+                f"{s_title}\n\nلو عجبك المقطع متنساش تدوس لايك وتشترك في القناة وتكتبلنا رأيك في التعليقات! 👇\n#قصص #حكايات #{ch['brand_name'].replace(' ', '_')}"
                 if ch.get("language") == "ar"
-                else f"{s_title}\n\nWould you pick 1 or 2? Comment below! 👇\n#shorts #mystery #{ch['brand_name'].replace(' ', '')}"
+                else f"{s_title}\n\nMake sure to like and subscribe for more stories! Drop your thoughts below! 👇\n#shorts #mystery #{ch['brand_name'].replace(' ', '')}"
             )
             tt_payload = {
                 "content": tt_caption[:2000],
@@ -736,24 +736,20 @@ def publish_channel_funnel(
 
     if lang == "ar":
         subscribe_block = (
-            f"اشترك في قناة «{brand_name}» ({yt_handle}) وفعل الجرس لتصلك أقوى القصص الواقعية والألغاز الغامضة يومياً!\n"
-            f"{comment_question if comment_question else 'اكتب توقعك في التعليقات قبل أن تصل للمشهد الأخير.. هل كشفت الخيط المخفي من البداية؟'}"
+            f"اشترك في قناة «{brand_name}» ({yt_handle}) وفعل الجرس لتصلك أقوى القصص الواقعية والألغاز الغامضة أول بأول!\n"
+            "متنساش تدوس لايك وتشترك في القناة لدعمنا في نشر حكايات أكتر.. وشاركنا رأيك في التعليقات!"
         )
         first_comment_long = (
-            comment_question
-            if comment_question
-            else "في أي دقيقة من الحلقة اكتشفت الحقيقة؟ اكتب توقعك في الردود!"
+            "لو عجبك الفيديو متنساش تدوس لايك وتشترك في القناة وتفعل الجرس علشان تتابع الحكايات والتحقيقات الجاية أول بأول.. وشاركنا رأيك في التعليقات تحت!"
         )
         hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '_')}" for t in tags_list[:8])
     else:
         subscribe_block = (
-            f"Subscribe to {brand_name} ({yt_handle}) and turn on notifications for daily full-length true mysteries & thrillers!\n"
-            f"{comment_question if comment_question else 'Drop your theory in the comments before the final twist — did you catch the hidden clue early?'}"
+            f"Subscribe to {brand_name} ({yt_handle}) and turn on notifications for upcoming full-length true mysteries & thrillers!\n"
+            "Don't forget to drop a like and subscribe to support the channel.. share your thoughts in the comments below!"
         )
         first_comment_long = (
-            comment_question
-            if comment_question
-            else "At what exact timestamp did you figure out the truth? Tell us your theory below!"
+            "If you enjoyed this episode, make sure to like and subscribe with notifications on so you never miss our next investigation.. drop your thoughts in the comments below!"
         )
         hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '')}" for t in tags_list[:8])
 
@@ -855,37 +851,37 @@ def publish_channel_funnel(
         debate_line = str(episode_meta.get(item["cta_key"]) or "").strip()
 
         if lang == "ar":
-            debate_prompt_short = "تختار ١ ولا ٢؟ اكتب رقمك في التعليقات!"
+            natural_cta_short = "متنساش تدوس لايك وتشترك في القناة وتكتبلنا رأيك في التعليقات!"
             first_comment_cta = (
-                f"{debate_prompt_short}\n"
-                f"شاهد الحلقة الكاملة بكل تفاصيلها ونهايتها الصادمة الآن على قناتنا ({yt_handle}):\n{yt_link_text}"
+                f"لو عجبك المقطع متنساش تشترك وتعمل لايك علشان تشوف باقي الحكايات أول بأول..\n"
+                f"شاهد الحلقة الكاملة بكل تفاصيلها الآن على قناتنا ({yt_handle}):\n{yt_link_text}"
             )
             fb_reel_caption = (
                 f"{clean_title_no_tags}\n"
-                f"{debate_line or debate_prompt_short}\n"
+                f"{debate_line or natural_cta_short}\n"
                 f"الحلقة الكاملة في أول تعليق!\n"
                 f"#ريلز #قصص_واقعية #حكايات #غموض #{brand_name.replace(' ', '_')}"
             )
             tt_caption = (
                 f"{clean_title_no_tags}\n"
-                f"{debate_prompt_short} — القصة الكاملة على حسابنا «{brand_name}»\n"
+                f"{natural_cta_short} — القصة الكاملة على حسابنا «{brand_name}»\n"
                 f"{tt_hashtags}"
             )
         else:
-            debate_prompt_short = "Would you pick 1 or 2? Comment your number below!"
+            natural_cta_short = "Make sure to like and subscribe to catch our next stories.. and share your thoughts below!"
             first_comment_cta = (
-                f"{debate_prompt_short}\n"
-                f"Watch the full 16-minute story & shocking ending on our channel ({yt_handle}):\n{yt_link_text}"
+                f"Drop a like and subscribe so you never miss our upcoming thrillers!\n"
+                f"Watch the full 16-minute story on our channel ({yt_handle}):\n{yt_link_text}"
             )
             fb_reel_caption = (
                 f"{clean_title_no_tags}\n"
-                f"{debate_line or debate_prompt_short}\n"
+                f"{debate_line or natural_cta_short}\n"
                 f"Full episode link in the first comment!\n"
                 f"#reels #truestory #mystery #plotwist #{brand_name.replace(' ', '')}"
             )
             tt_caption = (
                 f"{clean_title_no_tags}\n"
-                f"{debate_prompt_short} — Full story on {brand_name}\n"
+                f"{natural_cta_short} — Full story on {brand_name}\n"
                 f"{tt_hashtags}"
             )
 
