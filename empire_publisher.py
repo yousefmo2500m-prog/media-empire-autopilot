@@ -7,6 +7,7 @@
 - يرفع الأغلفة المخصصة لكل من الفيلم الطويل (`16:9` المتمركز) والشورتس/الريلز/تيك توك (`9:16` الطولي) مع إعادة المحاولة التلقائية ضد أي خطأ شبكي عابر!
 """
 
+import base64
 import datetime as dt
 import os
 import re
@@ -427,8 +428,21 @@ def publish_channel_via_make(
 
     print(f"[{ch['id']}] ⏰ جدولة الفيلم الطويل رسمياً لأعلى ريتش عند: {target_slot_utc.strftime('%Y-%m-%d %H:%M:%S UTC')}", flush=True)
 
-    long_cdn = stage_file_to_github_cdn(long_mp4)
-    thumb_cdn = stage_file_to_github_cdn(thumbnail_jpg)
+    prefix = ch.get("env_prefix", "")
+    tt_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
+
+    try:
+        if long_mp4.stat().st_size > 40 * 1024 * 1024 and tt_key:
+            long_cdn = upload_media_to_zernio(tt_key, long_mp4, mime_type="video/mp4")
+        else:
+            long_cdn = stage_file_to_github_cdn(long_mp4)
+    except Exception:
+        long_cdn = upload_media_to_zernio(tt_key, long_mp4, mime_type="video/mp4") if tt_key else stage_file_to_github_cdn(long_mp4)
+
+    try:
+        thumb_cdn = stage_file_to_github_cdn(thumbnail_jpg)
+    except Exception:
+        thumb_cdn = upload_media_to_zernio(tt_key, thumbnail_jpg, mime_type="image/jpeg") if tt_key else ""
 
     title_yt = build_youtube_title(episode_meta, ch)
     desc_yt = build_youtube_description(episode_meta, ch)
