@@ -371,6 +371,122 @@ def _post_zernio_resilient(
     return last_resp
 
 
+def stage_file_to_github_cdn(file_path: Path) -> str:
+    """رفع الملف إلى فرع media-cdn بسحابة GitHub ليتوفر فوراً عبر jsDelivr CDN فائق السرعة وبدون وسيط"""
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN", "")
+    repo = os.environ.get("GITHUB_REPOSITORY") or "yousefmo2500m-prog/media-empire-autopilot"
+    fname = f"latest/{file_path.name}"
+    url = f"https://api.github.com/repos/{repo}/contents/cdn/{fname}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json"
+    }
+    sha = None
+    try:
+        r_chk = requests.get(url + "?ref=media-cdn", headers=headers, timeout=10)
+        if r_chk.status_code == 200:
+            sha = r_chk.json().get("sha")
+    except Exception:
+        pass
+
+    with open(file_path, "rb") as f:
+        content_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+    body = {
+        "message": f"Stage {file_path.name} to CDN",
+        "content": content_b64,
+        "branch": "media-cdn"
+    }
+    if sha:
+        body["sha"] = sha
+
+    r = requests.put(url, headers=headers, json=body, timeout=60)
+    if r.status_code in (200, 201):
+        cdn_url = f"https://cdn.jsdelivr.net/gh/{repo}@media-cdn/cdn/{fname}"
+        print(f"  [✓] Staged to jsDelivr CDN: {cdn_url}", flush=True)
+        return cdn_url
+    raise RuntimeError(f"Failed to stage {file_path.name} to GitHub CDN: {r.status_code} {r.text[:200]}")
+
+
+def publish_channel_via_make(
+    ch: Dict[str, Any],
+    make_url: str,
+    episode_meta: Dict[str, Any],
+    long_mp4: Path,
+    thumbnail_jpg: Path,
+    short1_mp4: Path,
+    short2_mp4: Path,
+    short3_mp4: Optional[Path] = None,
+    short4_mp4: Optional[Path] = None,
+    target_slot_utc: Optional[dt.datetime] = None,
+) -> Dict[str, Any]:
+    """نشر وجدولة الحلقة الكاملة والـ 4 مقاطع شورتس عبر Make.com مع القفل الزمني لأقصى ريتش خوارزمي"""
+    now_utc = dt.datetime.now(dt.timezone.utc)
+    if target_slot_utc is None or (target_slot_utc - now_utc).total_seconds() < 300.0:
+        target_slot_utc = now_utc + dt.timedelta(minutes=20)
+
+    print(f"[{ch['id']}] ⏰ جدولة الفيلم الطويل رسمياً لأعلى ريتش عند: {target_slot_utc.strftime('%Y-%m-%d %H:%M:%S UTC')}", flush=True)
+
+    long_cdn = stage_file_to_github_cdn(long_mp4)
+    thumb_cdn = stage_file_to_github_cdn(thumbnail_jpg)
+
+    title_yt = build_youtube_title(episode_meta, ch)
+    desc_yt = build_youtube_description(episode_meta, ch)
+    caption_fb = build_facebook_post(episode_meta, ch)
+    first_comm = episode_meta.get("pinned_comment") or f"برأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇"
+
+    payload_long = {
+        "channel_id": ch["id"],
+        "channel_name": ch["brand_name"],
+        "video_type": "long_documentary",
+        "video_url": long_cdn,
+        "thumbnail_url": thumb_cdn,
+        "facebook_caption": caption_fb,
+        "youtube_title": title_yt[:95],
+        "youtube_description": desc_yt,
+        "first_comment": first_comm,
+        "is_scheduled": True,
+        "publish_time_iso": target_slot_utc.isoformat(),
+        "publish_time_unix": int(target_slot_utc.timestamp()),
+    }
+    r_long = requests.post(make_url, json=payload_long, timeout=60)
+    print(f"[{ch['id']}] تم إرسال الفيلم الطويل مجدولاً إلى Make.com ({r_long.status_code})", flush=True)
+
+    results = {"long_movie": {"make_status": r_long.status_code}}
+
+    shorts_files = [
+        ("short_3", short3_mp4, 1.0),
+        ("short_1", short1_mp4, 3.5),
+        ("short_4", short4_mp4, 6.0),
+        ("short_2", short2_mp4, 9.0),
+    ]
+    for s_id, s_path, delay_h in shorts_files:
+        if s_path is None or not s_path.exists():
+            continue
+        s_sched = target_slot_utc + dt.timedelta(hours=delay_h)
+        s_cdn = stage_file_to_github_cdn(s_path)
+        s_title = f"{episode_meta.get('title', ch['brand_name'])} | #{ch['brand_name'].replace(' ', '_')} #Shorts"
+        s_payload = {
+            "channel_id": ch["id"],
+            "channel_name": ch["brand_name"],
+            "video_type": s_id,
+            "video_url": s_cdn,
+            "facebook_caption": f"⚠️ {s_title}\n\n{first_comm}\n\n#ريلز #شورتس #{ch['brand_name'].replace(' ', '_')}",
+            "youtube_title": s_title[:95],
+            "youtube_description": f"{s_title}\n\n{first_comm}\n\n#Shorts #ريلز",
+            "first_comment": first_comm,
+            "is_scheduled": True,
+            "publish_time_iso": s_sched.isoformat(),
+            "publish_time_unix": int(s_sched.timestamp()),
+        }
+        r_s = requests.post(make_url, json=s_payload, timeout=60)
+        print(f"[{ch['id']}] تم إرسال {s_id} مجدولاً عند ({s_sched.strftime('%H:%M UTC')}) إلى Make.com ({r_s.status_code})", flush=True)
+        results[s_id] = {"make_status": r_s.status_code, "scheduled_time": s_sched.isoformat()}
+        time.sleep(2)
+
+    return results
+
+
 def publish_channel_funnel(
     ch: Dict[str, Any],
     episode_meta: Dict[str, Any],
@@ -388,6 +504,26 @@ def publish_channel_funnel(
     target_slot_utc: Optional[dt.datetime] = None,
 ) -> Dict[str, Any]:
     prefix = ch["env_prefix"]  # CH1 / CH2 / CH3 / CH4
+    make_webhook = (
+        os.environ.get(f"{prefix}_MAKE_WEBHOOK", "").strip()
+        or os.environ.get(f"MAKE_WEBHOOK_{prefix}", "").strip()
+        or os.environ.get("MAKE_WEBHOOK_URL", "").strip()
+    )
+    if make_webhook:
+        print(f"[{ch['id']}] 🚀 اكتشاف Make.com Webhook رسمي للقناة — توجيه النشر المجدول لسحابة Make...", flush=True)
+        return publish_channel_via_make(
+            ch=ch,
+            make_url=make_webhook,
+            episode_meta=episode_meta,
+            long_mp4=long_mp4,
+            thumbnail_jpg=thumbnail_jpg,
+            short1_mp4=short1_mp4,
+            short2_mp4=short2_mp4,
+            short3_mp4=short3_mp4,
+            short4_mp4=short4_mp4,
+            target_slot_utc=target_slot_utc,
+        )
+
     main_key = os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
     if not main_key:
         raise RuntimeError(f"مفتاح {prefix}_ZERNIO_KEY غير موجود في Secrets")
