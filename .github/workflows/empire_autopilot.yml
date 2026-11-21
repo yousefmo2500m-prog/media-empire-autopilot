@@ -120,6 +120,11 @@ jobs:
           CH4_ZERNIO_KEY: ${{ secrets.CH4_ZERNIO_KEY }}
           CH4_TIKTOK_ZERNIO_KEY: ${{ secrets.CH4_TIKTOK_ZERNIO_KEY }}
           CH4_TIKTOK_ACCOUNT_ID: ${{ secrets.CH4_TIKTOK_ACCOUNT_ID }}
+          CH1_MAKE_WEBHOOK: ${{ secrets.CH1_MAKE_WEBHOOK }}
+          CH2_MAKE_WEBHOOK: ${{ secrets.CH2_MAKE_WEBHOOK }}
+          CH3_MAKE_WEBHOOK: ${{ secrets.CH3_MAKE_WEBHOOK }}
+          CH4_MAKE_WEBHOOK: ${{ secrets.CH4_MAKE_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python -u run_empire.py --channel "${{ steps.target.outputs.channel }}"
 
