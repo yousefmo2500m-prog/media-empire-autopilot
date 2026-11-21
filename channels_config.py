@@ -34,7 +34,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "accounts": {
             "youtube": "6ae7d5c23b672b526b862ccc",
             "facebook": "6afdb80a43ad97b38144b894",
-            "tiktok": "6ae7da8c161bb07c0b158462",
+            "tiktok": "6b0109d545f3a06044979b84",
         },
         "language": "ar",
         "niche": "eg_diverse_novels",
@@ -134,7 +134,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "accounts": {
             "youtube": "6ae7d71dd515e7485027735d",
             "facebook": "6afdb873c92019081e499fa1",
-            "tiktok": "6ae7dade79a3bd79b94be415",
+            "tiktok": "6b010a62a3ec26568132acb5",
         },
         "language": "ar",
         "niche": "eg_conan_detective",
@@ -234,7 +234,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "accounts": {
             "youtube": "6ae7d81a3a502a73a1634519",
             "facebook": "6afdc65779436b32ce49acb4",
-            "tiktok": "6ae7db62c5b7eb7a48c705db",
+            "tiktok": "6b010e0906a30b0ea8c82957",
         },
         "language": "en",
         "niche": "en_diverse_stories",
@@ -335,7 +335,7 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
         "accounts": {
             "youtube": "6ae7d871bdfac131ee354bcd",
             "facebook": "6afdc76147cc7214709c73ad",
-            "tiktok": "6ae7dbac97252a684ca5e37f",
+            "tiktok": "6b010d8569dec8bf7030cd4a",
         },
         "language": "en",
         "niche": "en_detective_mystery",
