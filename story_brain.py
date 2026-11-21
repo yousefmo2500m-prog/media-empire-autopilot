@@ -265,6 +265,71 @@ def _sanitize_modest_action_prompt(p: str) -> str:
     return re.sub(r"\s+", " ", out).strip(" ,.-")
 
 
+def scout_viral_trends_and_angles(
+    channel_cfg: Dict[str, Any],
+    api_key: str,
+    used_topics: List[str],
+) -> Dict[str, Any]:
+    """
+    محرك استكشاف التريندات والميكانيكيات الفيروسية الأكثر بحثاً على يوتيوب:
+    يقوم بتحليل أكثر زوايا القصص والعناوين التي تحقق ملايين المشاهدات واقتطاف أفضل تركيبة نفسية
+    تضمن أعلى نسبة نقر (CTR) وأطول مدة احتفاظ بالمشاهد (Retention) قبل صياغة السيناريو!
+    """
+    lang = channel_cfg.get("language", "ar")
+    brand = channel_cfg.get("brand_name", "")
+    pillars = channel_cfg.get("constitution", {}).get("approved_pillars", [])
+    pillars_labels = [p.get("label", "") for p in pillars]
+
+    if lang == "ar":
+        sys_p = "أنت خبير خوارزميات يوتيوب وصانع المحتوى الفيروسي الأقوى في الشرق الأوسط (متخصص في قصص الجريمة والغموض والتحقيقات النفسية الواقعية مثل سامح سند وبيسوهات ومستر بالن)."
+        usr_p = f"""
+حلل أحدث صيحات البحث الفيروسي وميكانيكيات التفاعل الأعلى مشاهدة على يوتيوب حالياً.
+القناة: {brand}
+التصنيفات المعتمدة المتنوعة للقناة: {json.dumps(pillars_labels, ensure_ascii=False)}
+المواضيع التي استهلكت مؤخراً (ممنوع تكرارها): {used_topics[-15:]}
+
+المطلوب استكشاف زاوية قصة فيروسية مبتكرة وغير مسبوقة تكسر النمطية والتكرار تماماً (يمكن أن تكون: غموض نفسي معقد، أو لغز تاريخي غامض، أو عملية احتيال وذكاء ساخر مذهلة، أو قصة نجاة مستحيلة، أو واقعة غريبة لا يصدقها عقل)، وصياغة عناصر الجذب الفيروسي:
+
+أخرج JSON فقط:
+{{
+  "trend_angle": "وصف الزاوية الفيروسية الاستثنائية الأكثر إثارة للفضول",
+  "high_ctr_hook_title": "عنوان يوتيوب فضولي عالي النقر والنفاذ في خوارزميات الاقتراح",
+  "thumbnail_shock_element": "عنصر الصدمة البصري الرئيسي للغلاف الذي يجبر المشاهد على التوقف والنقر",
+  "curiosity_gap_secret": "السر المدفون أو المفارقة العقلية التي لا يمكن معرفتها إلا بمشاهدة الحلقة للنهاية"
+}}
+"""
+    else:
+        sys_p = "You are an elite YouTube Algorithm Director specializing in viral crime, mystery, and thriller content (like MrBallen and Coffeehouse Crime)."
+        usr_p = f"""
+Analyze current high-CTR YouTube search trends and viral triggers in true crime, psychological suspense, and unbelievable mysteries.
+Channel: {brand}
+Recent used topics (do not repeat): {used_topics[-15:]}
+
+Discover an unprecedented viral story angle that shatters monotony (psychological twist, bizarre survival, high-IQ heist, or forgotten historical enigma).
+
+Return valid JSON only:
+{{
+  "trend_angle": "The unique, irresistible viral curiosity angle",
+  "high_ctr_hook_title": "High-CTR search-optimized YouTube title",
+  "thumbnail_shock_element": "The shocking visual focal hook for the thumbnail",
+  "curiosity_gap_secret": "The jaw-dropping twist or hidden revelation"
+}}
+"""
+    try:
+        res = _groq_json(api_key, sys_p, usr_p, max_tokens=1200)
+        if res and res.get("trend_angle"):
+            return res
+    except Exception as exc:
+        print(f"[{channel_cfg.get('id')}][SCOUT-WARN] تعذر استكشاف التريند مؤقتاً ({exc})", flush=True)
+
+    return {
+        "trend_angle": "غموض نفسي واقعي وتحقيق غير مسبوق في سر اختفاء مفاجئ",
+        "high_ctr_hook_title": "سر الحادث الذي صدم الجميع | القصة الكاملة",
+        "thumbnail_shock_element": "باب مفتوح في الظلام مع ضوء ساطع وبطل مصدوم من المفاجأة",
+        "curiosity_gap_secret": "خيط صغير متناقض في الأدلة يقلب القضية رأساً على عقب"
+    }
+
+
 def generate_full_episode_and_short(
     channel_cfg: Dict[str, Any],
     api_key: str,
@@ -296,6 +361,10 @@ def generate_full_episode_and_short(
         except Exception as dir_exc:
             print(f"[{cid}][AI-DIRECTOR-WARN] استخدام التناوب الافتراضي الآمن ({dir_exc})", flush=True)
 
+    # استكشاف التريندات الفيروسية الأكثر بحثاً قبل بناء أي حلقة
+    viral_scout = scout_viral_trends_and_angles(channel_cfg, api_key, used)
+    print(f"[{cid}][VIRAL-SCOUT] 🔥 استكشاف التريند الفيروسي: {viral_scout.get('trend_angle', '')[:80]}...", flush=True)
+
     if lang == "ar":
         if niche == "eg_conan_detective":
             flavor = selected_flavor or EG_CONAN_CASES[ep_count % len(EG_CONAN_CASES)]
@@ -315,9 +384,15 @@ def generate_full_episode_and_short(
         blueprint_prompt = f"""
 {director_brief}
 
+تحليل الاستكشاف الفيروسي المسبق لليوم (Viral Intelligence):
+- زاوية الصدمة الفيروسية: {viral_scout.get('trend_angle')}
+- مقترح العنوان الأكثر نقراً: {viral_scout.get('high_ctr_hook_title')}
+- عنصر الغلاف الفيروسي: {viral_scout.get('thumbnail_shock_element')}
+- اللغز المحير: {viral_scout.get('curiosity_gap_secret')}
+
 الأفكار المستعملة سابقاً (ممنوع تكرارها نهائياً): {used}
 
-صمّمي حلقة إثارة نفسية واقعية / تحقيق ذكي لا يمكن التوقف عن سماعها (+16 دقيقة، تبدأ بمقدمة تشويقية نارية + 12 مشهداً) من فئة:
+صمّمي حلقة إثارة نفسية واقعية / تحقيق ذكي لا يمكن التوقف عن سماعها (+16 دقيقة، تبدأ بمقدمة تشويقية نارية + 12 مشهداً متصلة كفيلم سينمائي متكامل) من فئة:
 «{flavor}»
 
 قواعد الخوارزميات والجذب النفسي لعام 2026:
@@ -328,7 +403,7 @@ def generate_full_episode_and_short(
    - `short_1_hook_intro` و `short_2_hook_intro`: جملة خطف نارية في أول 4 ثوانٍ (15–20 كلمة بالعامية المصرية) للشورتين العميقين.
    - `short_3_hook_intro` و `short_4_hook_intro`: جملة صدمة خاطفة سريعة جداً في أول 3 ثوانٍ (10–13 كلمة بالعامية المصرية) للشورتين الخاطفين (<55 ثانية).
    - `short_1_banner_top` إلى `short_4_banner_top`: شريط عنوان علوي من **5 إلى 7 كلمات فقط** يوقف المشاهد الكاتم للصوت في الثانية صفر!
-   - `short_1_debate_cta` إلى `short_4_debate_cta`: جملة قفلة صوتية جدلية باختيارين (`واحد ... ولا اتنين ...؟ اكتب رقمك في التعليقات!`) مرتبطة بأحداث القصة فعلياً لتفجير التعليقات!
+   - `short_1_debate_cta` إلى `short_4_debate_cta`: دعوة تفاعل بشرية ذكية وطبيعية تحث المشاهد على الاشتراك واللايك وكتابة رأيه في التعليقات بدون أي أسئلة روبوتية!
 3. عنوان اليوتيوب (`youtube_title`): **عنوان يجمع الإثارة العالية + كلمات البحث الأكثر طلباً على يوتيوب** (ينتهي بـ `| قصة واقعية كاملة` أو `| لغز جريمة محير` — أقل من 85 حرفاً بدون حرق الحل) + نص الغلاف المصغّر (`thumbnail_hook_text`: **جملة صادمة مكتملة من 3 أو 4 كلمات فقط**).
 4. نهاية **المشهد 2** = ذروة أدرينالين أولى (الشورت 1). نهاية **المشهد 5** = صدمة الدليل الغريب (الشورت الخاطف 3). نهاية **المشهد 7** = ذروة منتصف القصة (الشورت 2). نهاية **المشهد 10** = لحظة المواجهة قبل كشف الحل (الشورت الخاطف 4).
 
@@ -338,7 +413,7 @@ def generate_full_episode_and_short(
   "youtube_title": "عنوان يوتيوب ناري يدمج كلمة بحث قوية مثل: قصة واقعية كاملة / لغز جريمة غامض (أقل من 85 حرفاً)",
   "thumbnail_hook_text": "جملة صادمة مكتملة من 3 أو 4 كلمات للغلاف",
   "thumbnail_banner_top": "مقتطف من ذروة الأحداث — تابع للنهاية!",
-  "thumbnail_prompt": "Hyper-realistic 8k 35mm thriller movie frame, 16:9 widescreen single continuous camera shot: a shocked Egyptian protagonist centered in the upper middle of the frame illuminated by vivid electric-blue phone glow and dramatic crimson rim light, mysterious lit apartment hallway behind them, rich cinematic contrast, ARRI Alexa cinema still, zero text, zero letters, zero logos",
+  "thumbnail_prompt": "Hyper-realistic 8k 35mm thriller movie frame, 16:9 widescreen single continuous camera shot: a shocked protagonist illuminated by eerie atmospheric door glow and dramatic crimson rim light in a dark mystery hallway at night, rich cinematic contrast, ARRI Alexa cinema still, zero text, zero letters, zero logos",
   "teaser_intro": "النص الكامل للمقدمة التشويقية النارية (80–95 كلمة بالعامية المصرية الحية مع فواصل .. بدون حرق الحل، تجبر المشاهد يكمل للنهاية)",
   "short_1_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الأول (16 كلمة بالعامية المصرية)",
   "short_2_hook_intro": "جملة خطف نارية في أول 4 ثوانٍ للشورت الثاني (16 كلمة بالعامية المصرية)",
@@ -348,10 +423,10 @@ def generate_full_episode_and_short(
   "short_2_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الثاني",
   "short_3_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الثالث",
   "short_4_banner_top": "شريط عنوان علوي صادم من 6 كلمات للشورت الرابع",
-  "short_1_debate_cta": "لو انت مكانه في اللحظة دي: واحد ... ولا اتنين ...؟ اكتب واحد أو اتنين في التعليقات واسمع القصة كاملة على قناتنا!",
-  "short_2_debate_cta": "تفتكر إيه السر هنا: واحد ... ولا اتنين ...؟ اكتب واحد أو اتنين في التعليقات وكمل الحكاية كاملة على قناتنا!",
-  "short_3_debate_cta": "بسرعة لو مكانه: واحد ... ولا اتنين ...؟ اكتب رقمك في التعليقات!",
-  "short_4_debate_cta": "تفتكر مين الجاني الحقيقي: واحد ... ولا اتنين ...؟ اكتب واحد أو اتنين في التعليقات!",
+  "short_1_debate_cta": "لو عجبك المقطع متنساش تشترك في القناة وتعمل لايك علشان تشوف الحكايات الجاية أول بأول.. وقولنا رأيك وتوقعك في التعليقات تحت!",
+  "short_2_debate_cta": "اشترك في القناة وفعل الجرس واعمل لايك علشان تتابع باقي الحكاية كاملة أول بأول.. ومستني رأيك وتوقعك في التعليقات!",
+  "short_3_debate_cta": "دوس لايك واشترك في القناة علشان حكاياتنا الجديدة متفوتكش كل يوم.. وقولنا في التعليقات حسيت بإيه!",
+  "short_4_debate_cta": "اشترك في القناة واعمل لايك عشان تدعمنا في نشر حكايات أكتر.. واكتب توقعك للي حصل في الكومنتات تحت!",
   "short_1_title": "عنوان ناري للشورت الأول يخطف الانتباه فوراً + #shorts #قصص_واقعية #غموض",
   "short_2_title": "عنوان ناري مختلف للشورت الثاني من ذروة منتصف القصة + #shorts #تشويق #حكايات",
   "short_3_title": "عنوان صاعق قصير للشورت الثالث السريع + #shorts #قصة_حقيقية #مفاجأة",
@@ -391,9 +466,15 @@ def generate_full_episode_and_short(
         blueprint_prompt = f"""
 {director_brief}
 
+Pre-Scouted YouTube Viral Intelligence:
+- Viral Angle: {viral_scout.get('trend_angle')}
+- Suggested High-CTR Hook Title: {viral_scout.get('high_ctr_hook_title')}
+- High-Tension Thumbnail Element: {viral_scout.get('thumbnail_shock_element')}
+- Core Psychological Mystery: {viral_scout.get('curiosity_gap_secret')}
+
 Avoid all previously used premises: {used}
 
-Design a hyper-realistic, unputdownable 16-minute episode (25-second Cold-Open Teaser Intro + 12 Scenes) for:
+Design a hyper-realistic, unputdownable 16-minute continuous movie episode (25-second Cold-Open Teaser Intro + 12 Scenes) for:
 "{flavor}"
 
 Return exact valid JSON:
@@ -412,10 +493,10 @@ Return exact valid JSON:
   "short_2_banner_top": "6-word shocking uppercase top hook banner #2",
   "short_3_banner_top": "6-word shocking uppercase top hook banner #3",
   "short_4_banner_top": "6-word shocking uppercase top hook banner #4",
-  "short_1_debate_cta": "Freeze right there! Type 1 in the comments if you would ..., or type 2 if you would ...! Watch the full story on our channel!",
-  "short_2_debate_cta": "Hold on! Type 1 if you think ..., or type 2 if you think ...! Drop 1 or 2 below and catch the full twist on our channel!",
-  "short_3_debate_cta": "Quick—type 1 if you ..., or type 2 if you ...! Drop your pick in the comments!",
-  "short_4_debate_cta": "Who was behind it: type 1 for ..., or type 2 for ...! Comment 1 or 2 now!",
+  "short_1_debate_cta": "Make sure to subscribe and drop a like so you never miss our next psychological thriller.. and share your thoughts in the comments below!",
+  "short_2_debate_cta": "Hit that subscribe button and leave a like to catch the full story.. what would you have done? Let us know down in the comments!",
+  "short_3_debate_cta": "Subscribe for more chilling stories and hit like if this gave you goosebumps.. drop your thoughts in the comments!",
+  "short_4_debate_cta": "Don't forget to like and subscribe to stay tuned for our next episode.. leave your reaction down in the comments!",
   "short_1_title": "Viral hook title #1 + #shorts #storytime #thriller",
   "short_2_title": "Viral mid-story climax title #2 + #shorts #mystery #plotwist",
   "short_3_title": "Fast viral cliffhanger title #3 + #shorts #truestory #creepy",
@@ -508,6 +589,7 @@ Return exact valid JSON:
 2. ممنوع أي كلمة فصحى أو مترجمة (التي، الذي، حيث، فندق مهجور، رمز ميكانيكي)! احكي بالعامية القاهرية الحية السلسة مع فواصل تنفس قصيرة `..`.
 3. في المشهد 4 والمشهد 10 ضعي **جسر تشويق طبيعي** يشد انتباه المشاهد عشان ميكسلش أو يخرج (مثلاً: «بس استنى.. لأن اللي حصل بعد دقيقتين بالظبط هو اللي قلب الموازين كلها..»).
 4. لو المشهد رقم **2** موجود هنا: اختميه في قمة الذروة النارية المعلقة! ولو المشهد رقم **7** موجود هنا: اختميه قبل انكشاف مفاجأة المنتصف بثانية واحدة!
+5. في المشهد رقم **11** أو **12** (قرب نهاية القصة): ادمجي في سياق الكلام جملة تفاعل بشرية دافئة جداً: «لو وصلت معايا للنقطة دي من الحكاية وعجبتك.. متنساش تدوس لايك وتشترك في القناة وتفعل الجرس علشان الحكايات الجاية متفوتكش.. ودلوقتي جه الوقت اللي نكشف فيه السر اللي دوّخ الجميع..» واختمي المشهد 12 بدعوة حماسية لكتابة آرائهم وتوقعاتهم في التعليقات!
 
 أرجعي JSON فقط:
 {{
@@ -529,6 +611,7 @@ Retention Rules:
 1. Length per scene: **260 to 295 words** of hyper-realistic, conversational spoken American storytelling with subtle `...` pauses.
 2. Add a natural spoken retention bridge in Scene 4 and Scene 10 ("But hold on—because what showed up two minutes later changed everything...").
 3. End Scene 2 on Peak Climax #1, and end Scene 7 one heartbeat before the mid-story twist!
+4. In Scene 11 or 12: Naturally weave in a warm, direct spoken CTA: 'If you made it this far and enjoyed the story, don't forget to hit like and subscribe with notifications on so you catch our upcoming cases.. now let's reveal the shocking truth..' and invite viewer theories in the comments at the very end!
 
 Return valid JSON only:
 {{

@@ -376,7 +376,9 @@
                 "type": "data",
                 "page_id": null,
                 "fileName": "video.mp4",
-                "description": "{{ifempty(1.facebook_caption; 1.caption)}}"
+                "description": "{{ifempty(1.facebook_caption; 1.caption)}}",
+                "published": "{{if(1.is_scheduled; false; true)}}",
+                "scheduled_publish_time": "{{1.publish_time_unix}}"
               },
               "metadata": {
                 "designer": {
@@ -623,9 +625,10 @@
                 "fileName": "video.mp4",
                 "categoryId": "24",
                 "description": "{{ifempty(1.youtube_description; 1.description)}}",
-                "privacyStatus": "public",
+                "privacyStatus": "{{if(1.is_scheduled; \"private\"; \"public\")}}",
                 "containsSyntheticMedia": false,
-                "selfDeclaredMadeForKids": false
+                "selfDeclaredMadeForKids": false,
+                "publishAt": "{{1.publish_time_iso}}"
               },
               "metadata": {
                 "designer": {

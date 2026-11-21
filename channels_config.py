@@ -115,13 +115,49 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                         "تجر البطل وراء خيط يكشف حياة مزدوجة مستحيلة لشخص كان يثق فيه ثقة عمياء"
                     ),
                 },
+                {
+                    "id": "eg_thr_dark_comedy_heist",
+                    "label": "حيل وذكاء بشري كوميدي غامض",
+                    "keywords": ["حيلة", "نصب", "مفارقة", "ذكاء", "سرقة", "خطة", "مقلب"],
+                    "prompt_seed": (
+                        "قصة ذكاء بشري واحتيال عبقري ومفارقات ساخرة مليئة بالتشويق والضحك الأسود: "
+                        "نصاب يقع في شر أعماله، أو خطة محكمة تنقلب على أصحابها بطريقة مضحكة وغامضة في نفس الوقت"
+                    ),
+                },
+                {
+                    "id": "eg_thr_historical_mystery",
+                    "label": "أسرار وتاريخ مصر الغامض",
+                    "keywords": ["تاريخ", "قصر", "وثيقة", "كنز", "مصر القديمة", "حارة", "مخطوطة"],
+                    "prompt_seed": (
+                        "غموض تاريخي واقعي حول وثيقة سرية أو قصر مهجور من زمن الباشوات أو لغز حقيقي "
+                        "من تاريخ مصر تتشابك خيوطه مع أحداث معاصرة تكشف سراً لا يصدق"
+                    ),
+                },
+                {
+                    "id": "eg_thr_unbelievable_survival",
+                    "label": "قصص بقاء ونجاة واقعية مستحيلة",
+                    "keywords": ["نجاة", "صحراء", "بقاء", "خطر", "مأزق", "حادث", "مواجهة"],
+                    "prompt_seed": (
+                        "قصة حبس أنفاس حقيقية لشخص وجد نفسه في مأزق مميت ومستحيل في قلب الصحراء أو مكان معزول، "
+                        "وقاتل من أجل النجاة بالصبر والذكاء حتى النهاية الصادمة"
+                    ),
+                },
+                {
+                    "id": "eg_thr_bizarre_true_events",
+                    "label": "أغرب الحوادث والظواهر الواقعية المدهشة",
+                    "keywords": ["حادثة", "غرابة", "لغز حقيقي", "صدمة", "واقعة", "تحقيق"],
+                    "prompt_seed": (
+                        "أحداث حقيقية واقعية أغرب من الخيال صدمت المحققين والرأي العام، "
+                        "تفاصيلها لا يصدقها عقل وتثبت أن الواقع أحياناً أغرب بكثير من أي فيلم خيالي"
+                    ),
+                },
             ],
         },
-        "cta_spoken_1": "اقف عند اللحظة دي! لو انت مكانه دلوقتي: واحد تواجهه فوراً باللي شفته؟ ولا اتنين تسكت وتراقبه في السر لحد الفجر؟ اكتب واحد أو اتنين في التعليقات واسمع القصة كاملة على قناتنا!",
-        "cta_spoken_2": "ثانية واحدة! التفصيلة دي قلبت كل حاجة! تفتكر واحد كانت صدفة مستحيلة؟ ولا اتنين فخ متخطط بدم بارد؟ اكتب واحد أو اتنين في التعليقات وكمل الحكاية كاملة دلوقتي!",
-        "cta_spoken_3": "لو انت مكانه في الثانية دي: واحد تفتح الباب وتواجهه؟ ولا اتنين تهرب وتقفل على نفسك؟ اكتب رقمك في التعليقات!",
-        "cta_spoken_4": "تفتكر مين اللي كدب فيهم: واحد أقرب صاحب ليه؟ ولا اتنين الشخص اللي محدش شك فيه؟ اكتب واحد أو اتنين في التعليقات!",
-        "cta_banner": "اكتب ١ أو ٢ في التعليقات! القصة الكاملة على القناة",
+        "cta_spoken_1": "لو عجبك المقطع متنساش تشترك في القناة وتعمل لايك علشان تشوف الحكايات الجاية أول بأول.. وقولنا رأيك وتوقعك في التعليقات تحت!",
+        "cta_spoken_2": "اشترك في القناة وفعل الجرس واعمل لايك علشان تتابع باقي الحكاية كاملة أول بأول.. ومستني رأيك وتوقعك في التعليقات!",
+        "cta_spoken_3": "دوس لايك واشترك في القناة علشان حكاياتنا الجديدة متفوتكش كل يوم.. وقولنا في التعليقات حسيت بإيه في اللحظة دي!",
+        "cta_spoken_4": "اشترك في القناة واعمل لايك عشان تدعمنا في نشر حكايات أكتر.. واكتب توقعك للي حصل في الكومنتات تحت!",
+        "cta_banner": "اشترك في القناة واعمل لايك! وشاركنا رأيك في التعليقات",
     },
     "ch2_eg_mystery": {
         "id": "ch2_eg_mystery",
@@ -215,13 +251,40 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                         "وربط الخيوط خطوة بخطوة حتى كشف الحقيقة الكاملة"
                     ),
                 },
+                {
+                    "id": "eg_mys_historical_coldcase",
+                    "label": "ألغاز تاريخية وقضايا قديمة محيرة",
+                    "keywords": ["تاريخ", "اكتشاف", "بردية", "قبر", "أثر", "لغز قديم", "حضارة"],
+                    "prompt_seed": (
+                        "لغز تاريخي غامض مستند إلى أحداث وأدلة ووثائق حقيقية حيرت المؤرخين والمحققين، "
+                        "وتتبع الخطوط العلمية والبوليسية لحل اللغز الممتد عبر القرون"
+                    ),
+                },
+                {
+                    "id": "eg_mys_mastermind_heist",
+                    "label": "سرقات المتاحف والبنوك المستحيلة",
+                    "keywords": ["سطو", "خزنة", "بنك", "متحف", "ألماس", "حيلة عبقرية", "إنذار"],
+                    "prompt_seed": (
+                        "أعقد وأذكى عمليات السطو والسرقات المستحيلة التي نفذها دهاة بدون إطلاق رصاصة واحدة "
+                        "وسط أحدث أجهزة الإنذار وكيف أوقعهم المحققون بخطأ لا يرى بالعين المجردة"
+                    ),
+                },
+                {
+                    "id": "eg_mys_vanished_without_trace",
+                    "label": "اختفاءات غامضة حيرت العالم",
+                    "keywords": ["اختفاء", "أثر", "سراب", "سفينة", "مجهول", "بصمات"],
+                    "prompt_seed": (
+                        "قصة اختفاء غامضة لشخصية أو سفينة أو طائرة اختفت تماماً دون أن تترك أثراً واحداً "
+                        "وتفاصيل رحلة البحث المضنية التي كشفت أسراراً تفوق الخيال"
+                    ),
+                },
             ],
         },
-        "cta_spoken_1": "وقف الفيديو وفكر كمحقق! تفتكر الجاني دخل إزاي: واحد بمفتاح منسوخ من جوه البيت؟ ولا اتنين كان مستخبي قبل ما الباب يتقفل؟ اكتب واحد أو اتنين في التعليقات وشوف الحل الكامل على قناتنا!",
-        "cta_spoken_2": "ركز في الغلطة الصغيرة دي! تفتكر مين صاحب الدليل المزيف: واحد الشاهد الأول؟ ولا اتنين صاحب البلاغ نفسه؟ اكتب واحد أو اتنين في التعليقات وكمل التحقيق كامل!",
-        "cta_spoken_3": "شغّل عقلك في ثانية: واحد التسجيل ده متفبرك؟ ولا اتنين الساعة هي اللي متقدمة؟ اكتب واحد أو اتنين في التعليقات!",
-        "cta_spoken_4": "قبل ما يتكشف الحل: واحد الجريمة متخططة من شهور؟ ولا اتنين حصلت في لحظة غضب؟ اكتب رقمك في التعليقات!",
-        "cta_banner": "اكتب ١ أو ٢ في التعليقات! حل اللغز الكامل على القناة",
+        "cta_spoken_1": "لو وصلت للغز ده متنساش تدوس لايك وتشترك في القناة علشان تتابع كشف أصعب القضايا أول بأول.. واكتبلنا رأيك وتوقعاتك في التعليقات!",
+        "cta_spoken_2": "اشترك في القناة وفعل الجرس واعمل لايك علشان تشوف حل اللغز كامل.. ومستني تحليلك وتوقعك للجاني في التعليقات تحت!",
+        "cta_spoken_3": "دوس لايك واشترك في القناة لتصلك أغرب الألغاز والتحقيقات يومياً.. وشاركنا برأيك في الكومنتات!",
+        "cta_spoken_4": "اشترك في القناة واعمل لايك عشان تدعم المحتوى وتشوف الحلقات الجاية.. وقولنا مين المشتبه فيه الأقرب بالنسبة لك!",
+        "cta_banner": "اشترك في القناة واعمل لايك! وشاركنا تحليلك في التعليقات",
     },
     "ch3_en_thriller": {
         "id": "ch3_en_thriller",
@@ -316,13 +379,31 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                         "that pulls an ordinary person into an intricately planned human puzzle"
                     ),
                 },
+                {
+                    "id": "en_thr_dark_comedy_heist",
+                    "label": "High-Stakes Heists & Dark Witty Con Artists",
+                    "keywords": ["heist", "con artist", "witty", "scheme", "ironic", "reversal", "twist"],
+                    "prompt_seed": (
+                        "a fast-paced, darkly witty suspense story about a brilliant con artist or high-stakes heist "
+                        "where an unexpected twist turns the hunters into the hunted in an unbelievable fashion"
+                    ),
+                },
+                {
+                    "id": "en_thr_extreme_survival",
+                    "label": "Extreme Survival & Impossible Escapes",
+                    "keywords": ["survival", "wilderness", "stranded", "escape", "endurance", "ordeal"],
+                    "prompt_seed": (
+                        "a breathless true-events survival thriller of an ordinary person pushed to the ultimate edge "
+                        "in an isolated wilderness or trapped scenario, outsmarting death with sheer will and intellect"
+                    ),
+                },
             ],
         },
-        "cta_spoken_1": "Freeze right there! Put yourself in their shoes: type 1 in the comments if you open that door and confront them, or type 2 if you lock yourself in and call for help! Then catch the full sixteen minute story on our channel!",
-        "cta_spoken_2": "Hold everything! Was that message a warning or a trap? Type 1 for warning or type 2 for trap in the comments, and watch the full twist unfold on our channel!",
-        "cta_spoken_3": "Quick—what would you do in that second? Type 1 if you check the camera, or 2 if you run out the door!",
-        "cta_spoken_4": "Who was lying the whole time? Type 1 for the neighbor, or type 2 for the person inside the house! Drop your pick below!",
-        "cta_banner": "COMMENT 1 OR 2 BELOW! FULL 16-MIN STORY ON CHANNEL",
+        "cta_spoken_1": "Make sure to subscribe and drop a like so you never miss our next psychological thriller.. and share your thoughts in the comments below!",
+        "cta_spoken_2": "Hit that subscribe button and leave a like to catch the full story.. what would you have done? Let us know down in the comments!",
+        "cta_spoken_3": "Subscribe for more chilling stories and hit like if this gave you goosebumps.. drop your thoughts in the comments!",
+        "cta_spoken_4": "Don't forget to like and subscribe to stay tuned for our next episode.. leave your reaction down in the comments!",
+        "cta_banner": "SUBSCRIBE & LIKE! SHARE YOUR THOUGHTS IN COMMENTS",
     },
     "ch4_en_mystery": {
         "id": "ch4_en_mystery",
@@ -417,12 +498,30 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                         "whose tiny background detail solves an impossible disappearance step by step"
                     ),
                 },
+                {
+                    "id": "en_mys_historical_enigma",
+                    "label": "Historical Enigmas & Lost Artifacts",
+                    "keywords": ["history", "artifact", "cipher", "ancient", "manuscript", "tomb", "expedition"],
+                    "prompt_seed": (
+                        "a baffling historical investigation into a real-world lost artifact or ancient secret "
+                        "that baffled historians and detectives for generations, uncovered through brilliant logic"
+                    ),
+                },
+                {
+                    "id": "en_mys_vanished_in_thin_air",
+                    "label": "Mysterious Vanishings & Unsolved Anomalies",
+                    "keywords": ["vanished", "air", "ship", "disappearance", "anomaly", "search", "trace"],
+                    "prompt_seed": (
+                        "a chilling true-crime investigation into people or vessels that vanished in broad daylight "
+                        "without leaving a single physical trace, and the mind-bending truth revealed decades later"
+                    ),
+                },
             ],
         },
-        "cta_spoken_1": "Pause and play detective! How was the room locked from inside? Type 1 if the alibi clock was rigged, or type 2 if someone never left the room! Comment 1 or 2 and solve the full case on our channel!",
-        "cta_spoken_2": "Wait right at that clue! Which detail exposed the culprit? Type 1 for the timestamp, or type 2 for the missing key! Drop your answer below and watch the full investigation!",
-        "cta_spoken_3": "Solve it in five seconds: type 1 if the witness lied, or type 2 if the recording was staged!",
-        "cta_spoken_4": "Final detective test: type 1 for an inside job, or type 2 for a framed suspect! Comment 1 or 2 now!",
-        "cta_banner": "TYPE 1 OR 2 IN COMMENTS! SOLVE FULL CASE ON CHANNEL",
+        "cta_spoken_1": "Pause and play detective! Make sure to like and subscribe to solve the world's most impossible cases with us.. and drop your theory in the comments!",
+        "cta_spoken_2": "Hit subscribe and leave a like to catch the full investigation.. which clue gave it away for you? Tell us down in the comments!",
+        "cta_spoken_3": "Subscribe for daily impossible mysteries and hit like to support the channel.. who was your prime suspect? Let us know below!",
+        "cta_spoken_4": "Don't forget to like and subscribe for more mind-bending investigations.. leave your thoughts down in the comments!",
+        "cta_banner": "SUBSCRIBE & LIKE! SOLVE THE FULL CASE ON OUR CHANNEL",
     },
 }

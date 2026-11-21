@@ -499,8 +499,12 @@ def publish_channel_via_make(
         "youtube_description": desc_yt,
         "first_comment": first_comm,
         "is_scheduled": True,
+        "privacy_status": "private",
+        "publish_at": target_slot_utc.isoformat(),
         "publish_time_iso": target_slot_utc.isoformat(),
         "publish_time_unix": int(target_slot_utc.timestamp()),
+        "scheduled_publish_time": int(target_slot_utc.timestamp()),
+        "published": False,
     }
     r_long = requests.post(make_url, json=payload_long, timeout=60)
     print(f"[{ch['id']}] تم إرسال الفيلم الطويل مجدولاً إلى Make.com ({r_long.status_code})", flush=True)
@@ -535,8 +539,12 @@ def publish_channel_via_make(
             "youtube_description": f"{s_title}\n\n{first_comm}\n\n#Shorts #ريلز",
             "first_comment": first_comm,
             "is_scheduled": True,
+            "privacy_status": "private",
+            "publish_at": s_sched.isoformat(),
             "publish_time_iso": s_sched.isoformat(),
             "publish_time_unix": int(s_sched.timestamp()),
+            "scheduled_publish_time": int(s_sched.timestamp()),
+            "published": False,
         }
 
         # الشورت الأول فقط (short_1) يُرسل لـ Make.com اليوم ليكون الريلز اليومي مع الفيلم

@@ -14,11 +14,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import imageio_ffmpeg
+try:
+    import imageio_ffmpeg
+    FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    import shutil
+    FFMPEG_BIN = shutil.which("ffmpeg") or "ffmpeg"
 
 from sound_studio import get_audio_duration
-
-FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
 ASSETS_DIR = Path(__file__).resolve().parent / "fonts"
 
 
@@ -208,17 +211,23 @@ def _render_single_long_8s_shot(
     d_safe = max(1.0, dur)
     mode = idx % 6
     if mode == 0:
-        mv = f"scale=1424:801,crop=1280:720:'(iw-1280)*(t/{d_safe:.2f})':'(ih-720)/2'"
+        # تحريك سينمائي Dolly Push-In (زوم درامي بطيء نحو بؤرة المشهد)
+        mv = f"scale=1480:832,crop=1280:720:'(iw-1280)/2 + ((iw-1280)*0.12)*(t/{d_safe:.2f})':'(ih-720)/2 + ((ih-720)*0.12)*(t/{d_safe:.2f})'"
     elif mode == 1:
-        mv = f"scale=1424:801,crop=1280:720:'(iw-1280)*(1-t/{d_safe:.2f})':'(ih-720)/2'"
+        # تحريك سينمائي Dolly Pull-Out (تراجع درامي بطيء يكشف تفاصيل الغرفة)
+        mv = f"scale=1480:832,crop=1280:720:'(iw-1280)/2 + ((iw-1280)*0.12)*(1-t/{d_safe:.2f})':'(ih-720)/2 + ((ih-720)*0.12)*(1-t/{d_safe:.2f})'"
     elif mode == 2:
-        mv = f"scale=1424:801,crop=1280:720:'(iw-1280)/2':'(ih-720)*(t/{d_safe:.2f})'"
+        # مسح أفقي بطيء إلى اليمين
+        mv = f"scale=1440:810,crop=1280:720:'(iw-1280)*(t/{d_safe:.2f})':'(ih-720)/2'"
     elif mode == 3:
-        mv = f"scale=1424:801,crop=1280:720:'(iw-1280)/2':'(ih-720)*(1-t/{d_safe:.2f})'"
+        # مسح أفقي بطيء إلى اليسار
+        mv = f"scale=1440:810,crop=1280:720:'(iw-1280)*(1-t/{d_safe:.2f})':'(ih-720)/2'"
     elif mode == 4:
-        mv = f"scale=1424:801,crop=1280:720:'(iw-1280)*(t/{d_safe:.2f})':'(ih-720)*(t/{d_safe:.2f})'"
+        # حركة تتبع قطرية سينمائية
+        mv = f"scale=1440:810,crop=1280:720:'(iw-1280)*(t/{d_safe:.2f})':'(ih-720)*(t/{d_safe:.2f})'"
     else:
-        mv = f"scale=1424:801,crop=1280:720:'(iw-1280)*(1-t/{d_safe:.2f})':'(ih-720)*(t/{d_safe:.2f})'"
+        # حركة عمودية هادئة بتركيز بصري عميق
+        mv = f"scale=1420:798,crop=1280:720:'(iw-1280)/2':'(ih-720)*(1-t/{d_safe:.2f})'"
 
     # ممنوع fade=in على اللقطة الأولى (idx == 0) حتى لا يكون الإطار الأول مظلماً أو بنياً!
     fade_in_part = "" if idx == 0 else "fade=t=in:st=0:d=0.14,"
@@ -353,13 +362,17 @@ def _render_single_short_8s_shot(
     d_safe = max(0.9, dur)
     mode = idx % 4
     if mode == 0:
-        mv = f"scale=764:1358,crop=720:1280:'(iw-720)/2':'(ih-1280)*(t/{d_safe:.2f})'"
+        # زوم رأسي سينمائي بطيء للداخل
+        mv = f"scale=810:1440,crop=720:1280:'(iw-720)/2':'(ih-1280)/2 + ((ih-1280)*0.15)*(t/{d_safe:.2f})'"
     elif mode == 1:
-        mv = f"scale=764:1358,crop=720:1280:'(iw-720)/2':'(ih-1280)*(1-t/{d_safe:.2f})'"
+        # زوم رأسي سينمائي بطيء للخارج
+        mv = f"scale=810:1440,crop=720:1280:'(iw-720)/2':'(ih-1280)/2 + ((ih-1280)*0.15)*(1-t/{d_safe:.2f})'"
     elif mode == 2:
-        mv = f"scale=764:1358,crop=720:1280:'(iw-720)*(t/{d_safe:.2f})':'(ih-1280)/2'"
+        # مسح رأسي هابط بطيء
+        mv = f"scale=764:1358,crop=720:1280:'(iw-720)/2':'(ih-1280)*(t/{d_safe:.2f})'"
     else:
-        mv = f"scale=764:1358,crop=720:1280:'(iw-720)*(1-t/{d_safe:.2f})':'(ih-1280)/2'"
+        # مسح رأسي صاعد بطيء
+        mv = f"scale=764:1358,crop=720:1280:'(iw-720)/2':'(ih-1280)*(1-t/{d_safe:.2f})'"
 
     # ممنوع fade=in على اللقطة الأولى (idx == 0) نهائياً لضمان إطار أول مشرق 100%!
     fade_in_part = "" if idx == 0 else "fade=t=in:st=0:d=0.11,"

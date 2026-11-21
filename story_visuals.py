@@ -778,6 +778,12 @@ def build_viral_youtube_thumbnail(
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
     raw_bg = out_path.parent / "_thumb_raw_flux.jpg"
+
+    # تنقية برومبت الغلاف لضمان بؤرة فضول صادمة ومنع اللقطات الميتة من الخلف
+    banned_back_shots = [r"\bfrom behind\b", r"\bback turned\b", r"\bwalking away\b", r"\bfacing away\b", r"\bback to camera\b"]
+    for pat in banned_back_shots:
+        prompt = re.sub(pat, "facing camera in shocking high-stakes revelation", prompt, flags=re.IGNORECASE)
+
     try:
         generate_single_shot_image(prompt, raw_bg, 1280, 720, seed=seed, shot_idx=0)
         src_bg = Image.open(str(raw_bg)).convert("RGB")

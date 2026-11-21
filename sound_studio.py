@@ -16,7 +16,13 @@ import wave
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-import imageio_ffmpeg
+try:
+    import imageio_ffmpeg
+    FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
+except Exception:
+    import shutil
+    FFMPEG_BIN = shutil.which("ffmpeg") or "ffmpeg"
+
 import numpy as np
 import requests
 
@@ -24,8 +30,6 @@ try:
     import _env_loader
 except Exception:
     pass
-
-FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
 
 GEMINI_TTS_MODELS = (
     "gemini-3.8-flash-tts",
