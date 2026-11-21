@@ -409,6 +409,47 @@ def stage_file_to_github_cdn(file_path: Path) -> str:
     raise RuntimeError(f"Failed to stage {file_path.name} to GitHub CDN: {r.status_code} {r.text[:200]}")
 
 
+def build_youtube_title(episode_meta: Dict[str, Any], ch: Dict[str, Any]) -> str:
+    """بناء عنوان يوتيوب جذاب ومطابق لخوارزميات البحث واقتراحات الفيديو"""
+    brand = ch.get("brand_name", "")
+    title = str(
+        episode_meta.get("youtube_title")
+        or episode_meta.get("episode_title")
+        or episode_meta.get("title")
+        or brand
+    ).strip()
+    return title[:95]
+
+
+def build_youtube_description(episode_meta: Dict[str, Any], ch: Dict[str, Any]) -> str:
+    """بناء وصف يوتيوب سيو غني بالكلمات المفتاحية والفصول والهاشتاجات"""
+    brand = ch.get("brand_name", "")
+    handle = ch.get("youtube_handle", "")
+    lang = ch.get("lang") or ch.get("language") or "ar"
+    seo_hook = str(episode_meta.get("seo_hook_2lines", "")).strip()
+    seo_synopsis = str(episode_meta.get("seo_synopsis", "")).strip()
+    comment_q = str(episode_meta.get("engagement_question", "")).strip()
+    raw_tags = str(episode_meta.get("hashtags", "")).strip()
+    tags_list = episode_meta.get("seo_tags") or ch.get("pillars", [])
+
+    if lang == "ar":
+        sub_block = f"اشترك في قناة «{brand}» ({handle}) وفعل الجرس لتصلك أقوى القصص والألغاز يومياً!\n{comment_q or 'شاركونا توقعاتكم وآراءكم في التعليقات'}"
+        hashtags = raw_tags or " ".join(f"#{t.replace(' ', '_')}" for t in tags_list[:8])
+    else:
+        sub_block = f"Subscribe to {brand} ({handle}) for daily mysteries and psychological thrillers!\n{comment_q or 'Share your theories and thoughts below'}"
+        hashtags = raw_tags or " ".join(f"#{t.replace(' ', '')}" for t in tags_list[:8])
+
+    parts = [p for p in [seo_hook, seo_synopsis, sub_block, hashtags] if p]
+    return "\n\n".join(parts)[:4900]
+
+
+def build_facebook_post(episode_meta: Dict[str, Any], ch: Dict[str, Any]) -> str:
+    """بناء منشور فيسبوك احترافي متكامل مع العنوان والقصة والهاشتاجات"""
+    title = build_youtube_title(episode_meta, ch)
+    desc = build_youtube_description(episode_meta, ch)
+    return f"{title}\n\n{desc}"[:4900]
+
+
 def publish_channel_via_make(
     ch: Dict[str, Any],
     make_url: str,
@@ -432,12 +473,10 @@ def publish_channel_via_make(
     tt_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
 
     try:
-        if long_mp4.stat().st_size > 40 * 1024 * 1024 and tt_key:
-            long_cdn = upload_media_to_zernio(tt_key, long_mp4, mime_type="video/mp4")
-        else:
-            long_cdn = stage_file_to_github_cdn(long_mp4)
-    except Exception:
-        long_cdn = upload_media_to_zernio(tt_key, long_mp4, mime_type="video/mp4") if tt_key else stage_file_to_github_cdn(long_mp4)
+        long_cdn = stage_file_to_github_cdn(long_mp4)
+    except Exception as e_cdn:
+        print(f"[{ch['id']}] محاولة رفع بديلة للفيلم الطويل بسبب ({e_cdn})...", flush=True)
+        long_cdn = upload_media_to_zernio(tt_key, long_mp4, mime_type="video/mp4") if tt_key else ""
 
     try:
         thumb_cdn = stage_file_to_github_cdn(thumbnail_jpg)
@@ -466,7 +505,12 @@ def publish_channel_via_make(
     r_long = requests.post(make_url, json=payload_long, timeout=60)
     print(f"[{ch['id']}] تم إرسال الفيلم الطويل مجدولاً إلى Make.com ({r_long.status_code})", flush=True)
 
-    results = {"long_movie": {"make_status": r_long.status_code}}
+    results = {
+        "long_movie": {"make_status": r_long.status_code},
+        "cdn_urls": {"long_movie": long_cdn, "thumbnail": thumb_cdn},
+        "scheduled_anchor_utc": target_slot_utc.isoformat(),
+        "youtube_watch_url": "",
+    }
 
     shorts_files = [
         ("short_3", short3_mp4, 1.0),
