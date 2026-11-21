@@ -42,9 +42,10 @@
       "رسالة فجر غامضة في شقة",
       "فاتورة كهرباء تكشف غرفة سرية",
       "مفتاح وصية عائلة سر مدفون منذ",
-      "لغز محفظة الجار في اسانسير العمارة"
+      "لغز محفظة الجار في اسانسير العمارة",
+      "مفتاح 1973 يفتح باب سري"
     ],
-    "last_pillar_id": "eg_thr_night_shift",
+    "last_pillar_id": "eg_thr_contract_inheritance",
     "title_pillar_map": {
       "الظل المجهول في نص الليل | قصة واقعية كاملة": "eg_thr_night_shift",
       "الرسالة ظهرت الساعة 3 الفجر تكشف إن شخص بيراقبك ": "eg_thr_night_signal",
@@ -79,9 +80,51 @@
       "رسالة فجر غامضة تكشف سر خفي في شقتك | قصة واقعية": "eg_thr_night_shift",
       "فاتورة كهرباء غامضة تكشف غرفة سرية في شقة القاهر": "eg_thr_apartment_secret",
       "مفتاح الوصية المفقود يفضح سر عائلة مصرية | قصة و": "eg_thr_contract_inheritance",
-      "لغز المحفظة المنسية في الأسانسير | قصة واقعية كا": "eg_thr_night_shift"
+      "لغز المحفظة المنسية في الأسانسير | قصة واقعية كا": "eg_thr_night_shift",
+      "مفتاح 1973 يفتح باب سري يفضح أسرار عائلية مخفية ": "eg_thr_contract_inheritance"
     },
-    "last_movie_published_at": "2026-11-21T21:00:00+00:00"
+    "last_movie_published_at": "2026-11-21T22:14:46.041424+00:00",
+    "queued_reels": [
+      {
+        "channel_id": "ch1_eg_thriller",
+        "channel_name": "دفتر راوي",
+        "video_type": "short_2",
+        "video_url": "https://cdn.jsdelivr.net/gh/yousefmo2500m-prog/media-empire-autopilot@media-cdn/cdn/latest/ch1_eg_thriller_short_2.mp4",
+        "facebook_caption": "⚠️ دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#ريلز #شورتس #دفتر_راوي",
+        "youtube_title": "دفتر راوي | #دفتر_راوي #Shorts",
+        "youtube_description": "دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#Shorts #ريلز",
+        "first_comment": "برأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇",
+        "is_scheduled": true,
+        "publish_time_iso": "2026-11-22T23:05:36.489550+00:00",
+        "publish_time_unix": 1795388736
+      },
+      {
+        "channel_id": "ch1_eg_thriller",
+        "channel_name": "دفتر راوي",
+        "video_type": "short_3",
+        "video_url": "https://cdn.jsdelivr.net/gh/yousefmo2500m-prog/media-empire-autopilot@media-cdn/cdn/latest/ch1_eg_thriller_short_3.mp4",
+        "facebook_caption": "⚠️ دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#ريلز #شورتس #دفتر_راوي",
+        "youtube_title": "دفتر راوي | #دفتر_راوي #Shorts",
+        "youtube_description": "دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#Shorts #ريلز",
+        "first_comment": "برأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇",
+        "is_scheduled": true,
+        "publish_time_iso": "2026-11-23T23:05:36.489550+00:00",
+        "publish_time_unix": 1795475136
+      },
+      {
+        "channel_id": "ch1_eg_thriller",
+        "channel_name": "دفتر راوي",
+        "video_type": "short_4",
+        "video_url": "https://cdn.jsdelivr.net/gh/yousefmo2500m-prog/media-empire-autopilot@media-cdn/cdn/latest/ch1_eg_thriller_short_4.mp4",
+        "facebook_caption": "⚠️ دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#ريلز #شورتس #دفتر_راوي",
+        "youtube_title": "دفتر راوي | #دفتر_راوي #Shorts",
+        "youtube_description": "دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#Shorts #ريلز",
+        "first_comment": "برأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇",
+        "is_scheduled": true,
+        "publish_time_iso": "2026-11-24T23:05:36.489550+00:00",
+        "publish_time_unix": 1795561536
+      }
+    ]
   },
   "ch2_eg_mystery": {
     "used_topics": [
