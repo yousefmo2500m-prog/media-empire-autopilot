@@ -513,12 +513,13 @@ def publish_channel_via_make(
     }
 
     shorts_files = [
-        ("short_3", short3_mp4, 1.0),
-        ("short_1", short1_mp4, 3.5),
-        ("short_4", short4_mp4, 6.0),
-        ("short_2", short2_mp4, 9.0),
+        ("short_1", short1_mp4, 0.0),
+        ("short_2", short2_mp4, 24.0),
+        ("short_3", short3_mp4, 48.0),
+        ("short_4", short4_mp4, 72.0),
     ]
-    for s_id, s_path, delay_h in shorts_files:
+    queued_for_future_days = []
+    for idx_s, (s_id, s_path, delay_h) in enumerate(shorts_files):
         if s_path is None or not s_path.exists():
             continue
         s_sched = target_slot_utc + dt.timedelta(hours=delay_h)
@@ -537,11 +538,21 @@ def publish_channel_via_make(
             "publish_time_iso": s_sched.isoformat(),
             "publish_time_unix": int(s_sched.timestamp()),
         }
-        r_s = requests.post(make_url, json=s_payload, timeout=60)
-        print(f"[{ch['id']}] تم إرسال {s_id} مجدولاً عند ({s_sched.strftime('%H:%M UTC')}) إلى Make.com ({r_s.status_code})", flush=True)
-        results[s_id] = {"make_status": r_s.status_code, "scheduled_time": s_sched.isoformat()}
 
-        # نشر / جدولة الشورت على تيك توك عبر Zernio بمفتاح الحساب النظيف
+        # الشورت الأول فقط (short_1) يُرسل لـ Make.com اليوم ليكون الريلز اليومي مع الفيلم
+        # باقي الشورتات تُحفظ في قائمة الانتظار للنشر اليومي المتتابع (منعاً لنشر 5 فيديوهات دفعة واحدة!)
+        if idx_s == 0:
+            r_s = requests.post(make_url, json=s_payload, timeout=60)
+            print(f"[{ch['id']}] ✅ تم إرسال الريلز الأول فقط (Short 1) لليوم إلى Make.com ({r_s.status_code})", flush=True)
+            results[s_id] = {"make_status": r_s.status_code, "scheduled_time": s_sched.isoformat()}
+        else:
+            print(f"[{ch['id']}] ⏳ تم حفظ {s_id} في قائمة انتظار الريلز اليومي للأيام القادمة (منعاً للتكدس)", flush=True)
+            queued_for_future_days.append(s_payload)
+            results[s_id] = {"make_status": "queued", "scheduled_time": s_sched.isoformat()}
+
+        results["cdn_urls"][s_id] = s_cdn
+
+        # نشر / جدولة الشورت على تيك توك عبر Zernio بمفتاح الحساب النظيف (موزعة زمنياً 24 ساعة)
         prefix = ch.get("env_prefix", "")
         tt_key = os.environ.get(f"{prefix}_TIKTOK_ZERNIO_KEY", "").strip() or os.environ.get(f"{prefix}_ZERNIO_KEY", "").strip()
         tt_acc = os.environ.get(f"{prefix}_TIKTOK_ACCOUNT_ID", "").strip() or ch.get("accounts", {}).get("tiktok", "")
@@ -576,6 +587,7 @@ def publish_channel_via_make(
 
         time.sleep(2)
 
+    results["queued_reels"] = queued_for_future_days
     return results
 
 

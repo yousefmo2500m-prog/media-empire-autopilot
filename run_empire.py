@@ -112,8 +112,49 @@ def run_single_channel(
     print(f"بدء الإنتاج السينمائي V17.0 المحسّن للقناة: {ch['brand_name']} ({ch_id})", flush=True)
     print("=" * 76, flush=True)
 
-    # 1) توليد القصة الكاملة + المقدمة التشويقية + بيانات الـ 4 شورتس وحفظ الذاكرة
+    # فحص نظام النشر: فيلم طويل كل 3 أيام + ريلز واحد يومياً (منعاً لنشر 5 فيديوهات دفعة واحدة!)
     memory = load_memory(MEMORY_FILE)
+    ch_mem = memory.setdefault(ch_id, {})
+    queued_reels = ch_mem.get("queued_reels", [])
+    last_movie_str = ch_mem.get("last_movie_published_at", "")
+
+    now_utc = dt.datetime.now(dt.timezone.utc)
+    is_movie_due = True
+    hours_since_movie = 999.0
+    if last_movie_str:
+        try:
+            last_movie_dt = dt.datetime.fromisoformat(last_movie_str.replace("Z", "+00:00"))
+            hours_since_movie = (now_utc - last_movie_dt).total_seconds() / 3600.0
+            if hours_since_movie < 68.0:  # أقل من 3 أيام (نظام كل 3 أيام)
+                is_movie_due = False
+        except Exception:
+            is_movie_due = True
+
+    prefix = ch.get("env_prefix", "")
+    make_webhook = (
+        os.environ.get(f"{prefix}_MAKE_WEBHOOK", "").strip()
+        or os.environ.get(f"MAKE_WEBHOOK_{prefix}", "").strip()
+        or os.environ.get("MAKE_WEBHOOK_URL", "").strip()
+    )
+
+    # إذا كان هناك مقطع ريلز في قائمة الانتظار ولم يحن موعد الفيلم الطويل (اليوم 2 أو 3):
+    # ننشر ريلز واحد فقط اليوم عبر Make.com وننهي الدورة فوراً (ريلز يومي نظيف)
+    if not is_movie_due and queued_reels and make_webhook and not dry_run:
+        next_reel = queued_reels.pop(0)
+        print(f"[{ch_id}] 🎯 موعد اليوم هو (ريلز يومي) فقط (آخر فيلم طويل نُشر منذ {hours_since_movie:.1f} ساعة)!", flush=True)
+        print(f"[{ch_id}] 🚀 إرسال الريلز المجدول لليوم إلى Make.com: {next_reel.get('youtube_title')}...", flush=True)
+        try:
+            r_post = requests.post(make_webhook, json=next_reel, timeout=60)
+            print(f"[{ch_id}] ✅ تم نشر الريلز اليومي بنجاح عبر Make.com ({r_post.status_code})!", flush=True)
+            ch_mem["queued_reels"] = queued_reels
+            save_memory(MEMORY_FILE, memory)
+            if not keep_output_dir:
+                shutil.rmtree(work_root, ignore_errors=True)
+            return
+        except Exception as e_post:
+            print(f"[{ch_id}] تنبيه عند نشر الريلز اليومي: {e_post} — سنكمل بالإنتاج الشامل.", flush=True)
+
+    # 1) حان موعد فيلم كامل جديد (كل 3 أيام): توليد القصة الكاملة + المقدمة التشويقية + بيانات الـ 4 شورتس
     ep = generate_full_episode_and_short(channel_cfg=ch, api_key=groq_key, memory=memory)
     save_memory(MEMORY_FILE, memory)
 
@@ -388,6 +429,10 @@ def run_single_channel(
             f"[{ch_id}] تم قفل/نشر الفيلم وجدولة الـ 4 شورتس بنجاح! الموعد المرجعي: {pub_res.get('scheduled_anchor_utc')} | رابط يوتيوب: {pub_res.get('youtube_watch_url')}",
             flush=True,
         )
+        ch_mem["last_movie_published_at"] = now_utc.isoformat()
+        if "queued_reels" in pub_res:
+            ch_mem["queued_reels"] = pub_res["queued_reels"]
+        save_memory(MEMORY_FILE, memory)
 
     if not keep_output_dir:
         shutil.rmtree(work_root, ignore_errors=True)
