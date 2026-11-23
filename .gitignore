@@ -4,4 +4,6 @@ demo_outputs/
 demo_shots/
 demo_audio/
 _work/
+state/api_surplus_clips/*.mp4
 .env
+production_vault/**/*.mp4
