@@ -43,9 +43,10 @@
       "فاتورة كهرباء تكشف غرفة سرية",
       "مفتاح وصية عائلة سر مدفون منذ",
       "لغز محفظة الجار في اسانسير العمارة",
-      "مفتاح 1973 يفتح باب سري"
+      "مفتاح 1973 يفتح باب سري",
+      "مفتاح شقة سكنية يفضح سر مرعب"
     ],
-    "last_pillar_id": "eg_thr_contract_inheritance",
+    "last_pillar_id": "eg_thr_night_shift",
     "title_pillar_map": {
       "الظل المجهول في نص الليل | قصة واقعية كاملة": "eg_thr_night_shift",
       "الرسالة ظهرت الساعة 3 الفجر تكشف إن شخص بيراقبك ": "eg_thr_night_signal",
@@ -81,23 +82,11 @@
       "فاتورة كهرباء غامضة تكشف غرفة سرية في شقة القاهر": "eg_thr_apartment_secret",
       "مفتاح الوصية المفقود يفضح سر عائلة مصرية | قصة و": "eg_thr_contract_inheritance",
       "لغز المحفظة المنسية في الأسانسير | قصة واقعية كا": "eg_thr_night_shift",
-      "مفتاح 1973 يفتح باب سري يفضح أسرار عائلية مخفية ": "eg_thr_contract_inheritance"
+      "مفتاح 1973 يفتح باب سري يفضح أسرار عائلية مخفية ": "eg_thr_contract_inheritance",
+      "مفتاح سري في شقة الجيران يفضح سر مروع | قصة واقع": "eg_thr_night_shift"
     },
     "last_movie_published_at": "2026-11-21T22:14:46.041424+00:00",
     "queued_reels": [
-      {
-        "channel_id": "ch1_eg_thriller",
-        "channel_name": "دفتر راوي",
-        "video_type": "short_2",
-        "video_url": "https://cdn.jsdelivr.net/gh/yousefmo2500m-prog/media-empire-autopilot@media-cdn/cdn/latest/ch1_eg_thriller_short_2.mp4",
-        "facebook_caption": "⚠️ دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#ريلز #شورتس #دفتر_راوي",
-        "youtube_title": "دفتر راوي | #دفتر_راوي #Shorts",
-        "youtube_description": "دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#Shorts #ريلز",
-        "first_comment": "برأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇",
-        "is_scheduled": true,
-        "publish_time_iso": "2026-11-22T23:05:36.489550+00:00",
-        "publish_time_unix": 1795388736
-      },
       {
         "channel_id": "ch1_eg_thriller",
         "channel_name": "دفتر راوي",
@@ -190,9 +179,11 @@
       "Photo of self in dry-cleaned suit",
       "3:14 AM phone photo reveals inside hallway",
       "Night shift guard traps own shadow",
-      "Hidden apartment crawlspace utility power theft"
+      "Hidden apartment crawlspace utility power theft",
+      "Lost Hiker's Snow Cave Survival Ordeal",
+      "Night Guard Uncovers Deadly Delivery Conspiracy"
     ],
-    "last_pillar_id": "en_thr_hidden_sublet",
+    "last_pillar_id": "en_thr_night_shift",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
@@ -210,7 +201,9 @@
       "The Dry Cleaner’s Impossible Mistake | True Myst": "en_thr_wrong_item_trail",
       "The Photo Taken From His Own Living Room Floor |": "en_thr_3am_notification",
       "The Security Guard Who Locked Himself In His Own": "en_thr_night_shift",
-      "The Locked Storage Room Was Bleeding Power | Tru": "en_thr_hidden_sublet"
+      "The Locked Storage Room Was Bleeding Power | Tru": "en_thr_hidden_sublet",
+      "What This Snow Cave Diary Reveals: A Hiker's Fig": "en_thr_extreme_survival",
+      "How a Night Guard Discovered a $12 Million Deliv": "en_thr_night_shift"
     }
   },
   "ch4_en_mystery": {

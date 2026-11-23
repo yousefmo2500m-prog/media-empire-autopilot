@@ -19,6 +19,8 @@ import requests
 
 ZERNIO_BASE = "https://zernio.com/api/v1"
 _ZERNIO_GATEWAY_RETRY_DELAYS = (15, 30, 60)
+AUTO_PUBLISH_PAUSED = os.environ.get("AUTO_PUBLISH_PAUSED", "1") == "1"
+
 
 
 def _fmt_yt_timestamp(sec: float) -> str:
@@ -319,6 +321,12 @@ def _post_zernio_resilient(
     max_attempts: int = 4,
 ) -> requests.Response:
     """يرسل طلبات Zernio مع ثلاث إعادات مخصصة لأخطاء 502/504، إضافة لمعالجة أخطاء الشبكة العابرة."""
+    if AUTO_PUBLISH_PAUSED:
+        print(f"[PAUSED] تم إيقاف النشر الآلي مؤقتاً لمدة الـ 10 أيام لخطة الربح اليدوية الفائقة: {label}", flush=True)
+        dummy = requests.Response()
+        dummy.status_code = 200
+        dummy._content = b'{"success": true, "paused": true}'
+        return dummy
     last_resp: Optional[requests.Response] = None
     gateway_retry_count = 0
     for attempt in range(max_attempts):
@@ -463,6 +471,9 @@ def publish_channel_via_make(
     target_slot_utc: Optional[dt.datetime] = None,
 ) -> Dict[str, Any]:
     """نشر وجدولة الحلقة الكاملة والـ 4 مقاطع شورتس عبر Make.com مع القفل الزمني لأقصى ريتش خوارزمي"""
+    if AUTO_PUBLISH_PAUSED:
+        print(f"[PAUSED] تم تعليق النشر الآلي لـ Make.com مؤقتاً لخطة الـ 10 أيام اليدوية لقناة: {ch['id']}", flush=True)
+        return {"status": "paused", "reason": "10_day_handcrafted_plan"}
     now_utc = dt.datetime.now(dt.timezone.utc)
     if target_slot_utc is None or (target_slot_utc - now_utc).total_seconds() < 300.0:
         target_slot_utc = now_utc + dt.timedelta(minutes=20)
@@ -730,10 +741,16 @@ def publish_channel_funnel(
     ep_title = str(episode_meta.get("youtube_title") or episode_meta.get("episode_title") or brand_name)[:95]
     seo_hook_2lines = str(episode_meta.get("seo_hook_2lines", "")).strip()
     seo_synopsis = str(episode_meta.get("seo_synopsis", "")).strip()
-    chapters_txt = build_chapters_block(scene_timings, lang)
+    custom_chapters = episode_meta.get("seo_chapters")
+    if custom_chapters and isinstance(custom_chapters, list) and len(custom_chapters) >= 3:
+        chapters_header = "📌 محطات ولحظات التحقيق الحاسمة (Key Moments):" if lang == "ar" else "📌 KEY INVESTIGATION MOMENTS:"
+        chapters_txt = chapters_header + "\n" + "\n".join(str(c) for c in custom_chapters)
+    else:
+        chapters_txt = build_chapters_block(scene_timings, lang)
     comment_question = str(episode_meta.get("engagement_question", "")).strip()
     raw_hashtags = str(episode_meta.get("hashtags", "")).strip()
 
+    binge_hook = str(episode_meta.get("binge_recommendation_hook", "")).strip()
     if lang == "ar":
         subscribe_block = (
             f"اشترك في قناة «{brand_name}» ({yt_handle}) وفعل الجرس لتصلك أقوى القصص الواقعية والألغاز الغامضة أول بأول!\n"
@@ -742,6 +759,8 @@ def publish_channel_funnel(
         first_comment_long = (
             "لو عجبك الفيديو متنساش تدوس لايك وتشترك في القناة وتفعل الجرس علشان تتابع الحكايات والتحقيقات الجاية أول بأول.. وشاركنا رأيك في التعليقات تحت!"
         )
+        if binge_hook:
+            first_comment_long += f"\n\n🔥 {binge_hook}"
         hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '_')}" for t in tags_list[:8])
     else:
         subscribe_block = (
@@ -751,6 +770,8 @@ def publish_channel_funnel(
         first_comment_long = (
             "If you enjoyed this episode, make sure to like and subscribe with notifications on so you never miss our next investigation.. drop your thoughts in the comments below!"
         )
+        if binge_hook:
+            first_comment_long += f"\n\n🔥 {binge_hook}"
         hashtags_line = raw_hashtags or " ".join(f"#{t.replace(' ', '')}" for t in tags_list[:8])
 
     facebook_first_comment_long = _facebook_channel_comment(first_comment_long, channel_url, lang)

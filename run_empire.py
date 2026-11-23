@@ -41,6 +41,10 @@ from story_visuals import (
     generate_opening_motion_clip,
     generate_scene_motion_clips_batch,
 )
+from surplus_api_asset_bank import (
+    claim_surplus_clips_for_episode,
+    harvest_surplus_api_assets,
+)
 
 MEMORY_FILE = Path(__file__).resolve().parent / "state" / "empire_memory.json"
 
@@ -353,6 +357,13 @@ def run_single_channel(
     if highlight_motion_idx is not None and long_highlight_motion:
         all_long_motion_clips[highlight_motion_idx] = long_highlight_motion
 
+    # دمج لقطات الفيديو المخزنة مسبقاً من الحصص المجانية المتجددة (Surplus Asset Bank)
+    surplus_clips = claim_surplus_clips_for_episode(ch_id, count=len(long_imgs))
+    for s_idx, s_clip in enumerate(surplus_clips):
+        if s_idx not in all_long_motion_clips:
+            all_long_motion_clips[s_idx] = s_clip
+            print(f"[{ch_id}] 💎 دمج لقطة مخزنة مسبقاً من بنك الفائض في المشهد {s_idx + 1}: {s_clip.name}", flush=True)
+
     print(f"[{ch_id}] مونتاج الحلقة الكاملة HD كفيلم سينمائي متصل (1280x720)...", flush=True)
     render_long_episode_mp4(
         shot_images=long_imgs,
@@ -457,6 +468,12 @@ def run_single_channel(
         if "queued_reels" in pub_res:
             ch_mem["queued_reels"] = pub_res["queued_reels"]
         save_memory(MEMORY_FILE, memory)
+
+        # استغلال الفائض من حصص الـ APIs المجانية المتجددة لتخزين لقطات فيديو للحلقات القادمة
+        try:
+            harvest_surplus_api_assets(ch_id, max_clips=4)
+        except Exception as bank_exc:
+            print(f"[{ch_id}][SURPLUS-BANK-WARN] {bank_exc}", flush=True)
 
     if not keep_output_dir:
         shutil.rmtree(work_root, ignore_errors=True)

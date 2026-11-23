@@ -262,11 +262,12 @@ def _synth_human_block(
 ) -> Path:
     clean = _sanitize_tts_text(text)
     out_mp3.parent.mkdir(parents=True, exist_ok=True)
-    if is_arabic and _try_fish_audio_cloning(clean, is_arabic, out_mp3, voice_cfg, call_index):
-        return out_mp3
+    # الصوت البشري الأصلي المعتمد للقناة (Gemini TTS - Kore للدليل الأخير و Puck لدفتر راوي)
     if _try_gemini_tts_strict(clean, is_arabic, out_mp3, voice_cfg.get("gemini_voice", "Kore"), call_index):
         return out_mp3
     if (not is_arabic) and _try_groq_orpheus(clean, voice_cfg.get("orpheus_voice", "tara"), out_mp3):
+        return out_mp3
+    if is_arabic and _try_fish_audio_cloning(clean, is_arabic, out_mp3, voice_cfg, call_index):
         return out_mp3
     if _try_edge_tts(clean, is_arabic, out_mp3, voice_cfg):
         print(f"[SoundStudio] Synthesized via Microsoft Neural Voice (Edge-TTS)", flush=True)
@@ -283,17 +284,25 @@ def _whisper_transcribe_words(audio_path: Path, groq_key: str, language: str) ->
     if not keys_to_try:
         return []
     slim_mp3 = audio_path.parent / f"_wslim_{audio_path.stem}.mp3"
+    file_to_send = audio_path
     try:
-        subprocess.run(
-            [FFMPEG_BIN, "-y", "-i", str(audio_path), "-ar", "16000", "-ac", "1", "-b:a", "48k", "-loglevel", "error", str(slim_mp3)],
-            check=True,
-        )
+        if FFMPEG_BIN and subprocess.run([FFMPEG_BIN, "-version"], capture_output=True).returncode == 0:
+            subprocess.run(
+                [FFMPEG_BIN, "-y", "-i", str(audio_path), "-ar", "16000", "-ac", "1", "-b:a", "48k", "-loglevel", "error", str(slim_mp3)],
+                check=True,
+            )
+            if slim_mp3.exists():
+                file_to_send = slim_mp3
+    except Exception:
+        file_to_send = audio_path
+
+    try:
         for cur_key in keys_to_try:
-            with open(slim_mp3, "rb") as fh:
+            with open(file_to_send, "rb") as fh:
                 resp = requests.post(
                     "https://api.groq.com/openai/v1/audio/transcriptions",
                     headers={"Authorization": f"Bearer {cur_key}"},
-                    files={"file": (slim_mp3.name, fh, "audio/mpeg")},
+                    files={"file": (file_to_send.name, fh, "audio/mpeg")},
                     data=[
                         ("model", "whisper-large-v3-turbo"),
                         ("response_format", "verbose_json"),

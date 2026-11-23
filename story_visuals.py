@@ -55,7 +55,7 @@ def _load_bold_font(size: int) -> ImageFont.FreeTypeFont:
 
 def _get_hf_auth_pool() -> List[Optional[str]]:
     pool: List[Optional[str]] = [None]
-    names = ["HF_TOKEN"] + [f"HF_TOKEN_{i}" for i in range(1, 11)]
+    names = ["HF_TOKEN"] + [f"HF_TOKEN_{i}" for i in range(1, 101)]
     for k in names:
         v = os.environ.get(k, "").strip()
         if v and v not in pool:
@@ -1087,6 +1087,25 @@ def generate_opening_motion_clip(
             return str(res) if res else None
 
         ex = ThreadPoolExecutor(max_workers=1)
+        fut = ex.submit(_worker, tok)
+        try:
+            vid_tmp = fut.result(timeout=75.0)
+            ex.shutdown(wait=False)
+            if vid_tmp and Path(vid_tmp).exists() and Path(vid_tmp).stat().st_size > 25000:
+                import shutil as _sh
+                _sh.copy2(vid_tmp, out_mp4)
+                try:
+                    Path(vid_tmp).unlink(missing_ok=True)
+                except Exception:
+                    pass
+                return out_mp4
+        except Exception as exc:
+            ex.shutdown(wait=False, cancel_futures=True)
+            msg = str(exc).lower()
+            if "quota" in msg or "zerogpu" in msg or "exceeded" in msg:
+                _EXHAUSTED_SLOTS.add(slot_key)
+            continue
+
     return None
 
 
@@ -1107,7 +1126,16 @@ def fetch_or_generate_scene_motion_clip(
     out_mp4 = Path(out_mp4)
     out_mp4.parent.mkdir(parents=True, exist_ok=True)
 
-    # 1. Pixabay Video HD Fetch
+    # 1. AI Video Generation via HuggingFace ZeroGPU LTX-Video
+    try:
+        res = generate_opening_motion_clip(prompt, None, out_mp4, is_vertical=is_vertical, duration_sec=duration_sec, seed=seed)
+        if res and res.exists() and res.stat().st_size > 20000:
+            print(f"    🎬 [AI Video Engine] تم توليد مقطع فيديو متحرك حقيقي بالذكاء الاصطناعي (حجم={res.stat().st_size} بايت)", flush=True)
+            return res
+    except Exception as ai_v_exc:
+        print(f"    ⚠️ [AI Video Engine] ملاحظة ({ai_v_exc})", flush=True)
+
+    # 2. Pixabay Video HD Fetch
     pixabay_key = os.environ.get("PIXABAY_API_KEY", "").strip() or "58562427-888666fb1b6895d44dd719aa6"
     if pixabay_key:
         try:

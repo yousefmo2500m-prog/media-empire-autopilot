@@ -169,6 +169,42 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                         "دون ترك أي دليل، حتى اللحظة الأخيرة التي تكشف من كان يسيطر على اللعبة منذ اليوم الأول"
                     ),
                 },
+                {
+                    "id": "eg_thr_closed_palace_secrets",
+                    "label": "أسرار القصور المغلقة وصراعات العائلات الثرية",
+                    "keywords": ["قصر", "وصية", "ثروة", "عائلة", "ميراث", "قفل", "خزينة خاصة"],
+                    "prompt_seed": (
+                        "أسرار غرف مغلقة في قصر تاريخي مهيب ونزاع صامت على ثروة غامضة ووصية مشفرة "
+                        "تكشف وجوهاً مخيفة وتاريخاً سرياً لم يعرفه أحد لعقود"
+                    ),
+                },
+                {
+                    "id": "eg_thr_serial_mastermind",
+                    "label": "أعقد قضايا الجرائم المتسلسلة ومطاردة الدهاء",
+                    "keywords": ["بصمة", "شفرة", "مطاردة", "محقق", "توقيع", "ضحية", "لغز"],
+                    "prompt_seed": (
+                        "مطاردة بوليسية ونفسية حابسة للأنفاس لعقل إجرامي فائق الذكاء يترك توقيعاً غامضاً "
+                        "في كل مكان، ومحقق عبقري يفك اللغز من خطأ نفسي خفي لم يحسب حسابه"
+                    ),
+                },
+                {
+                    "id": "eg_thr_digital_cyber_hunt",
+                    "label": "مؤامرات العالم الرقمي وتجسس الهواتف والذكاء الاصطناعي",
+                    "keywords": ["كاميرا", "هاتف", "تسريب", "قرصنة", "تتبع", "ذكاء اصطناعي", "ملف سري"],
+                    "prompt_seed": (
+                        "مؤامرة رقمية واقعية تبدأ بملف غير متوقع يظهر على هاتف بطل القصة أو كاميرا مراقبة ذكية "
+                        "تسجل ما لا يجب رؤيته، وتتحول لمطاردة بقاء إلكترونية وواقعية تحبس الأنفاس"
+                    ),
+                },
+                {
+                    "id": "eg_thr_doomed_expeditions",
+                    "label": "رحلات الطيران والسفن المنكوبة وألغاز المجهول",
+                    "keywords": ["طائرة", "سفينة", "بحر", "نداء استغاثة", "رادار", "عاصفة", "اختفاء"],
+                    "prompt_seed": (
+                        "لغز رحلة حقيقية في أعالي البحار أو الأجواء انقطع اتصالها في ظروف محيرة "
+                        "والتحقيقات المضنية التي قادت إلى العثور على أسرار تفوق الخيال وشهادات نجاة لا تصدق"
+                    ),
+                },
             ],
         },
         "cta_spoken_1": "لو عجبك المقطع متنساش تشترك في القناة وتعمل لايك علشان تشوف الحكايات الجاية أول بأول.. وقولنا رأيك وتوقعك في التعليقات تحت!",
@@ -294,6 +330,33 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                     "prompt_seed": (
                         "قصة اختفاء غامضة لشخصية أو سفينة أو طائرة اختفت تماماً دون أن تترك أثراً واحداً "
                         "وتفاصيل رحلة البحث المضنية التي كشفت أسراراً تفوق الخيال"
+                    ),
+                },
+                {
+                    "id": "eg_mys_forensic_breakthrough",
+                    "label": "ألغاز الطب الشرعي والاكتشافات المعملية الحاسمة",
+                    "keywords": ["معمل", "أثر خفي", "عينة", "حمض نووي", "مجهر", "سم", "دليل قاطع"],
+                    "prompt_seed": (
+                        "قضية جنائية معقدة بدت وكأنها حادث عرضي أو انتحار محكم، لكن تفصيلة طبية أو كيميائية لا ترى بالعين المجردة "
+                        "في تقرير المعمل الجنائي تقلب الموازين وتثبت جريمة قتل تم التخطيط لها بدهاء استثنائي"
+                    ),
+                },
+                {
+                    "id": "eg_mys_interpol_manhunt",
+                    "label": "مطاردات الإنتربول الدولية للعقول المتنكرة بأسماء مزيفة",
+                    "keywords": ["إنتربول", "مطار", "جواز سفر", "تنكر", "مطاردة", "هوية", "حدود"],
+                    "prompt_seed": (
+                        "مطاردة دولية شائقة عبر الحدود بين محقق عبقري وداهية ينتحل 5 شخصيات مختلفة "
+                        "ويعيش حياة كاملة تحت هويات مزورة حتى أوقعه تفصيل لغوي أو سلوكي صغير كشف قناعه الحقيقي"
+                    ),
+                },
+                {
+                    "id": "eg_mys_theatre_crime",
+                    "label": "جرائم المسارح والمعارض وحيل التمويه البصري",
+                    "keywords": ["مسرح", "عرض", "خدعة بصرية", "ستارة", "تمويه", "جمهور", "غموض"],
+                    "prompt_seed": (
+                        "جريمة مستحيلة حدثت أمام أعين المئات في صالة عرض أو مسرح مغلق دون أن يلاحظ أحد كيف نُفذت، "
+                        "وفك الشفرة الهندسية والتمويه البصري الذكي الذي استغله الجاني لتضليل الجميع"
                     ),
                 },
             ],
@@ -532,6 +595,24 @@ CHANNELS: Dict[str, Dict[str, Any]] = {
                     "prompt_seed": (
                         "a chilling true-crime investigation into people or vessels that vanished in broad daylight "
                         "without leaving a single physical trace, and the mind-bending truth revealed decades later"
+                    ),
+                },
+                {
+                    "id": "en_mys_forensic_coldcase",
+                    "label": "Forensic Cold-Cases & Microscopic Anomalies",
+                    "keywords": ["forensic", "microscopic", "chemical", "fiber", "reconstruction", "verdict"],
+                    "prompt_seed": (
+                        "an apparently flawless cold case where a microscopic forensic inconsistency—a fiber, reflection, or chemical timestamp— "
+                        "reconstructed the entire crime scene and exposed a cunning mastermind after decades of silence"
+                    ),
+                },
+                {
+                    "id": "en_mys_high_society_intrigue",
+                    "label": "High-Society Secrets & Contested Dynastic Wills",
+                    "keywords": ["estate", "dynasty", "will", "poison", "inheritance", "manor", "motive"],
+                    "prompt_seed": (
+                        "a razor-sharp closed-circle mystery inside a secluded historic manor where billions were at stake, "
+                        "every family member possessed an airtight alibi, and one silent physical paradox solved the murder"
                     ),
                 },
             ],

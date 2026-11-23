@@ -7,3 +7,4 @@ _work/
 state/api_surplus_clips/*.mp4
 .env
 production_vault/**/*.mp4
+production_vault/**/*.mp3
