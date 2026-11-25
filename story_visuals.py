@@ -384,7 +384,7 @@ def _try_cloudflare_flux(prompt: str, width: int, height: int, seed: int) -> Opt
         r = requests.post(
             f"https://api.cloudflare.com/client/v4/accounts/{cf_acc}/ai/run/@cf/black-forest-labs/flux-1-schnell",
             headers={"Authorization": f"Bearer {cf_tok}"},
-            json={"prompt": prompt[:2048], "steps": 4, "seed": seed % 999999},
+            json={"prompt": prompt[:2048]},
             timeout=30,
         )
         if r.status_code == 200:
