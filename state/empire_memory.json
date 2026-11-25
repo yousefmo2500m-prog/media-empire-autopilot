@@ -183,7 +183,7 @@
       "Lost Hiker's Snow Cave Survival Ordeal",
       "Night Guard Uncovers Deadly Delivery Conspiracy",
       "Swapped Gym Bag Uncovers Murderous Treasure Hunt",
-      "Hiker Trapped By Avalanche Outsmarts Death"
+      "Lost Hiker's Cryptic Trail Survival Test"
     ],
     "last_pillar_id": "en_thr_extreme_survival",
     "title_pillar_map": {
@@ -207,9 +207,8 @@
       "What This Snow Cave Diary Reveals: A Hiker's Fig": "en_thr_extreme_survival",
       "How a Night Guard Discovered a $12 Million Deliv": "en_thr_night_shift",
       "Swapped Gym Bag Led to Murder & $2M Treasure | T": "en_thr_wrong_item_trail",
-      "Hiker's Deadly Avalanche Escape: How He Outsmart": "en_thr_extreme_survival"
-    },
-    "last_movie_published_at": "2026-11-25T01:16:32.837215+00:00"
+      "Alone in the Woods: How a Hiker Outsmarted a Dea": "en_thr_extreme_survival"
+    }
   },
   "ch4_en_mystery": {
     "used_topics": [
