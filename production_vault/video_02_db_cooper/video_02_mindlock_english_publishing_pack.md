@@ -5,7 +5,7 @@
 ---
 
 ### 📁 PRODUCTION ASSETS & VAULT LOCATION:
-* **Master English Video (Full Foley & ChristopherNeural Narration):**  
+* **Master English Video (Full Foley & Charon Gemini Voiceover + English Subtitles):**  
   📁 `/home/user/db_cooper_complete_cinema_movie_en.mp4`  
   *(Runtime: **07:20 min** | Size: 43 MB | Resolution: 1280x720 @ 24fps Panavision 16:9 | Codec: H.264 / AAC 24kHz)*
 * **Master Arabic Video (Full Foley & Hamed Voiceover):**  
@@ -110,7 +110,7 @@ db cooper, db cooper mystery, who was db cooper, db cooper documentary, norjak, 
 
 ### ⚙️ 6. TECHNICAL SPECIFICATIONS & COMPLIANCE:
 * **Audio Track:** Full 24000Hz master, mixed EBU R128 (-24.0 dB LUFS, Peak -0.5 dB).
-* **Voice Actor:** `en-US-ChristopherNeural` (Authoritative investigative narrative tone).
+* **Voice Actor:** `Gemini TTS Studio Voice: Charon` (100% human investigative narrative tone, officially locked for Mindlock channel).
 * **SFX Layer:** 14 bespoke synthesized Foley cues (Boeing JT8D turbine roar, Zippo flint strike, bourbon ice clink, rainstorm gusts, master caution buzzer, aft stairs decompression vortex, Huey helicopter blades, and FBI rubber stamp).
-* **Aspect Ratio:** 16:9 Panavision cinematic letterbox (1280x720, 24.0 fps progressive).
+* **Aspect Ratio & Subtitles:** 16:9 Panavision cinematic letterbox (1280x720, 24.0 fps progressive) with crisp, burned-in English subtitles on a dedicated bottom matte (100% clean English presentation, zero Arabic text).
 * **Copyright Status:** 100% Original AI visual generation + public domain FBI archival evidence (Zero Content ID / Zero Copyright Claim).

@@ -1,5 +1,8 @@
 # 🎬 MINDLOCK CASE FILE #02: THE D.B. COOPER FILES
-## Full English Voiceover Script & Cinematic Scene Breakdown
+## Full English Voiceover Script (Gemini TTS Charon) & Cinematic Scene Breakdown
+
+* **Voice Actor:** `Charon` (Gemini Studio TTS — 100% human investigative true crime cadence).
+* **Subtitles:** Dedicated English typography on cinematic bottom matte (zero residual foreign text).
 
 ---
 
