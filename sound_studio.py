@@ -32,10 +32,10 @@ except Exception:
     pass
 
 GEMINI_TTS_MODELS = (
-    "gemini-3.8-flash-tts",
     "gemini-3.8-flash-lite-tts",
-    "gemini-3.1-flash-tts-preview",
     "gemini-2.5-flash-preview-tts",
+    "gemini-3.1-flash-tts-preview",
+    "gemini-3.8-flash-tts",
 )
 
 
@@ -78,8 +78,8 @@ def _norm_token(word: str) -> str:
 def _get_gemini_keys() -> List[str]:
     keys: List[str] = []
     for env_name in (
-        "GEMINI_API_KEY",
         "GEMINI_API_KEY_2",
+        "GEMINI_API_KEY",
         "GEMINI_API_KEY_3",
         "GEMINI_API_KEY_4",
         "GEMINI_API_KEY_5",
