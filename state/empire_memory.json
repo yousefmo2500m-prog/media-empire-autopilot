@@ -185,9 +185,10 @@
       "Lost Hiker's Snow Cave Survival Ordeal",
       "Night Guard Uncovers Deadly Delivery Conspiracy",
       "Swapped Gym Bag Uncovers Murderous Treasure Hunt",
-      "Lost Hiker's Cryptic Trail Survival Test"
+      "Lost Hiker's Cryptic Trail Survival Test",
+      "Doorbell Snapshot Reveals Neighbor's Secret Identity"
     ],
-    "last_pillar_id": "en_thr_extreme_survival",
+    "last_pillar_id": "en_thr_doorbell_neighbor",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
@@ -209,7 +210,8 @@
       "What This Snow Cave Diary Reveals: A Hiker's Fig": "en_thr_extreme_survival",
       "How a Night Guard Discovered a $12 Million Deliv": "en_thr_night_shift",
       "Swapped Gym Bag Led to Murder & $2M Treasure | T": "en_thr_wrong_item_trail",
-      "Alone in the Woods: How a Hiker Outsmarted a Dea": "en_thr_extreme_survival"
+      "Alone in the Woods: How a Hiker Outsmarted a Dea": "en_thr_extreme_survival",
+      "The Doorbell Photo That Exposed a Double Life | ": "en_thr_doorbell_neighbor"
     }
   },
   "ch4_en_mystery": {
