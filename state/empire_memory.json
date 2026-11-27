@@ -191,9 +191,10 @@
       "Night Guard Uncovers Deadly Delivery Conspiracy",
       "Swapped Gym Bag Uncovers Murderous Treasure Hunt",
       "Lost Hiker's Cryptic Trail Survival Test",
-      "Doorbell Snapshot Reveals Neighbor's Secret Identity"
+      "Doorbell Snapshot Reveals Neighbor's Secret Identity",
+      "Security Guard Discovers Hidden Delivery Cipher"
     ],
-    "last_pillar_id": "en_thr_doorbell_neighbor",
+    "last_pillar_id": "en_thr_night_shift",
     "title_pillar_map": {
       "The $4,200 Monthly Electric Bill Mystery | True ": "en_thr_hidden_sublet",
       "The Night Shift Guard Who Found the Hidden Floor": "en_thr_night_shift",
@@ -216,8 +217,10 @@
       "How a Night Guard Discovered a $12 Million Deliv": "en_thr_night_shift",
       "Swapped Gym Bag Led to Murder & $2M Treasure | T": "en_thr_wrong_item_trail",
       "Alone in the Woods: How a Hiker Outsmarted a Dea": "en_thr_extreme_survival",
-      "The Doorbell Photo That Exposed a Double Life | ": "en_thr_doorbell_neighbor"
-    }
+      "The Doorbell Photo That Exposed a Double Life | ": "en_thr_doorbell_neighbor",
+      "Hidden Delivery Cipher Triggers 2025 Disappearan": "en_thr_night_shift"
+    },
+    "last_movie_published_at": "2026-11-27T01:27:30.776517+00:00"
   },
   "ch4_en_mystery": {
     "used_topics": [
