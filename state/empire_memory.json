@@ -246,7 +246,7 @@
       "Logical trap reveals hidden arsonist mastermind",
       "Staged murder points to innocent neighbor",
       "The Lost Amber Chamber of Sumer",
-      "Silent Library Murder Clockwork Alibi Puzzle"
+      "Analog Heist Locked Vault Mystery"
     ],
     "last_pillar_id": "en_mys_locked_room",
     "title_pillar_map": {
@@ -266,8 +266,8 @@
       "The False Witness: A Detective's Logical Trap | ": "en_mys_logical_sting",
       "The Neighbor's Murder Frame: How a Perfect Alibi": "en_mys_staged_reversal",
       "The Lost Amber Chamber of Sumer: AI Decodes the ": "en_mys_historical_enigma",
-      "Silent Library Murder: Clockwork Alibi Puzzle | ": "en_mys_locked_room"
+      "Analog Heist Locked Vault Mystery | Locked-Room ": "en_mys_locked_room"
     },
-    "last_movie_published_at": "2026-11-27T03:32:30.002639+00:00"
+    "last_movie_published_at": "2026-11-27T05:27:16.177688+00:00"
   }
 }
