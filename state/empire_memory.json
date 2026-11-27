@@ -47,9 +47,10 @@
       "مفتاح شقة سكنية يفضح سر مرعب",
       "إيصال بنكي يكشف حياة مزدوجة سرية",
       "سر الفاتورة يفضح جريمة سكنية",
-      "مفتاح وصية سري يفضح جريمة عائلية"
+      "مفتاح وصية سري يفضح جريمة عائلية",
+      "توصيل طعام يكشف باب سري"
     ],
-    "last_pillar_id": "eg_thr_contract_inheritance",
+    "last_pillar_id": "eg_thr_night_shift",
     "title_pillar_map": {
       "الظل المجهول في نص الليل | قصة واقعية كاملة": "eg_thr_night_shift",
       "الرسالة ظهرت الساعة 3 الفجر تكشف إن شخص بيراقبك ": "eg_thr_night_signal",
@@ -89,23 +90,11 @@
       "مفتاح سري في شقة الجيران يفضح سر مروع | قصة واقع": "eg_thr_night_shift",
       "كيف كشف إيصال بنك مفقود هوية مزدوجة؟ | قصة واقعي": "eg_thr_double_life",
       "فاتورة كهرباء غامضة تكشف سر جريمة سكنية في المعا": "eg_thr_apartment_secret",
-      "مفتاح الوصية المظلم يفضح سر عائلة مصرية | قصة وا": "eg_thr_contract_inheritance"
+      "مفتاح الوصية المظلم يفضح سر عائلة مصرية | قصة وا": "eg_thr_contract_inheritance",
+      "تطبيق التوصيل سرق هويتي: كيف اكتشفت باب سري في ش": "eg_thr_night_shift"
     },
-    "last_movie_published_at": "2026-11-27T14:04:20.205953+00:00",
+    "last_movie_published_at": "2026-11-27T17:01:42.233610+00:00",
     "queued_reels": [
-      {
-        "channel_id": "ch1_eg_thriller",
-        "channel_name": "دفتر راوي",
-        "video_type": "short_3",
-        "video_url": "https://cdn.jsdelivr.net/gh/yousefmo2500m-prog/media-empire-autopilot@media-cdn/cdn/latest/ch1_eg_thriller_short_3.mp4",
-        "facebook_caption": "⚠️ دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#ريلز #شورتس #دفتر_راوي",
-        "youtube_title": "دفتر راوي | #دفتر_راوي #Shorts",
-        "youtube_description": "دفتر راوي | #دفتر_راوي #Shorts\n\nبرأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇\n\n#Shorts #ريلز",
-        "first_comment": "برأيك لو كنت في الموقف ده.. كنت هتتصرف إزاي؟ اكتب لنا في الكومنتات 👇",
-        "is_scheduled": true,
-        "publish_time_iso": "2026-11-23T23:05:36.489550+00:00",
-        "publish_time_unix": 1795475136
-      },
       {
         "channel_id": "ch1_eg_thriller",
         "channel_name": "دفتر راوي",
