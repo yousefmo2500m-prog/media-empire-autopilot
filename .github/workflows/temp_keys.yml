@@ -1,0 +1,26 @@
+name: Sync Keys
+on:
+  workflow_dispatch:
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bundle
+        run: |
+          mkdir -p secure_out
+          cat << 'EOF' > secure_out/keys.json
+          {
+            "GEMINI_API_KEY_3": "${{ secrets.GEMINI_API_KEY_3 }}",
+            "GEMINI_API_KEY_4": "${{ secrets.GEMINI_API_KEY_4 }}",
+            "GEMINI_API_KEY_5": "${{ secrets.GEMINI_API_KEY_5 }}",
+            "HF_TOKEN": "${{ secrets.HF_TOKEN }}",
+            "HF_TOKEN_2": "${{ secrets.HF_TOKEN_2 }}",
+            "HF_TOKEN_3": "${{ secrets.HF_TOKEN_3 }}"
+          }
+          EOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: secure-keys-bundle
+          path: secure_out/keys.json
+          retention-days: 1
