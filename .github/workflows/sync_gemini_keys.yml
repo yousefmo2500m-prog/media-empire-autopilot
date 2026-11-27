@@ -1,0 +1,20 @@
+name: Sync Gemini Keys
+on:
+  workflow_dispatch:
+
+jobs:
+  export-keys:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Export keys
+        run: |
+          mkdir -p secure_keys
+          echo "GEMINI_API_KEY_3=${{ secrets.GEMINI_API_KEY_3 }}" > secure_keys/keys.txt
+          echo "GEMINI_API_KEY_4=${{ secrets.GEMINI_API_KEY_4 }}" >> secure_keys/keys.txt
+          echo "GEMINI_API_KEY_5=${{ secrets.GEMINI_API_KEY_5 }}" >> secure_keys/keys.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: secure-gemini-keys
+          path: secure_keys/keys.txt
+          retention-days: 1
