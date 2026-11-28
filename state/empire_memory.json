@@ -227,9 +227,10 @@
       "Logical trap reveals hidden arsonist mastermind",
       "Staged murder points to innocent neighbor",
       "The Lost Amber Chamber of Sumer",
-      "Analog Heist Locked Vault Mystery"
+      "Analog Heist Locked Vault Mystery",
+      "Impossible Staged Crime Reveals Hidden Innocence"
     ],
-    "last_pillar_id": "en_mys_locked_room",
+    "last_pillar_id": "en_mys_staged_reversal",
     "title_pillar_map": {
       "The Blank Page In The Sealed Vault | Locked-Room": "en_mys_logical_sting",
       "The Typewritten Note Named The Killer Until A Fl": "en_mys_staged_reversal",
@@ -247,8 +248,9 @@
       "The False Witness: A Detective's Logical Trap | ": "en_mys_logical_sting",
       "The Neighbor's Murder Frame: How a Perfect Alibi": "en_mys_staged_reversal",
       "The Lost Amber Chamber of Sumer: AI Decodes the ": "en_mys_historical_enigma",
-      "Analog Heist Locked Vault Mystery | Locked-Room ": "en_mys_locked_room"
+      "Analog Heist Locked Vault Mystery | Locked-Room ": "en_mys_locked_room",
+      "How a 1940s Cipher Cracked a 2024 Murder Mystery": "en_mys_staged_reversal"
     },
-    "last_movie_published_at": "2026-11-27T05:27:16.177688+00:00"
+    "last_movie_published_at": "2026-11-28T05:06:10.368389+00:00"
   }
 }
