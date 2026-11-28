@@ -7,3 +7,5 @@ _work/
 state/api_surplus_clips/
 .env
 scenes_short*
+
+*.mp4
